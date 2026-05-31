@@ -120,3 +120,96 @@ async def change_article_status(
         await dispatch_event(event_id)
     await db.refresh(article)
     return article
+
+
+# ── участники статьи (ТЗ §5.4, §12.4) ──
+@router.get("/articles/{article_id}/members", response_model=list[ArticleMemberOut])
+async def article_members(
+    article_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    article = await db.get(Article, article_id)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
+    await require_membership(article.workspace_id, db, user)
+    rows = await db.execute(
+        select(ArticleMember, User.display_name, User.email)
+        .join(User, User.id == ArticleMember.user_id)
+        .where(ArticleMember.article_id == article_id)
+    )
+    return [
+        ArticleMemberOut(id=m.id, user_id=m.user_id, role=m.role, display_name=dn, email=em)
+        for m, dn, em in rows.all()
+    ]
+
+
+@router.post("/articles/{article_id}/members", response_model=ArticleMemberOut, status_code=201)
+async def add_article_member(
+    article_id: str,
+    data: ArticleMemberAdd,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    article = await db.get(Article, article_id)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
+    member = await require_membership(article.workspace_id, db, user)
+    if member.role not in ELEVATED_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+    in_ws = await db.scalar(
+        select(WorkspaceMember).where(
+            WorkspaceMember.workspace_id == article.workspace_id,
+            WorkspaceMember.user_id == data.user_id,
+        )
+    )
+    if in_ws is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not a workspace member")
+    exists = await db.scalar(
+        select(ArticleMember).where(
+            ArticleMember.article_id == article_id,
+            ArticleMember.user_id == data.user_id,
+        )
+    )
+    if exists:
+        exists.role = data.role
+        await db.commit()
+        await db.refresh(exists)
+        target = exists
+    else:
+        target = ArticleMember(article_id=article_id, user_id=data.user_id, role=data.role)
+        db.add(target)
+        await db.commit()
+        await db.refresh(target)
+    u = await db.get(User, target.user_id)
+    return ArticleMemberOut(
+        id=target.id,
+        user_id=target.user_id,
+        role=target.role,
+        display_name=u.display_name if u else None,
+        email=u.email if u else None,
+    )
+
+
+@router.delete("/articles/{article_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_article_member(
+    article_id: str,
+    user_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    article = await db.get(Article, article_id)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
+    member = await require_membership(article.workspace_id, db, user)
+    if member.role not in ELEVATED_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+    target = await db.scalar(
+        select(ArticleMember).where(
+            ArticleMember.article_id == article_id,
+            ArticleMember.user_id == user_id,
+        )
+    )
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
+    await db.delete(target)
+    await db.commit()
+    return None

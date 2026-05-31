@@ -247,6 +247,18 @@
           </div>
         </div>
         <div class="col">
+          <div class="card sk">
+            <h3>Ближайшие дедлайны</h3>
+            <div id="dashDeadlines"><div class="ph" style="height:52px;">загрузка…</div></div>
+          </div>
+          <div class="card sk">
+            <h3>Активные проекты</h3>
+            <div id="dashProjects"><div class="ph" style="height:52px;">загрузка…</div></div>
+          </div>
+          <div class="card sk">
+            <h3>Статьи в работе</h3>
+            <div id="dashArticles"><div class="ph" style="height:52px;">загрузка…</div></div>
+          </div>
           <div class="card sk2 feed">
             <h3>Активность команды</h3>
             <div class="feedbody" id="dashFeed"></div>
@@ -303,6 +315,15 @@
           <div class="card sk2"><h3>Статьи проекта</h3><div id="pdArticles"></div></div>
         </div>
         <div class="col">
+          <div class="card sk2 memberbox" data-members="project">
+            <h3>Участники проекта</h3>
+            <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <select class="rolepick" data-member-user style="min-width:160px;"></select>
+              <select class="rolepick" data-member-role></select>
+              <button class="btn primary sm" data-member-add>Добавить</button>
+            </div>
+            <div data-member-list></div>
+          </div>
           <div class="card sk2 cmtbox" data-cmt="project"><h3>Комментарии</h3><div class="cmt-list"></div>
             <div class="cmt-form"></div></div>
         </div>
@@ -327,6 +348,15 @@
           </div>
         </div>
         <div class="col">
+          <div class="card sk2 memberbox" data-members="article">
+            <h3>Участники статьи</h3>
+            <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <select class="rolepick" data-member-user style="min-width:160px;"></select>
+              <select class="rolepick" data-member-role></select>
+              <button class="btn primary sm" data-member-add>Добавить</button>
+            </div>
+            <div data-member-list></div>
+          </div>
           <div class="card sk2 cmtbox" data-cmt="article"><h3>Комментарии</h3><div class="cmt-list"></div>
             <div class="cmt-form"></div></div>
         </div>

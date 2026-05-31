@@ -11,6 +11,12 @@
     'IDEA', 'PLANNING', 'WRITING', 'INTERNAL_REVIEW', 'REVISION',
     'SUBMITTED', 'UNDER_REVIEW', 'ACCEPTED', 'PUBLISHED', 'ARCHIVED',
   ];
+  const PROJECT_ROLES = ['PROJECT_OWNER', 'LEAD', 'CONTRIBUTOR', 'REVIEWER', 'OBSERVER'];
+  const ARTICLE_ROLES = ['AUTHOR', 'CO_AUTHOR', 'REVIEWER', 'EDITOR', 'OBSERVER'];
+  const ACTIVE_PROJECT_STATUSES = new Set(['IDEA', 'PLANNING', 'ACTIVE', 'PAUSED', 'IN_REVIEW']);
+  const ACTIVE_ARTICLE_STATUSES = new Set([
+    'IDEA', 'PLANNING', 'WRITING', 'INTERNAL_REVIEW', 'REVISION', 'SUBMITTED', 'UNDER_REVIEW',
+  ]);
 
   const state = {
     me: null,
@@ -19,6 +25,9 @@
     pet: null,
     prevXp: null,
     projects: [],
+    articles: [],
+    members: [],
+    pollTimer: null,
   };
 
   const esc = (s) =>
@@ -315,7 +324,25 @@
     renderWorkspacePicker();
     refreshPet();
     refreshNotifBadge();
+    startPolling();
     go('dashboard');
+  }
+
+  function startPolling() {
+    if (state.pollTimer) clearInterval(state.pollTimer);
+    state.pollTimer = setInterval(async () => {
+      if (!api.isAuthed() || !state.wsId) return;
+      try {
+        await refreshNotifBadge();
+        const active = $('.screen.on');
+        const name = active ? active.id.replace('screen-', '') : '';
+        if (name === 'dashboard') await refreshDashboardLive();
+        if (name === 'team') await renderTeam();
+        if (name === 'notif') await renderNotifications();
+      } catch {
+        // Polling is best-effort; explicit actions still surface errors via toasts.
+      }
+    }, 30000);
   }
 
   /* ---------------- onboarding ---------------- */
@@ -504,6 +531,7 @@
   /* ---------------- laboratory (members + invite code + roles) ---------------- */
   const ROLE_OPTIONS = ['OWNER', 'ADMIN', 'PROJECT_LEAD', 'EDITOR', 'MEMBER', 'VIEWER'];
   const ADMIN_ROLES = new Set(['OWNER', 'ADMIN']);
+  const ELEVATED_ROLES = new Set(['OWNER', 'ADMIN', 'PROJECT_LEAD', 'EDITOR']);
 
   async function renderLab() {
     const ws = state.workspaces.find((w) => w.id === state.wsId);
@@ -737,18 +765,56 @@
     const ws = state.workspaces.find((w) => w.id === state.wsId);
     $('#dashSub').textContent = ws ? ws.name : '';
     await refreshPet();
+    await refreshDashboardLive();
+  }
 
-    const tasks = await api.get('/me/tasks');
+  async function refreshDashboardLive() {
+    const [tasks, feed, projects, articles] = await Promise.all([
+      api.get('/me/tasks'),
+      api.get(`/workspaces/${state.wsId}/activity?limit=15`),
+      api.get(`/workspaces/${state.wsId}/projects`),
+      api.get(`/workspaces/${state.wsId}/articles`),
+    ]);
+    state.projects = projects;
+    state.articles = articles;
     const open = tasks.filter((t) => t.status !== 'DONE');
     $('#dashTaskCount').textContent = `${open.length} открыто`;
     $('#dashTasks').innerHTML = tasks.length
       ? tasks.slice(0, 8).map(taskRow).join('')
       : '<div class="muted sm">Задач пока нет — создайте на «Мои задачи».</div>';
 
-    const feed = await api.get(`/workspaces/${state.wsId}/activity?limit=15`);
     $('#dashFeed').innerHTML = feed.length
       ? feed.map(feedRow).join('')
       : '<div class="muted sm">Пока тихо.</div>';
+    renderDashboardWidgets(tasks, projects, articles);
+  }
+
+  function renderDashboardWidgets(tasks, projects, articles) {
+    const dated = tasks
+      .filter((t) => t.due_date && t.status !== 'DONE')
+      .sort((a, b) => a.due_date.localeCompare(b.due_date))
+      .slice(0, 5);
+    $('#dashDeadlines').innerHTML = dated.length
+      ? dated.map((t) => `<div class="task" data-open-task="${t.id}" style="cursor:pointer;">
+          <div class="prio ${t.priority}"></div>
+          <div class="t">${esc(t.title)} <span class="tag">${t.scope}</span></div>
+          <span class="chip">${t.due_date}</span>
+        </div>`).join('')
+      : '<div class="muted sm">Ближайших дедлайнов нет.</div>';
+
+    const activeProjects = projects.filter((p) => ACTIVE_PROJECT_STATUSES.has(p.status)).slice(0, 5);
+    $('#dashProjects').innerHTML = activeProjects.length
+      ? activeProjects.map((p) => `<div class="task" data-open-project="${p.id}" style="cursor:pointer;">
+          <div class="t">${esc(p.name)}</div><span class="tag ptype">${p.status}</span>
+        </div>`).join('')
+      : '<div class="muted sm">Активных проектов нет.</div>';
+
+    const activeArticles = articles.filter((a) => ACTIVE_ARTICLE_STATUSES.has(a.status)).slice(0, 5);
+    $('#dashArticles').innerHTML = activeArticles.length
+      ? activeArticles.map((a) => `<div class="task" data-open-article="${a.id}" style="cursor:pointer;">
+          <div class="t">${esc(a.title)}</div><span class="tag ptype">${a.status}</span>
+        </div>`).join('')
+      : '<div class="muted sm">Статей в работе нет.</div>';
   }
 
   function feedRow(a) {
@@ -839,6 +905,7 @@
       ? articles.map((a) => `<div class="task" data-open-article="${a.id}" style="cursor:pointer;"><div class="t">${esc(a.title)}</div><span class="tag ptype">${a.status}</span></div>`).join('')
       : '<div class="muted sm">Нет статей.</div>';
 
+    renderMemberManager('project', id, p.workspace_id);
     mountComments('project', id);
   }
 
@@ -877,8 +944,129 @@
     $('#adTaskCount').textContent = `${own.length}`;
     $('#adTasks').innerHTML = own.length ? own.map(taskRowLinked).join('') : '<div class="muted sm">Нет задач статьи.</div>';
 
+    renderMemberManager('article', id, a.workspace_id);
     mountComments('article', id);
   }
+
+  /* ---------------- project/article members ---------------- */
+  const MEMBER_CONFIG = {
+    project: {
+      roles: PROJECT_ROLES,
+      path: (id) => `/projects/${id}/members`,
+    },
+    article: {
+      roles: ARTICLE_ROLES,
+      path: (id) => `/articles/${id}/members`,
+    },
+  };
+
+  async function renderMemberManager(kind, entityId, workspaceId) {
+    const cfg = MEMBER_CONFIG[kind];
+    const box = $(`.memberbox[data-members="${kind}"]`);
+    if (!cfg || !box) return;
+    box.dataset.id = entityId;
+    const list = box.querySelector('[data-member-list]');
+    const userSel = box.querySelector('[data-member-user]');
+    const roleSel = box.querySelector('[data-member-role]');
+    const addBtn = box.querySelector('[data-member-add]');
+    list.innerHTML = '<div class="ph" style="height:44px;">загрузка…</div>';
+
+    try {
+      const [workspaceMembers, entityMembers] = await Promise.all([
+        api.get(`/workspaces/${workspaceId}/members`),
+        api.get(cfg.path(entityId)),
+      ]);
+      state.members = workspaceMembers;
+      const my = workspaceMembers.find((m) => m.user_id === state.me.id);
+      const canManage = !!my && ELEVATED_ROLES.has(my.role);
+
+      userSel.innerHTML = workspaceMembers
+        .map((m) => `<option value="${m.user_id}">${esc(m.display_name || m.email || m.user_id.slice(0, 8))}</option>`)
+        .join('');
+      roleSel.innerHTML = cfg.roles.map((r) => `<option>${r}</option>`).join('');
+      userSel.disabled = !canManage;
+      roleSel.disabled = !canManage;
+      addBtn.disabled = !canManage;
+      addBtn.style.display = canManage ? '' : 'none';
+
+      list.innerHTML = entityMembers.length
+        ? `<table class="tbl"><tbody>${entityMembers.map((m) => {
+            const roleCell = canManage
+              ? `<select class="rolepick" data-member-role-of="${m.user_id}" data-kind="${kind}" data-entity-id="${entityId}">
+                  ${cfg.roles.map((r) => `<option ${r === m.role ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>`
+              : `<span class="tag ptype">${m.role}</span>`;
+            const remove = canManage
+              ? `<span class="chip danger btn-like" data-remove-entity-member="${m.user_id}" data-kind="${kind}" data-entity-id="${entityId}">удалить</span>`
+              : '';
+            return `<tr>
+              <td><div class="row"><div class="avatar hatch">${initials(m.display_name || '?')}</div>
+                <div><b>${esc(m.display_name || m.user_id.slice(0, 8))}</b><div class="mono">${esc(m.email || '')}</div></div></div></td>
+              <td>${roleCell}</td>
+              <td>${remove}</td>
+            </tr>`;
+          }).join('')}</tbody></table>`
+        : '<div class="muted sm">Участников пока нет.</div>';
+    } catch {
+      list.innerHTML = '<div class="muted sm">Не удалось загрузить участников.</div>';
+    }
+  }
+
+  document.addEventListener('click', async (e) => {
+    const add = e.target.closest('[data-member-add]');
+    if (!add) return;
+    const box = add.closest('.memberbox');
+    const kind = box.dataset.members;
+    const id = box.dataset.id;
+    const cfg = MEMBER_CONFIG[kind];
+    const user_id = box.querySelector('[data-member-user]').value;
+    const role = box.querySelector('[data-member-role]').value;
+    if (!user_id || !role) return;
+    add.disabled = true;
+    try {
+      await api.post(cfg.path(id), { user_id, role });
+      toast('Участник обновлён', 'xp');
+      const entity = kind === 'project' ? await api.get(`/projects/${id}`) : await api.get(`/articles/${id}`);
+      renderMemberManager(kind, id, entity.workspace_id);
+    } catch (err) {
+      toast(err.message || 'Не удалось обновить участника', '');
+    } finally {
+      add.disabled = false;
+    }
+  });
+
+  document.addEventListener('change', async (e) => {
+    const sel = e.target.closest('[data-member-role-of]');
+    if (!sel) return;
+    const kind = sel.dataset.kind;
+    const id = sel.dataset.entityId;
+    const cfg = MEMBER_CONFIG[kind];
+    try {
+      await api.post(cfg.path(id), { user_id: sel.dataset.memberRoleOf, role: sel.value });
+      toast('Роль обновлена', 'xp');
+    } catch (err) {
+      toast(err.message || 'Не удалось изменить роль', '');
+      const entity = kind === 'project' ? await api.get(`/projects/${id}`) : await api.get(`/articles/${id}`);
+      renderMemberManager(kind, id, entity.workspace_id);
+    }
+  });
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-remove-entity-member]');
+    if (!btn) return;
+    if (!confirm('Удалить участника?')) return;
+    const kind = btn.dataset.kind;
+    const id = btn.dataset.entityId;
+    const cfg = MEMBER_CONFIG[kind];
+    try {
+      await api.del(`${cfg.path(id)}/${btn.dataset.removeEntityMember}`);
+      toast('Участник удалён', '');
+      const entity = kind === 'project' ? await api.get(`/projects/${id}`) : await api.get(`/articles/${id}`);
+      renderMemberManager(kind, id, entity.workspace_id);
+    } catch (err) {
+      toast(err.message || 'Не удалось удалить', '');
+    }
+  });
 
   /* ---------------- detail: task ---------------- */
   async function openTask(id) {

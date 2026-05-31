@@ -107,3 +107,44 @@ async def test_deadline_check_notifies_once(client):
 
     notifs = (await client.get("/notifications", headers=hb)).json()
     assert sum(1 for n in notifs if n["type"] == "DEADLINE") == 1
+
+
+async def test_article_members_can_be_managed_by_elevated_workspace_member(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    bob_id = (await client.get("/auth/me", headers=hb)).json()["id"]
+    article = (
+        await client.post(f"/workspaces/{ws['id']}/articles", json={"title": "Paper"}, headers=ho)
+    ).json()
+
+    assert (await client.get(f"/articles/{article['id']}/members", headers=ho)).json() == []
+
+    resp = await client.post(
+        f"/articles/{article['id']}/members",
+        json={"user_id": bob_id, "role": "REVIEWER"},
+        headers=ho,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["role"] == "REVIEWER"
+
+    # Re-adding the same user updates their article role.
+    resp = await client.post(
+        f"/articles/{article['id']}/members",
+        json={"user_id": bob_id, "role": "EDITOR"},
+        headers=ho,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["role"] == "EDITOR"
+
+    # A regular workspace MEMBER can see article members but cannot manage them.
+    assert (await client.get(f"/articles/{article['id']}/members", headers=hb)).status_code == 200
+    assert (
+        await client.post(
+            f"/articles/{article['id']}/members",
+            json={"user_id": bob_id, "role": "AUTHOR"},
+            headers=hb,
+        )
+    ).status_code == 403
+
+    resp = await client.delete(f"/articles/{article['id']}/members/{bob_id}", headers=ho)
+    assert resp.status_code == 204, resp.text
+    assert (await client.get(f"/articles/{article['id']}/members", headers=ho)).json() == []
