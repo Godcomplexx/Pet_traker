@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>petpro — lab tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;700&family=Patrick+Hand&family=Kalam:wght@400;700&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wireframes.css">
+</head>
+<body data-density="comfortable">
+
+<!-- ========================= AUTH ========================= -->
+<div id="auth" class="on">
+  <div class="authcard sk">
+    <div class="brand" style="margin-bottom:6px;">
+      <div class="logo">п</div>
+      <div><b>petpro</b><div class="v">lab tracker · корми питомца работой</div></div>
+    </div>
+    <div class="line"></div>
+    <div id="authPane">
+      <div class="tabs" id="authTabs">
+        <button class="on" data-tab="login">Вход</button>
+        <button data-tab="reg">Регистрация</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div class="field" id="nameField" style="display:none;">
+          <label>Отображаемое имя</label>
+          <input class="input" id="displayName" autocomplete="name" placeholder="Анна Петрова">
+          <div class="field-err" data-err="display_name"></div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input class="input" id="email" type="email" autocomplete="email" placeholder="you@lab.ru">
+          <div class="field-err" data-err="email"></div>
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input class="input" id="password" type="password" autocomplete="current-password" placeholder="••••••••">
+          <div class="field-err" data-err="password"></div>
+          <div class="sm muted" id="pwHint" style="display:none;margin-top:3px;">Минимум 8 символов, буква и цифра</div>
+        </div>
+        <div class="field" id="confirmField" style="display:none;">
+          <label>Повторите пароль</label>
+          <input class="input" id="password2" type="password" autocomplete="new-password" placeholder="••••••••">
+          <div class="field-err" data-err="password2"></div>
+        </div>
+        <button class="btn primary" style="width:100%;margin-top:8px;" id="authGo" type="submit">Войти →</button>
+      </form>
+      <p class="sm" id="authError" style="color:#c5402f;min-height:18px;margin:8px 0 0;"></p>
+      <p class="sm muted" style="text-align:center;margin:6px 0 0;">Закрывай задачи — питомец растёт.<br><span class="note">XP начисляет бэкенд</span></p>
+    </div>
+
+    <!-- Шаг подтверждения email -->
+    <div id="verifyPane" style="display:none;">
+      <h3 style="margin-bottom:4px;">Подтвердите email</h3>
+      <p class="sm muted">Мы отправили 6-значный код на <b id="verifyEmail"></b>. Введите его ниже.</p>
+      <div class="field">
+        <label>Код из письма</label>
+        <input class="input" id="verifyCode" inputmode="numeric" maxlength="6"
+               placeholder="000000" style="letter-spacing:.4em;text-align:center;font-size:24px;">
+        <div class="field-err" data-err="verify_code"></div>
+      </div>
+      <div class="note" id="devCodeHint" style="display:none;"></div>
+      <button class="btn primary" style="width:100%;margin-top:6px;" id="verifyBtn">Подтвердить →</button>
+      <p class="sm muted" style="text-align:center;margin-top:10px;">
+        Не пришло? <span class="btn-like" id="resendBtn" style="color:var(--accent);">Отправить код ещё раз</span><br>
+        <span class="btn-like" id="backToAuth" style="color:var(--ink2);">← назад</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= ONBOARDING (выбор лаборатории) ========================= -->
+<div id="onboard">
+  <div class="authcard sk">
+    <div class="brand" style="margin-bottom:6px;">
+      <div class="logo">п</div>
+      <div><b>petpro</b><div class="v" id="onboardHi">добро пожаловать</div></div>
+    </div>
+    <div class="line"></div>
+    <div class="tabs" id="onboardTabs">
+      <button class="on" data-otab="create">Создать лабораторию</button>
+      <button data-otab="join">Войти по коду</button>
+    </div>
+
+    <div id="onboardCreate">
+      <div class="field">
+        <label>Название лаборатории</label>
+        <input class="input" id="obName" placeholder="Lab Костенко">
+        <div class="field-err" data-err="ob_name"></div>
+      </div>
+      <div class="field">
+        <label>Описание <span class="muted">(необязательно)</span></label>
+        <textarea class="input" id="obDesc" placeholder="Научно-инженерная лаборатория"></textarea>
+      </div>
+      <button class="btn primary" style="width:100%;" id="obCreateBtn">Создать →</button>
+    </div>
+
+    <div id="onboardJoin" style="display:none;">
+      <div class="field">
+        <label>Код приглашения</label>
+        <input class="input" id="obCode" placeholder="ABCD2345" maxlength="12" style="text-transform:uppercase;letter-spacing:.15em;">
+        <div class="field-err" data-err="ob_code"></div>
+      </div>
+      <button class="btn primary" style="width:100%;" id="obJoinBtn">Присоединиться →</button>
+      <p class="sm muted" style="text-align:center;margin-top:10px;">Код можно получить у владельца лаборатории.</p>
+    </div>
+
+    <div class="line"></div>
+    <p class="sm muted" style="text-align:center;"><span class="btn-like" id="obLogout" style="color:var(--accent);">← выйти</span></p>
+  </div>
+</div>
+
+<!-- ========================= PET CREATOR ========================= -->
+<div id="petcreate">
+  <div class="authcard sk" style="width:440px;">
+    <div class="brand" style="margin-bottom:6px;">
+      <div class="logo">п</div>
+      <div><b>создай питомца</b><div class="v">он будет расти от твоей работы</div></div>
+    </div>
+    <div class="line"></div>
+
+    <div class="petscreen petbig pet-preview"><div class="scan">PREVIEW</div></div>
+
+    <div class="field">
+      <label>Имя питомца</label>
+      <input class="input" id="pcName" placeholder="Кодзи" value="Кодзи">
+      <div class="field-err" data-err="pc_name"></div>
+    </div>
+
+    <div class="field">
+      <label>Вид</label>
+      <div class="species-pick" id="pcSpecies"></div>
+    </div>
+
+    <div class="field">
+      <label>Цвет тела</label>
+      <div class="swatches" id="pcBody"></div>
+    </div>
+
+    <div class="field">
+      <label>Акцент (рот/детали)</label>
+      <div class="swatches" id="pcAccent"></div>
+    </div>
+
+    <button class="btn primary" style="width:100%;margin-top:6px;" id="pcSaveBtn">Готово! →</button>
+  </div>
+</div>
+
+<!-- ========================= APP ========================= -->
+<div id="app" style="display:none;">
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">п</div>
+      <div><b>petpro</b><div class="v">лаборатория</div></div>
+    </div>
+    <div class="labpick soft">
+      <select id="wsPick" class="rolepick" style="flex:1;border:0;background:transparent;font-size:15px;"></select>
+      <span class="mono btn-like" id="newWsBtn" title="Новая лаборатория">＋</span>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-go="dashboard" class="active"><span class="ic">▤</span> Дашборд</a>
+      <a data-go="lab"><span class="ic">🧪</span> Лаборатория</a>
+      <div class="grp">Работа</div>
+      <a data-go="projects"><span class="ic">◧</span> Проекты</a>
+      <a data-go="articles"><span class="ic">▦</span> Статьи</a>
+      <a data-go="mytasks"><span class="ic">✓</span> Мои задачи</a>
+      <div class="grp">Игра</div>
+      <a data-go="pet"><span class="ic">❍</span> Питомец</a>
+      <a data-go="team"><span class="ic">◑</span> Team Room</a>
+      <div class="grp">Прочее</div>
+      <a data-go="notif"><span class="ic">!</span> Уведомления <span class="badge hide" id="notifBadge">0</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="petmini sk2" data-go="pet">
+      <div class="av"><div class="hud" data-petlevel>1</div></div>
+      <div class="meta">
+        <b data-petname>Питомец</b> <span class="mono">ур. <span data-petlevel>1</span></span>
+        <div class="track" style="margin-top:5px;"><div class="fill xp" data-petfill style="width:0%"></div></div>
+        <div class="mono" style="margin-top:3px;" data-petlabel>0 / 100 XP</div>
+      </div>
+    </div>
+    <div class="line"></div>
+    <div class="userrow">
+      <div class="avatar hatch" id="meAvatar">··</div>
+      <div style="flex:1;" id="meName">…</div>
+      <span class="mono btn-like" id="logoutBtn" title="Выйти">⏻</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- ===== LABORATORY ===== -->
+    <section class="screen" id="screen-lab">
+      <div class="topbar">
+        <div><h1 id="labName">Лаборатория</h1><div class="muted sm" id="labRole"></div></div>
+      </div>
+
+      <div class="card sk" id="inviteCard" style="margin-bottom:var(--gap);display:none;">
+        <h3>Код приглашения <span class="mono">для новых участников</span></h3>
+        <div class="row" style="gap:12px;align-items:center;">
+          <div class="lcd" id="joinCode" style="font-size:30px;letter-spacing:.2em;padding:6px 16px;border:2.5px solid var(--ink);border-radius:var(--radius);background:var(--paper2);">········</div>
+          <button class="btn" id="copyCodeBtn">⧉ Копировать</button>
+        </div>
+        <p class="note">Передайте код коллеге — он введёт его при входе и присоединится как MEMBER.</p>
+      </div>
+
+      <div class="card sk">
+        <h3>Участники <span class="mono" id="memberCount"></span></h3>
+        <table class="tbl">
+          <thead><tr><th>Участник</th><th>Роль</th><th></th></tr></thead>
+          <tbody id="memberBody"></tbody>
+        </table>
+        <p class="note" id="roleHint">роль определяет права: VIEWER только смотрит, MEMBER/EDITOR ведут задачи и статьи, ADMIN/OWNER управляют участниками</p>
+      </div>
+    </section>
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="screen on" id="screen-dashboard">
+      <div class="topbar">
+        <div><h1 id="dashHi">Привет 👋</h1><div class="muted sm" id="dashSub"></div></div>
+        <div class="grow"></div>
+        <button class="btn" data-go="mytasks">+ Задача</button>
+        <button class="btn primary" data-go="projects">+ Проект</button>
+      </div>
+
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="row" style="gap:18px;align-items:stretch;">
+          <div class="petscreen" style="width:124px;height:124px;flex:0 0 auto;"><div class="scan">LVL <span data-petlevel>1</span></div></div>
+          <div style="flex:1;">
+            <div class="between"><h2><span data-petname>Питомец</span> <span class="mono">· ур. <span data-petlevel>1</span></span></h2><span class="chip" data-petstate></span></div>
+            <div class="stat"><span class="lbl">XP до ур.<span data-petlevelnext>2</span></span><div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div><span class="num" data-petnum>0/100</span></div>
+            <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
+            <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
+            <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
+            <div class="note" style="margin-top:4px;">level = floor(XP/100)+1 · меняется только воркером</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Мои задачи <span class="mono" id="dashTaskCount"></span></h3>
+            <div id="dashTasks"><div class="ph" style="height:60px;">загрузка…</div></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2 feed">
+            <h3>Активность команды</h3>
+            <div class="feedbody" id="dashFeed"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROJECTS ===== -->
+    <section class="screen" id="screen-projects">
+      <div class="topbar">
+        <div><h1>Проекты</h1><div class="muted sm">направления лаборатории</div></div>
+        <div class="grow"></div>
+        <input class="input" id="projName" placeholder="Название проекта" style="width:200px;">
+        <select class="rolepick" id="projType">
+          <option>RESEARCH</option><option>SOFTWARE</option><option>PUBLICATION</option>
+          <option>EXPERIMENT</option><option>ADMIN</option><option selected>OTHER</option>
+        </select>
+        <button class="btn primary" id="newProjectBtn">+ Создать</button>
+      </div>
+      <div class="board" id="projectBoard"></div>
+    </section>
+
+    <!-- ===== ARTICLES ===== -->
+    <section class="screen" id="screen-articles">
+      <div class="topbar">
+        <div><h1>Статьи</h1><div class="muted sm">научные артефакты · publication workflow</div></div>
+        <div class="grow"></div>
+        <input class="input" id="artTitle" placeholder="Заголовок статьи" style="width:240px;">
+        <button class="btn primary" id="newArticleBtn">+ Создать</button>
+      </div>
+      <div class="col" id="articleList"></div>
+    </section>
+
+    <!-- ===== PROJECT DETAIL ===== -->
+    <section class="screen" id="screen-projdetail">
+      <div class="topbar">
+        <div><span class="btn-like sm" data-go="projects" style="color:var(--accent);">← проекты</span>
+          <h1 id="pdName">Проект</h1><div class="muted sm" id="pdMeta"></div></div>
+        <div class="grow"></div>
+        <select class="rolepick" id="pdStatus"></select>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk"><h3>Описание</h3><div id="pdDesc" class="muted"></div></div>
+          <div class="card sk">
+            <div class="between"><h3>Задачи проекта <span class="mono" id="pdTaskCount"></span></h3></div>
+            <div class="row" style="gap:8px;margin-bottom:8px;">
+              <input class="input" id="pdNewTask" placeholder="Новая задача проекта" style="flex:1;">
+              <button class="btn primary sm" id="pdAddTask">+ Задача</button>
+            </div>
+            <div id="pdTasks"></div>
+          </div>
+          <div class="card sk2"><h3>Статьи проекта</h3><div id="pdArticles"></div></div>
+        </div>
+        <div class="col">
+          <div class="card sk2 cmtbox" data-cmt="project"><h3>Комментарии</h3><div class="cmt-list"></div>
+            <div class="cmt-form"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ARTICLE DETAIL ===== -->
+    <section class="screen" id="screen-artdetail">
+      <div class="topbar">
+        <div><span class="btn-like sm" data-go="articles" style="color:var(--accent);">← статьи</span>
+          <h1 id="adTitle">Статья</h1><div class="muted sm" id="adMeta"></div></div>
+        <div class="grow"></div>
+        <select class="rolepick" id="adStatus"></select>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk"><h3>Описание</h3><div id="adDesc" class="muted"></div>
+            <div id="adFields" class="sm muted" style="margin-top:8px;"></div></div>
+          <div class="card sk">
+            <div class="between"><h3>Задачи статьи <span class="mono" id="adTaskCount"></span></h3></div>
+            <div id="adTasks"></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2 cmtbox" data-cmt="article"><h3>Комментарии</h3><div class="cmt-list"></div>
+            <div class="cmt-form"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TASK DETAIL ===== -->
+    <section class="screen" id="screen-taskdetail">
+      <div class="topbar">
+        <div><span class="btn-like sm" id="tdBack" style="color:var(--accent);">← назад</span>
+          <h1 id="tdTitle">Задача</h1><div class="muted sm" id="tdMeta"></div></div>
+        <div class="grow"></div>
+        <button class="btn" id="tdToggle">Закрыть задачу</button>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk"><h3>Описание</h3><div id="tdDesc" class="muted"></div></div>
+        </div>
+        <div class="col">
+          <div class="card sk2 cmtbox" data-cmt="task"><h3>Комментарии</h3><div class="cmt-list"></div>
+            <div class="cmt-form"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MY TASKS ===== -->
+    <section class="screen" id="screen-mytasks">
+      <div class="topbar">
+        <div><h1>Мои задачи</h1><div class="muted sm">командные + личные</div></div>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="row" style="flex-wrap:wrap;gap:8px;">
+          <input class="input" id="taskTitle" placeholder="Что нужно сделать?" style="flex:1;min-width:200px;">
+          <select class="rolepick" id="taskScope">
+            <option value="PERSONAL">🔒 Личная</option>
+            <option value="WORKSPACE">Командная (workspace)</option>
+            <option value="PROJECT">Проектная</option>
+          </select>
+          <select class="rolepick" id="taskProject" style="display:none;"></select>
+          <select class="rolepick" id="taskAssignee" style="display:none;"></select>
+          <input class="input" id="taskDue" type="date" style="display:none;width:auto;">
+          <button class="btn primary" id="newTaskBtn">+ Добавить</button>
+        </div>
+      </div>
+
+      <!-- фильтры -->
+      <div class="filterbar">
+        <span class="mono">scope:</span>
+        <div class="seg" data-filter="scope">
+          <button class="on" data-val="all">все</button>
+          <button data-val="team">команд.</button>
+          <button data-val="personal">личные</button>
+        </div>
+        <span class="mono">статус:</span>
+        <div class="seg" data-filter="status">
+          <button class="on" data-val="all">все</button>
+          <button data-val="open">открыто</button>
+          <button data-val="done">готово</button>
+        </div>
+        <span class="mono">дедлайн:</span>
+        <div class="seg" data-filter="due">
+          <button class="on" data-val="all">все</button>
+          <button data-val="overdue">просроч.</button>
+          <button data-val="soon">скоро</button>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card sk">
+          <h3>Командные <span class="mono" id="teamCount"></span></h3>
+          <div id="teamTasks"></div>
+        </div>
+        <div class="card sk2">
+          <h3 style="color:var(--priv)">Личные <span class="lock" style="margin-left:auto;">🔒 только вы</span></h3>
+          <div id="personalTasks"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PET ===== -->
+    <section class="screen" id="screen-pet">
+      <div class="topbar"><div><h1>Питомец</h1><div class="muted sm">растёт от выполненной работы</div></div></div>
+      <div class="card sk petbig" style="max-width:520px;">
+        <div class="petscreen" style="height:220px;"><div class="scan">LVL <span data-petlevel>1</span></div></div>
+        <div class="between" style="margin-top:12px;">
+          <h2><span data-petname>Питомец</span></h2>
+          <button class="btn sm" id="renamePetBtn">✎ переименовать</button>
+        </div>
+        <div class="note" data-petstate style="margin-bottom:6px;"></div>
+        <div class="stat"><span class="lbl">XP</span><div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div><span class="num" data-petnum>0/100</span></div>
+        <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
+        <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
+        <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
+      </div>
+    </section>
+
+    <!-- ===== TEAM ROOM ===== -->
+    <section class="screen" id="screen-team">
+      <div class="topbar"><div><h1>Team Room</h1><div class="muted sm">питомцы команды + публичная активность</div></div></div>
+      <div class="grid g-1-2">
+        <div class="card sk"><h3>Питомцы команды</h3><div id="teamPets" class="col"></div></div>
+        <div class="card sk2 feed"><h3>Активность</h3><div class="feedbody" id="teamFeed"></div></div>
+      </div>
+    </section>
+
+    <!-- ===== NOTIFICATIONS ===== -->
+    <section class="screen" id="screen-notif">
+      <div class="topbar">
+        <div><h1>Уведомления</h1></div>
+        <div class="grow"></div>
+        <button class="btn sm" id="readAllBtn">Прочитать все</button>
+      </div>
+      <div class="card sk2"><div id="notifList"></div></div>
+    </section>
+  </main>
+</div>
+
+<div class="toastwrap" id="toasts"></div>
+
+<script src="api.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

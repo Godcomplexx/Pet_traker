@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>petpro — вайрфреймы v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;700&family=Patrick+Hand&family=Kalam:wght@400;700&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wireframes.css">
+</head>
+<body data-density="comfortable">
+
+<!-- ========================= AUTH ========================= -->
+<div id="auth" data-screen-label="Auth">
+  <div class="authcard sk">
+    <div class="brand" style="margin-bottom:6px;">
+      <div class="logo">п</div>
+      <div><b>petpro</b><div class="v">lab tracker · корми питомца работой</div></div>
+    </div>
+    <div class="line"></div>
+    <div class="tabs" id="authTabs">
+      <button class="on" data-tab="login">Вход</button>
+      <button data-tab="reg">Регистрация</button>
+    </div>
+    <div class="field" data-reg style="display:none;">
+      <label>Отображаемое имя</label><input class="input" placeholder="Анна Петрова">
+    </div>
+    <div class="field"><label>Email</label><input class="input" placeholder="you@lab.ru"></div>
+    <div class="field"><label>Пароль</label><input class="input" type="password" placeholder="••••••••"></div>
+    <button class="btn primary" style="width:100%;margin-top:8px;" id="authGo">Войти →</button>
+    <p class="sm muted" style="text-align:center;margin:14px 0 0;">Закрывай задачи — питомец растёт.<br><span class="note">XP начисляет бэкенд за реальную работу</span></p>
+  </div>
+</div>
+
+<!-- ========================= APP ========================= -->
+<div id="app" style="display:none;">
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">п</div>
+      <div><b>petpro</b><div class="v">лаборатория</div></div>
+    </div>
+    <div class="labpick soft" data-go="lab">🧪 Lab Костенко <span class="mono">⚙</span></div>
+    <nav class="nav" id="nav">
+      <a data-go="dashboard" class="active"><span class="ic">▤</span> Дашборд</a>
+      <div class="grp">Работа</div>
+      <a data-go="projects"><span class="ic">◧</span> Проекты</a>
+      <a data-go="articles"><span class="ic">▦</span> Статьи</a>
+      <a data-go="mytasks"><span class="ic">✓</span> Мои задачи</a>
+      <div class="grp">Игра</div>
+      <a data-go="pet"><span class="ic">❍</span> Питомец</a>
+      <a data-go="team"><span class="ic">◑</span> Team Room</a>
+      <div class="grp">Прочее</div>
+      <a data-go="notif"><span class="ic">!</span> Уведомления <span class="badge" id="notifBadge">3</span></a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="petmini sk2" data-go="pet">
+      <div class="av" data-pet="mini"></div>
+      <div class="meta">
+        <b data-petname>Кодзи</b> <span class="mono">ур. <span data-petlevel>7</span></span>
+        <div class="track" style="margin-top:5px;"><div class="fill xp" data-petfill style="width:40%"></div></div>
+        <div class="mono" style="margin-top:3px;" data-petlabel>640 / 700 XP</div>
+      </div>
+    </div>
+    <div class="line"></div>
+    <div class="userrow" data-go="profile">
+      <div class="avatar hatch">АП</div>
+      <div style="flex:1;">Анна П.<div class="mono">EDITOR</div></div>
+      <span class="mono">⚙</span>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="screen on" id="screen-dashboard" data-screen-label="Dashboard">
+      <div class="topbar">
+        <div><h1>Привет, Анна 👋</h1><div class="muted sm">Lab Костенко · 5 задач сегодня · 1 дедлайн близко</div></div>
+        <div class="grow"></div>
+        <div class="search soft"><span class="mono">⌕ поиск</span></div>
+        <button class="btn" data-go="mytasks">+ Задача</button>
+        <button class="btn primary" data-go="projects">+ Проект</button>
+      </div>
+
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="row" style="gap:18px;align-items:stretch;">
+          <div class="petscreen" data-pet="hero" style="width:124px;height:124px;flex:0 0 auto;"><div class="scan">LVL <span data-petlevel>7</span></div></div>
+          <div style="flex:1;">
+            <div class="between"><h2><span data-petname>Кодзи</span> <span class="mono">· капибара · ур. <span data-petlevel>7</span></span></h2><span class="chip xp">+<span data-todayxp>30</span> XP сегодня</span></div>
+            <div class="stat"><span class="lbl">XP до ур.<span data-petlevelnext>8</span></span><div class="track"><div class="fill xp" data-petfill style="width:40%"></div></div><span class="num" data-petnum>640/700</span></div>
+            <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" style="width:80%"></div></div><span class="num">80</span></div>
+            <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" style="width:45%"></div></div><span class="num">45</span></div>
+            <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" style="width:70%"></div></div><span class="num">70</span></div>
+            <div class="note" style="margin-top:4px;">level = floor(XP/100)+1 · меняется только воркером</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Активные проекты <span class="mono">3</span></h3>
+            <div class="grid g2">
+              <div class="acard soft" data-go="projdetail" style="cursor:pointer;">
+                <div class="row"><span class="statusdot" style="background:var(--accent)"></span><span class="tag ptype" style="border-color:#6f8fb0;color:#456">SOFTWARE</span></div>
+                <div class="ttl">Research Portal</div>
+                <div class="track"><div class="fill acc" style="width:40%"></div></div>
+                <div class="between"><span class="sm muted">8/20 задач · +2 статьи</span><div class="avstack"><div class="avatar">АП</div><div class="avatar hatch">МК</div></div></div>
+              </div>
+              <div class="acard soft">
+                <div class="row"><span class="statusdot" style="background:var(--accent)"></span><span class="tag ptype" style="border-color:#c98b6b;color:#7a4">PUBLICATION</span></div>
+                <div class="ttl">Диагностика МРТ</div>
+                <div class="track"><div class="fill acc" style="width:58%"></div></div>
+                <div class="between"><span class="sm muted">7/12 задач</span><div class="avstack"><div class="avatar hatch">МК</div><div class="avatar hatch">СД</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card sk">
+            <h3>Мои командные задачи <span class="mono" data-count="open">4 открыто</span></h3>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio URGENT"></div><div class="chk"></div><div class="t">Ответить рецензенту №2 <span class="tag">RESPONSE</span> <span class="mono">· МРТ</span></div><span class="chip acc">сегодня</span></div>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio HIGH"></div><div class="chk"></div><div class="t">Сверстать дашборд <span class="tag">DEVELOPMENT</span> <span class="mono">· Portal</span></div><span class="chip">завтра</span></div>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio MEDIUM"></div><div class="chk"></div><div class="t">Прогнать e2e-тесты <span class="tag">TESTING</span> <span class="mono">· Portal</span></div><span class="muted sm">5 июн</span></div>
+            <div class="task done" data-kind="team" data-xp="10" data-awarded="1"><div class="prio LOW"></div><div class="chk done"></div><div class="t">Согласовать аннотацию</div><span class="chip xp">+10 XP</span></div>
+          </div>
+
+          <div class="card sk2">
+            <h3 style="color:var(--priv)">Мои личные задачи <span class="lock" style="margin-left:auto;">🔒 только вы</span></h3>
+            <div class="task priv" data-kind="personal" data-xp="5"><div class="chk"></div><div class="t">Записаться к стоматологу</div><span class="chip priv">+5 XP</span></div>
+            <div class="task priv" data-kind="personal" data-xp="5"><div class="chk"></div><div class="t">Прочитать 2 статьи по диффузии</div><span class="muted sm">сегодня</span></div>
+            <div class="note priv">не попадают в feed, Team Room и проектные доски</div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card sk2">
+            <h3>Ближайшие дедлайны</h3>
+            <div class="task"><div class="prio URGENT"></div><div class="t">Ответ рецензенту<div class="mono">МРТ · командная</div></div><span class="chip acc">сегодня</span></div>
+            <div class="task"><div class="prio HIGH"></div><div class="t">Релиз API v1.3<div class="mono">Research Portal</div></div><span class="chip">3 дня</span></div>
+            <div class="task priv"><div class="prio MEDIUM"></div><div class="t">Стоматолог <span class="lock">🔒</span><div class="mono">личная</div></div><span class="muted sm">8 июн</span></div>
+          </div>
+          <div class="card sk2 feed">
+            <h3>Активность команды <span class="mono">30с</span></h3>
+            <div class="feedbody" data-feed="dash">
+              <div class="it"><div class="av">МК</div><div><span>Михаил закрыл задачу «Таблицы»</span> <span class="chip xp">+10</span><div class="when">2 мин</div></div></div>
+              <div class="it"><div class="av">ИВ</div><div><span>Ирина перевела проект <b>«Сенсоры» → DONE</b></span> <span class="chip xp">+50</span><div class="when">18 мин</div></div></div>
+              <div class="it"><div class="av">СД</div><div><span>Сергей упомянул вас в комментарии</span><div class="when">1 ч</div></div></div>
+            </div>
+            <a class="sm" style="color:var(--accent)" data-go="team">→ Team Room</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LABORATORY / WORKSPACE ===== -->
+    <section class="screen" id="screen-lab" data-screen-label="Laboratory">
+      <div class="topbar">
+        <div><h1>Лаборатория</h1><div class="muted sm">Workspace · участники, роли, настройки</div></div>
+        <div class="grow"></div>
+        <button class="btn primary" id="inviteBtn">+ Пригласить</button>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Участники <span class="mono" id="memberCount">6 человек</span></h3>
+            <table class="tbl">
+              <thead><tr><th>Участник</th><th>Email</th><th>Роль в workspace</th><th></th></tr></thead>
+              <tbody id="memberBody"></tbody>
+            </table>
+            <p class="note">роль определяет права: VIEWER только смотрит, EDITOR ведёт статьи/задачи, ADMIN/OWNER управляют участниками</p>
+          </div>
+          <div class="card sk2">
+            <h3>Роли проекта <span class="mono">project roles</span></h3>
+            <div class="row" style="flex-wrap:wrap;gap:8px;">
+              <span class="tag ptype">PROJECT_OWNER</span><span class="tag ptype">LEAD</span><span class="tag ptype">CONTRIBUTOR</span><span class="tag ptype">REVIEWER</span><span class="tag ptype">OBSERVER</span>
+            </div>
+            <div class="muted sm" style="margin-top:8px;">назначаются отдельно внутри каждого проекта поверх workspace-роли</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>Настройки лаборатории</h3>
+            <div class="field"><label>Название</label><input class="input" value="Lab Костенко"></div>
+            <div class="field"><label>Описание</label><textarea class="input">Научно-инженерная лаборатория: ML, биомед, публикации.</textarea></div>
+            <button class="btn primary sm" style="margin-top:4px;">Сохранить</button>
+          </div>
+          <div class="card sk2">
+            <h3>Сводка</h3>
+            <div class="stat"><span class="lbl" style="width:auto;flex:1">Проекты</span><b>7</b></div>
+            <div class="stat"><span class="lbl" style="width:auto;flex:1">Статьи</span><b>9</b></div>
+            <div class="stat"><span class="lbl" style="width:auto;flex:1">Открытые задачи</span><b>34</b></div>
+            <div class="stat"><span class="lbl" style="width:auto;flex:1">XP команды</span><b style="color:var(--xp)">4 280</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROJECTS BOARD ===== -->
+    <section class="screen" id="screen-projects" data-screen-label="Projects Board">
+      <div class="topbar">
+        <div><h1>Проекты</h1><div class="muted sm">Доска по статусам · Lab Костенко</div></div>
+        <div class="grow"></div>
+        <div class="seg"><button class="on">Все типы</button><button>Research</button><button>Software</button><button>Publication</button></div>
+        <button class="btn primary">+ Проект</button>
+      </div>
+      <div class="board" id="projboard"></div>
+      <p class="note">проект объединяет код, исследования и статьи · перевод в DONE даёт +50 XP участникам</p>
+    </section>
+
+    <!-- ===== PROJECT DETAIL ===== -->
+    <section class="screen" id="screen-projdetail" data-screen-label="Project Detail">
+      <div class="topbar">
+        <a class="chip" data-go="projects">← к проектам</a>
+        <div class="grow"></div>
+        <span class="chip">тип: <b>SOFTWARE</b></span>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="between" style="align-items:flex-start;">
+          <div>
+            <h1>Research Portal</h1>
+            <div class="muted sm" style="margin-top:4px;">Веб-портал лаборатории: задачи, статьи, дашборды. Наука + разработка в одном проекте.</div>
+          </div>
+          <div class="col" style="align-items:flex-end;gap:8px;">
+            <div class="row"><span class="mono">статус</span><span class="chip acc statussel" data-stkind="project">ACTIVE ▾</span></div>
+            <div class="avstack"><div class="avatar">АП</div><div class="avatar hatch">МК</div><div class="avatar hatch">СД</div><div class="avatar" style="background:var(--paper)">+3</div></div>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="row" style="flex-wrap:wrap;gap:18px;">
+          <div><span class="mono">дедлайн</span><div>30 июня · <span style="color:var(--accent)">24 дн.</span></div></div>
+          <div><span class="mono">задачи</span><div>8 / 20 закрыто</div></div>
+          <div><span class="mono">статьи</span><div>2 связанные</div></div>
+          <div><span class="mono">руководитель</span><div>Анна П. · LEAD</div></div>
+        </div>
+      </div>
+
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Задачи проекта <span class="mono" data-count>scope: PROJECT</span> <button class="btn sm" style="margin-left:auto;">+ Задача</button></h3>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio HIGH"></div><div class="chk"></div><div class="t">Свёрстать дашборд <span class="tag">DEVELOPMENT</span></div><div class="avatar" style="width:26px;height:26px;font-size:9px;">АП</div><span class="muted sm">завтра</span></div>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio MEDIUM"></div><div class="chk"></div><div class="t">e2e-тесты воркеров <span class="tag">TESTING</span></div><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">МК</div><span class="muted sm">5 июн</span></div>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio MEDIUM"></div><div class="chk"></div><div class="t">Макет Team Room <span class="tag">DESIGN</span></div><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">СД</div><span class="muted sm">6 июн</span></div>
+            <div class="task done" data-kind="team" data-xp="10" data-awarded="1"><div class="prio HIGH"></div><div class="chk done"></div><div class="t">Деплой staging <span class="tag">DEPLOYMENT</span></div><div class="avatar" style="width:26px;height:26px;font-size:9px;">АП</div><span class="chip xp">+10</span></div>
+            <div class="task done" data-kind="team" data-xp="10" data-awarded="1"><div class="prio LOW"></div><div class="chk done"></div><div class="t">Сбор требований <span class="tag">RESEARCH</span></div><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">МК</div><span class="chip xp">+10</span></div>
+          </div>
+          <div class="card sk feed">
+            <h3>Комментарии <span class="mono">project</span></h3>
+            <div class="it"><div class="av">МК</div><div><b>Михаил</b> <span class="when">сегодня</span><div>API готов, можно подключать дашборд. <span style="color:var(--accent)">@anna</span></div></div></div>
+            <div class="row" style="margin-top:8px;">
+              <div class="avatar hatch">АП</div>
+              <div class="input soft" style="flex:1;color:var(--ink2);border-style:dashed;">комментарий… <span style="color:var(--accent)">@упомянуть</span></div>
+              <button class="btn primary sm">↵</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>Связанные статьи <span class="mono">2</span></h3>
+            <div class="acard soft" data-go="artdetail" style="cursor:pointer;">
+              <div class="row"><span class="statusdot" style="background:var(--accent)"></span><span class="mono">WRITING</span></div>
+              <div class="ttl">Нейросети в диагностике МРТ</div>
+            </div>
+            <div class="acard soft" style="margin-top:8px;">
+              <div class="row"><span class="statusdot" style="background:#9bb0c4"></span><span class="mono">PLANNING</span></div>
+              <div class="ttl">Methodology paper: Research Portal</div>
+            </div>
+            <button class="btn sm" style="margin-top:8px;">+ Статья в проект</button>
+          </div>
+          <div class="card sk2">
+            <h3>История проекта <span class="mono">public events</span></h3>
+            <div class="tl">
+              <div class="ev xp">TASK_COMPLETED «Деплой staging» <span class="chip xp">+10</span><div class="mono">Анна · 3 ч</div></div>
+              <div class="ev">PROJECT_STATUS_CHANGED → ACTIVE<div class="mono">Анна · 2 дня</div></div>
+              <div class="ev">ARTICLE_LINKED «MRT»<div class="mono">Михаил · 4 дня</div></div>
+              <div class="ev">PROJECT_CREATED<div class="mono">Анна · 6 дней</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ARTICLES BOARD ===== -->
+    <section class="screen" id="screen-articles" data-screen-label="Articles Board">
+      <div class="topbar">
+        <div><h1>Статьи</h1><div class="muted sm">Publication workflow · научные артефакты</div></div>
+        <div class="grow"></div>
+        <div class="chip">фильтр: мои</div>
+        <div class="search soft"><span class="mono">⌕ поиск</span></div>
+        <button class="btn primary">+ Статья</button>
+      </div>
+      <div class="board" id="artboard"></div>
+      <p class="note">статья может жить в проекте или прямо в лаборатории · SUBMITTED +50 · ACCEPTED +100 · PUBLISHED +150</p>
+    </section>
+
+    <!-- ===== ARTICLE DETAIL ===== -->
+    <section class="screen" id="screen-artdetail" data-screen-label="Article Detail">
+      <div class="topbar">
+        <a class="chip" data-go="articles">← к статьям</a>
+        <a class="chip" data-go="projdetail">◧ проект: Research Portal</a>
+        <div class="grow"></div>
+        <span class="chip xp">автор получил +50 XP за SUBMITTED</span>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="between" style="align-items:flex-start;">
+          <div>
+            <h1>Нейросети в диагностике МРТ</h1>
+            <div class="muted sm" style="margin-top:4px;">Сравнение CNN-архитектур для ранней диагностики.</div>
+          </div>
+          <div class="col" style="align-items:flex-end;gap:8px;">
+            <div class="row"><span class="mono">статус</span><span class="chip acc statussel" data-stkind="article">WRITING ▾</span></div>
+            <div class="avstack"><div class="avatar">АП</div><div class="avatar hatch">МК</div><div class="avatar hatch">СД</div></div>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="row" style="flex-wrap:wrap;gap:18px;">
+          <div><span class="mono">проект</span><div style="color:var(--accent);cursor:pointer;" data-go="projdetail">Research Portal ↗</div></div>
+          <div><span class="mono">дедлайн</span><div>20 июня · <span style="color:var(--accent)">14 дн.</span></div></div>
+          <div><span class="mono">target journal</span><div>Nature Medicine</div></div>
+          <div><span class="mono">document</span><div style="color:var(--accent)">docs.lab/mri-cnn ↗</div></div>
+        </div>
+      </div>
+
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Задачи статьи <span class="mono" data-count>scope: ARTICLE</span> <button class="btn sm" style="margin-left:auto;">+ Задача</button></h3>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio HIGH"></div><div class="chk"></div><div class="t">Дописать «Методы» <span class="tag">WRITING</span></div><div class="avatar" style="width:26px;height:26px;font-size:9px;">АП</div><span class="muted sm">завтра</span></div>
+            <div class="task" data-kind="team" data-xp="10"><div class="prio URGENT"></div><div class="chk"></div><div class="t">Ответ рецензенту №2 <span class="tag">RESPONSE</span></div><div class="avatar" style="width:26px;height:26px;font-size:9px;">АП</div><span class="chip acc">сегодня</span></div>
+            <div class="task done" data-kind="team" data-xp="10" data-awarded="1"><div class="prio LOW"></div><div class="chk done"></div><div class="t">Собрать датасет <span class="tag">RESEARCH</span></div><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">СД</div><span class="chip xp">+15</span></div>
+          </div>
+          <div class="card sk feed">
+            <h3>Комментарии <span class="mono">5</span></h3>
+            <div class="it"><div class="av">СД</div><div><b>Сергей</b> <span class="when">вчера</span><div><span style="color:var(--accent)">@anna</span> добавил ссылки на датасет, посмотри.</div></div></div>
+            <div class="row" style="margin-top:8px;">
+              <div class="avatar hatch">АП</div>
+              <div class="input soft" style="flex:1;color:var(--ink2);border-style:dashed;">комментарий… <span style="color:var(--accent)">@упомянуть</span></div>
+              <button class="btn primary sm">↵</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>История статьи <span class="mono">events</span></h3>
+            <div class="tl">
+              <div class="ev xp"><b>SUBMITTED</b> <span class="chip xp">+50</span><div class="mono">Ирина · 18 мин</div></div>
+              <div class="ev xp">TASK_COMPLETED «Датасет» <span class="chip xp">+15</span><div class="mono">Сергей · 2 ч</div></div>
+              <div class="ev">USER_MENTIONED @anna<div class="mono">Сергей · вчера</div></div>
+              <div class="ev">STATUS → WRITING<div class="mono">Анна · 2 дня</div></div>
+            </div>
+          </div>
+          <div class="card sk2">
+            <h3>Участники статьи</h3>
+            <div class="task"><div class="avatar" style="width:28px;height:28px;font-size:9px;">АП</div><div class="t" style="cursor:default;">Анна П.</div><span class="tag">AUTHOR</span></div>
+            <div class="task"><div class="avatar hatch" style="width:28px;height:28px;font-size:9px;">МК</div><div class="t" style="cursor:default;">Михаил К.</div><span class="tag">CO_AUTHOR</span></div>
+            <div class="task"><div class="avatar hatch" style="width:28px;height:28px;font-size:9px;">СД</div><div class="t" style="cursor:default;">Сергей Д.</div><span class="tag">REVIEWER</span></div>
+            <button class="btn sm" style="margin-top:8px;">+ Добавить</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MY TASKS ===== -->
+    <section class="screen" id="screen-mytasks" data-screen-label="My Tasks">
+      <div class="topbar">
+        <div><h1>Мои задачи</h1><div class="muted sm">Командные + личные · агрегатор всех scope</div></div>
+        <div class="grow"></div>
+        <button class="btn" id="addPersonal">+ Личная задача</button>
+        <button class="btn primary" id="addTeam">+ Командная</button>
+      </div>
+      <div class="filterbar" id="mtFilters">
+        <span class="mono">scope</span>
+        <div class="seg" data-filter="scope"><button class="on" data-val="all">Все</button><button data-val="team">Командные</button><button class="priv" data-val="personal">Личные 🔒</button></div>
+        <span class="mono">статус</span>
+        <div class="seg" data-filter="status"><button class="on" data-val="all">Все</button><button data-val="open">Открытые</button><button data-val="done">Закрытые</button></div>
+        <span class="mono">дедлайн</span>
+        <div class="seg" data-filter="due"><button data-val="today">Сегодня</button><button data-val="week">Неделя</button><button class="on" data-val="all">Все</button></div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card sk">
+          <h3>Командные <span class="mono">workspace / project / article</span></h3>
+          <div id="mtTeam">
+            <div class="task" data-kind="team" data-xp="10" data-scope="team" data-status="open" data-due="today"><div class="prio URGENT"></div><div class="chk"></div><div class="t">Ответ рецензенту №2 <span class="tag">RESPONSE</span><div class="mono">ARTICLE · МРТ</div></div><span class="chip acc">сегодня</span></div>
+            <div class="task" data-kind="team" data-xp="10" data-scope="team" data-status="open" data-due="week"><div class="prio HIGH"></div><div class="chk"></div><div class="t">Свёрстать дашборд <span class="tag">DEVELOPMENT</span><div class="mono">PROJECT · Portal</div></div><span class="chip">завтра</span></div>
+            <div class="task" data-kind="team" data-xp="10" data-scope="team" data-status="open" data-due="week"><div class="prio MEDIUM"></div><div class="chk"></div><div class="t">Прогнать e2e-тесты <span class="tag">TESTING</span><div class="mono">PROJECT · Portal</div></div><span class="muted sm">5 июн</span></div>
+            <div class="task" data-kind="team" data-xp="10" data-scope="team" data-status="open" data-due="later"><div class="prio LOW"></div><div class="chk"></div><div class="t">Обновить onboarding-доку <span class="tag">ADMIN</span><div class="mono">WORKSPACE</div></div><span class="muted sm">9 июн</span></div>
+          </div>
+          <div class="note">complete даёт +10 XP и пишет событие в командный feed</div>
+        </div>
+
+        <div class="card sk2">
+          <h3 style="color:var(--priv)">Личные <span class="lock" style="margin-left:auto;">🔒 PRIVATE · только вы</span></h3>
+          <div id="mtPersonal">
+            <div class="task priv" data-kind="personal" data-xp="5" data-scope="personal" data-status="open" data-due="today"><div class="chk"></div><div class="t">Записаться к стоматологу <span class="tag" style="border-color:var(--priv);color:var(--priv)">PERSONAL</span><div class="mono">личная</div></div><span class="chip priv">+5</span></div>
+            <div class="task priv" data-kind="personal" data-xp="5" data-scope="personal" data-status="open" data-due="today"><div class="chk"></div><div class="t">Прочитать 2 статьи по диффузии<div class="mono">личная</div></div><span class="muted sm">сегодня</span></div>
+            <div class="task priv done" data-kind="personal" data-xp="5" data-scope="personal" data-status="done" data-due="later" data-awarded="1"><div class="chk done"></div><div class="t">Оформить отпуск</div><span class="chip priv">+5</span></div>
+          </div>
+          <div class="note priv">не видны команде · нет activity event · reward без названия задачи</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TASK DETAIL ===== -->
+    <section class="screen" id="screen-taskdetail" data-screen-label="Task Detail">
+      <div class="topbar">
+        <a class="chip" id="tdBack">← назад</a>
+        <div class="grow"></div>
+        <button class="btn primary" id="tdComplete">✓ Закрыть задачу</button>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <span class="tag ptype" id="tdScope">PROJECT</span>
+          <span class="tag" id="tdType">DEVELOPMENT</span>
+          <span class="chip" id="tdVis">visibility: WORKSPACE</span>
+        </div>
+        <h1 id="tdTitle">Свёрстать дашборд</h1>
+        <div class="muted sm" id="tdCtx" style="margin-top:4px;">PROJECT · Research Portal</div>
+        <div class="line"></div>
+        <div class="row" style="flex-wrap:wrap;gap:18px;">
+          <div><span class="mono">статус</span><div><span class="chip acc statussel" data-stkind="task" id="tdStatus">IN_PROGRESS ▾</span></div></div>
+          <div><span class="mono">приоритет</span><div id="tdPrio">HIGH</div></div>
+          <div><span class="mono">исполнитель</span><div class="row"><div class="avatar" style="width:24px;height:24px;font-size:9px;">АП</div> Анна П.</div></div>
+          <div><span class="mono">дедлайн</span><div>завтра</div></div>
+          <div><span class="mono">создал</span><div>Михаил К.</div></div>
+        </div>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Описание</h3>
+            <div class="muted">Подключить виджеты дашборда к API: мои задачи, дедлайны, прогресс питомца, лента. Использовать polling 30с для уведомлений.</div>
+          </div>
+          <div class="card sk feed">
+            <h3>Комментарии <span class="mono">task</span></h3>
+            <div class="it"><div class="av">МК</div><div><b>Михаил</b> <span class="when">сегодня</span><div>API эндпоинты готовы, держи контракт.</div></div></div>
+            <div class="row" style="margin-top:8px;">
+              <div class="avatar hatch">АП</div>
+              <div class="input soft" style="flex:1;color:var(--ink2);border-style:dashed;">комментарий… <span style="color:var(--accent)">@упомянуть</span></div>
+              <button class="btn primary sm">↵</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>История задачи</h3>
+            <div class="tl" id="tdTl">
+              <div class="ev">ASSIGNED → Анна П.<div class="mono">Михаил · 1 день</div></div>
+              <div class="ev">STATUS → IN_PROGRESS<div class="mono">Анна · 1 день</div></div>
+              <div class="ev">TASK_CREATED<div class="mono">Михаил · 2 дня</div></div>
+            </div>
+          </div>
+          <div class="card sk2">
+            <h3>Награда за закрытие</h3>
+            <div class="row"><span class="chip xp">+10 XP базово</span></div>
+            <div class="row" style="margin-top:6px;"><span class="chip xp">+5 XP до дедлайна</span></div>
+            <div class="note" style="margin-top:6px;">начислит воркер после TASK_COMPLETED</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PET PAGE ===== -->
+    <section class="screen" id="screen-pet" data-screen-label="Pet Page">
+      <div class="topbar"><div><h1>Питомец</h1><div class="muted sm">Личный прогресс · растёт за командную и личную работу</div></div></div>
+      <div class="grid g-1-2">
+        <div class="card sk col" style="align-items:center;text-align:center;">
+          <div class="petscreen petbig" data-pet="big" style="width:100%;height:240px;"><div class="scan">PET · idle · mood 80</div></div>
+          <div class="row" style="justify-content:center;"><h2 data-petname>Кодзи</h2><button class="btn sm" id="renamePet">✎ имя</button></div>
+          <div class="muted">капибара · уровень <span data-petlevel>7</span></div>
+          <div class="row" style="gap:8px;"><span class="chip xp">⚡ серия 5 дней</span><span class="chip acc">🏅 6 наград</span></div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>Уровень и XP <span class="mono">level = floor(xp/100)+1</span></h3>
+            <div class="between"><span>Уровень <b style="font-size:24px;" data-petlevel>7</b></span><span class="mono" data-petlabel>640 / 700 до ур. 8</span></div>
+            <div class="track" style="height:18px;margin-top:6px;"><div class="fill xp" data-petfill style="width:40%"></div></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px;"><span class="mono">всего <span data-pettotal>640</span> XP</span><span class="mono">+<span data-todayxp>30</span> сегодня</span></div>
+          </div>
+          <div class="card sk2">
+            <h3>Состояние</h3>
+            <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" style="width:80%"></div></div><span class="num">80</span></div>
+            <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" style="width:45%"></div></div><span class="num">45</span></div>
+            <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" style="width:70%"></div></div><span class="num">70</span></div>
+            <div class="note">эти значения нельзя менять с фронта — только награды воркера</div>
+          </div>
+          <div class="card sk2">
+            <h3>Последние награды <span class="mono">rewards</span></h3>
+            <div class="rewardlist" data-feed="rewards">
+              <div class="task"><div class="t" style="cursor:default;">✦ Проект «Сенсоры» → DONE</div><span class="chip xp">+50 XP</span></div>
+              <div class="task"><div class="t" style="cursor:default;">✦ SUBMITTED · «МРТ»</div><span class="chip xp">+50 XP</span></div>
+              <div class="task"><div class="t" style="cursor:default;">✦ Командная задача до дедлайна</div><span class="chip xp">+10 +5</span></div>
+              <div class="task priv"><div class="t" style="cursor:default;">✦ Личная задача <span class="lock">🔒</span></div><span class="chip priv">+5 XP</span></div>
+            </div>
+            <div class="note priv">личные награды без названия задачи в metadata</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TEAM ROOM ===== -->
+    <section class="screen" id="screen-team" data-screen-label="Team Room">
+      <div class="topbar">
+        <div><h1>Team Room</h1><div class="muted sm">Публичный прогресс лаборатории · без личных задач</div></div>
+        <div class="grow"></div>
+        <button class="btn">⟳ обновить</button>
+      </div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <h3>Питомцы команды <span class="mono">6 участников</span></h3>
+            <div class="grid g3" id="petgrid"></div>
+          </div>
+          <div class="grid g2">
+            <div class="card sk2">
+              <h3>Прогресс проектов</h3>
+              <div class="task"><div class="t" style="cursor:default;">Research Portal <span class="tag ptype" style="border-color:#6f8fb0">SOFTWARE</span></div><div class="track" style="width:90px"><div class="fill acc" style="width:40%"></div></div></div>
+              <div class="task"><div class="t" style="cursor:default;">Диагностика МРТ <span class="tag ptype" style="border-color:#c98b6b">PUBLICATION</span></div><div class="track" style="width:90px"><div class="fill acc" style="width:58%"></div></div></div>
+              <div class="task"><div class="t" style="cursor:default;">Сенсоры <span class="tag">DONE</span></div><span class="chip xp">+50</span></div>
+            </div>
+            <div class="card sk2">
+              <h3>Прогресс статей</h3>
+              <div class="task"><div class="t" style="cursor:default;">Нейросети в МРТ</div><span class="chip acc">WRITING</span></div>
+              <div class="task"><div class="t" style="cursor:default;">Климат · пшеница</div><span class="chip">UNDER_REVIEW</span></div>
+              <div class="task"><div class="t" style="cursor:default;">CRISPR off-target</div><span class="chip xp">ACCEPTED</span></div>
+            </div>
+          </div>
+          <div class="card sk2">
+            <h3>Командные ачивки</h3>
+            <div class="row" style="flex-wrap:wrap;gap:10px;">
+              <span class="chip acc">🏆 5 проектов активны</span>
+              <span class="chip xp">🔥 серия команды 12 дней</span>
+              <span class="chip">📤 3 сабмита за месяц</span>
+              <span class="chip" style="opacity:.5;border-style:dashed;">🔒 5 публикаций</span>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2 feed">
+            <h3>Activity feed <span class="mono">30–60с · public</span></h3>
+            <div class="feedbody" data-feed="team">
+              <div class="it"><div class="av">МК</div><div><span>Михаил закрыл «Таблицы»</span> <span class="chip xp">+10</span><div class="when">2 мин</div></div></div>
+              <div class="it"><div class="av">ИВ</div><div><span>Ирина: проект «Сенсоры» → <b>DONE</b></span> <span class="chip xp">+50</span><div class="when">18 мин</div></div></div>
+              <div class="it"><div class="av">СД</div><div><span>Сергей прокомментировал «МРТ»</span><div class="when">1 ч</div></div></div>
+              <div class="it"><div class="av">АП</div><div><span>Анна создала проект «Геном»</span><div class="when">3 ч</div></div></div>
+            </div>
+            <div class="note priv" style="margin-top:6px;">личные задачи участников здесь не появляются</div>
+          </div>
+          <div class="card sk2">
+            <h3>Последние награды</h3>
+            <div class="task"><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">ИВ</div><div class="t" style="cursor:default;">Ирина · ACCEPTED</div><span class="chip xp">+100</span></div>
+            <div class="task"><div class="avatar hatch" style="width:26px;height:26px;font-size:9px;">МК</div><div class="t" style="cursor:default;">Михаил · 3 задачи</div><span class="chip xp">+30</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== NOTIFICATIONS ===== -->
+    <section class="screen" id="screen-notif" data-screen-label="Notifications">
+      <div class="topbar">
+        <div><h1>Уведомления</h1><div class="muted sm">Только ваши · опрос каждые 30с</div></div>
+        <div class="grow"></div>
+        <button class="btn" id="markAll">Отметить всё прочитанным</button>
+      </div>
+      <div class="card sk" style="max-width:760px;" id="notifList">
+        <div class="task" data-notif="unread" style="gap:12px;"><span class="statusdot" style="background:var(--accent)"></span><div class="t" style="cursor:default;"><b>Вас назначили на командную задачу</b> «Ответ рецензенту №2»<div class="mono">ARTICLE · МРТ · только что</div></div><button class="btn sm notif-read">✓</button></div>
+        <div class="task" data-notif="unread" style="gap:12px;"><span class="statusdot" style="background:var(--accent)"></span><div class="t" style="cursor:default;"><b>Сергей упомянул вас</b> в комментарии проекта <span style="color:var(--accent)">@anna</span><div class="mono">PROJECT · Research Portal · 1 ч</div></div><button class="btn sm notif-read">✓</button></div>
+        <div class="task priv" data-notif="unread" style="gap:12px;"><span class="statusdot" style="background:var(--priv)"></span><div class="t" style="cursor:default;"><b>Дедлайн личной задачи</b> «Стоматолог» через 1 день <span class="lock">🔒</span><div class="mono">личное · 2 ч</div></div><button class="btn sm notif-read">✓</button></div>
+        <div class="line"></div>
+        <div class="task" style="gap:12px;opacity:.55;"><span class="statusdot" style="background:var(--line)"></span><div class="t" style="cursor:default;">Михаил ответил на ваш комментарий<div class="mono">прочитано · вчера</div></div></div>
+        <div class="task" style="gap:12px;opacity:.55;"><span class="statusdot" style="background:var(--line)"></span><div class="t" style="cursor:default;">Питомец достиг уровня 7 🎉<div class="mono">прочитано · 2 дня</div></div></div>
+      </div>
+      <p class="note">точка = непрочитано · <span class="note priv">фиолетовая = личное</span> · ✓ → PATCH /notifications/:id/read</p>
+    </section>
+
+    <!-- ===== PROFILE / SETTINGS ===== -->
+    <section class="screen" id="screen-profile" data-screen-label="Profile">
+      <div class="topbar"><div><h1>Профиль и настройки</h1><div class="muted sm">Личный аккаунт · питомец · уведомления</div></div></div>
+      <div class="grid g2">
+        <div class="col">
+          <div class="card sk">
+            <h3>Профиль</h3>
+            <div class="row" style="gap:14px;align-items:flex-start;">
+              <div class="ph" style="width:80px;height:80px;border-radius:50%;flex:0 0 auto;">AVATAR</div>
+              <div style="flex:1;">
+                <div class="field" style="margin-top:0;"><label>Отображаемое имя</label><input class="input" value="Анна Петрова"></div>
+                <div class="field"><label>Email</label><input class="input" value="anna@lab.ru" disabled style="color:var(--ink2)"></div>
+              </div>
+            </div>
+            <button class="btn primary sm">Сохранить профиль</button>
+          </div>
+          <div class="card sk2">
+            <h3>Питомец</h3>
+            <div class="field" style="margin-top:0;"><label>Имя питомца</label><input class="input" id="petNameInput" value="Кодзи"></div>
+            <div class="row"><span class="mono">вид</span><span>капибара</span><span class="mono">уровень</span><span data-petlevel>7</span></div>
+            <div class="note" style="margin-top:6px;">через фронт можно менять только имя · XP/уровень — только воркер</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card sk2">
+            <h3>Уведомления</h3>
+            <div class="task"><div class="t" style="cursor:default;">Назначение на командную задачу</div><div class="seg"><button class="on">вкл</button><button>выкл</button></div></div>
+            <div class="task"><div class="t" style="cursor:default;">Упоминания в комментариях</div><div class="seg"><button class="on">вкл</button><button>выкл</button></div></div>
+            <div class="task"><div class="t" style="cursor:default;">Дедлайны личных задач <span class="lock">🔒</span></div><div class="seg"><button class="on">вкл</button><button>выкл</button></div></div>
+          </div>
+          <div class="card sk2">
+            <h3>Сессия</h3>
+            <div class="muted sm">Вы вошли как Анна Петрова · роль EDITOR в Lab Костенко.</div>
+            <button class="btn danger sm" style="margin-top:10px;" id="logoutBtn">Выйти</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toastwrap" id="toasts"></div>
+<div id="tweaks-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script src="wireframes.js"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{ "density": "comfortable", "titleColor": "#d2654a" }/*EDITMODE-END*/;
+function PetproTweaks(){
+  const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
+  React.useEffect(()=>{ document.body.setAttribute('data-density', t.density); },[t.density]);
+  React.useEffect(()=>{ document.body.style.setProperty('--title', t.titleColor); },[t.titleColor]);
+  return (
+    <TweaksPanel>
+      <TweakSection label="Макет" />
+      <TweakRadio label="Плотность" value={t.density}
+        options={['compact','comfortable']} onChange={(v)=>setTweak('density',v)} />
+      <TweakSection label="Заголовки" />
+      <TweakColor label="Цвет шрифта" value={t.titleColor}
+        options={['#d2654a','#2c2823','#3f7d52','#8a73b8','#c2904a','#3a6ea5']}
+        onChange={(v)=>setTweak('titleColor',v)} />
+    </TweaksPanel>
+  );
+}
+ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<PetproTweaks/>);
+</script>
+</body>
+</html>

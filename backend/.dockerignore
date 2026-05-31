@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+*.db
+tests/test_petpro.db
+smoke.db
+alembic_test.db
+*.egg-info/

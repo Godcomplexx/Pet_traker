@@ -1,0 +1,214 @@
+# PetPro — Lab Project Tracker with Pet Gamification
+
+Рабочее пространство для лабораторий и команд разработки: проекты, научные
+статьи, командные и приватные задачи — с игровым питомцем, которого «кормит»
+реально выполненная работа.
+
+> Реализация по [техническому заданию](docs/technical-spec.md) (v2.0).
+
+## Ключевая идея
+
+```
+Project / Article / Task = источник правды
+        ↓ (мутация)
+Domain Event             = факт изменения  (PENDING)
+        ↓ (worker, идемпотентно)
+Reward → Pet XP/level    + Activity Feed (только командные события)
+```
+
+Фронтенд **никогда** не начисляет XP напрямую — все игровые изменения проходят
+через domain events и обработчик (`app/services/events.py`).
+
+## Стек
+
+| Слой | Технологии |
+|------|-----------|
+| Backend | FastAPI, SQLAlchemy 2 (async), PostgreSQL 15, Pydantic v2, JWT (python-jose) |
+| Очередь | Redis + Taskiq (асинхронный воркер побочных эффектов) |
+| Frontend | Vanilla HTML/CSS/JS SPA, подключён к API; «бумажный» скетч-стиль |
+| Инфра | Docker Compose (Postgres, Redis) |
+
+## Структура
+
+```
+petpro/
+├── backend/            # FastAPI приложение
+│   └── app/
+│       ├── api/routers/   # auth, pets, workspaces, projects, articles, tasks, feed
+│       ├── core/          # config, database, security
+│       ├── services/      # domain events, gamification, dispatch
+│       ├── models.py      # 14 сущностей (spec §11)
+│       ├── enums.py
+│       ├── schemas.py
+│       └── worker.py      # Taskiq broker + task
+├── frontend/           # SPA на API: index.html + api.js + app.js
+│   ├── wireframes.css     # дизайн-система («бумажный» скетч)
+│   └── prototype.html     # исходный кликабельный прототип (референс, mock-данные)
+├── docs/technical-spec.md
+└── docker-compose.yml
+```
+
+## Быстрый старт — всё в Docker (рекомендуется)
+
+Один command поднимает весь стек: Postgres, Redis, API, воркер и фронтенд.
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+Готово. Сервисы:
+
+| URL | Что |
+|-----|-----|
+| http://localhost:5500 | Фронтенд (nginx) |
+| http://localhost:8000/docs | Swagger API |
+| http://localhost:8000/health | Healthcheck |
+| localhost:5433 | Postgres (для внешних клиентов) |
+
+Контейнеры: `petpro-postgres`, `petpro-redis`, `petpro-backend`,
+`petpro-worker` (Taskiq), `petpro-frontend`. Миграции (`alembic upgrade head`)
+прогоняются автоматически при старте backend. В Docker-режиме
+`EVENT_MODE=taskiq` — события обрабатывает отдельный воркер.
+
+Полезное:
+
+```bash
+docker compose logs -f backend worker    # логи
+docker compose ps                         # статус
+docker compose down                       # остановить (данные сохраняются в volumes)
+docker compose down -v                    # остановить и стереть данные
+```
+
+## Запуск без Docker (локальная разработка)
+
+```bash
+# Инфраструктура (только БД и брокер)
+docker compose up -d postgres redis
+
+# Backend
+cd backend
+python -m venv .venv; .venv\Scripts\activate     # Windows
+pip install -e ".[dev]"
+cp .env.example .env
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000        # Swagger: /docs
+
+# Воркер (опционально; иначе EVENT_MODE=inline обрабатывает события в процессе API)
+taskiq worker app.worker:broker
+
+# Frontend
+cd ../frontend
+python -m http.server 5500                        # http://localhost:5500
+#   index.html     — приложение (логин → дашборд → задачи → питомец)
+#   prototype.html — исходный прототип-референс на mock-данных
+#   адрес API: window.PETPRO_API (по умолчанию http://localhost:8000/api)
+```
+
+В режиме разработки `EVENT_MODE=inline` (по умолчанию) — события обрабатываются
+в процессе API, отдельный воркер не нужен. Для масштабирования переключите на
+`taskiq` и поднимите воркер.
+
+## Регистрация и подтверждение email
+
+Флоу: **регистрация → код на почту → подтверждение → вход**.
+
+1. `POST /auth/register` — создаёт **неподтверждённый** аккаунт, генерирует
+   6-значный код и отправляет письмо.
+2. `POST /auth/verify {email, code}` — проверяет код, активирует аккаунт, выдаёт токены.
+3. `POST /auth/resend-code {email}` — отправить код повторно.
+4. До подтверждения `POST /auth/login` возвращает `403`.
+
+**Отправка письма** ([app/services/email.py](backend/app/services/email.py)):
+- **Dev-режим (по умолчанию)** — `SMTP_HOST` пуст: письмо не уходит, код пишется
+  в логи backend и возвращается в ответе (`dev_code`) + показывается на экране.
+  Работает сразу, без настройки.
+- **Реальные письма** — заполните `SMTP_*` в `backend/.env`. Для Gmail нужен
+  app-password (https://myaccount.google.com/apppasswords, требует 2FA):
+  ```env
+  SMTP_HOST=smtp.gmail.com
+  SMTP_PORT=587
+  SMTP_USER=you@gmail.com
+  SMTP_PASSWORD=<app-password>
+  ```
+  Тот же код полетит настоящим письмом — менять ничего больше не нужно.
+
+Отключить подтверждение вовсе: `REQUIRE_EMAIL_VERIFICATION=false`.
+
+> **Где хранятся данные:** всё в вашем PostgreSQL (контейнер `petpro-postgres`,
+> volume `petpro_postgres_data`). Пароли — только в виде bcrypt-хеша.
+
+## Онбординг нового пользователя
+
+После входа пользователь проходит шаги, пока не готов к работе:
+
+1. **Лаборатория** — нет ни одной → «создать свою» или «войти по коду».
+2. **Создание питомца** — если питомец ещё не настроен (`customized=false`),
+   открывается экран с живым превью пиксельного спрайта: имя, **вид**
+   (капибара/кот/пёс/лягушка/аксолотль) и **цвета** (тело + акцент). Сохранение —
+   `PUT /pets/me`. После этого — дашборд.
+
+Внешность хранится в БД (`pets.species/body_color/accent_color`), спрайт рисуется
+CSS-сеткой 10×9 без картинок — одинаково в сайдбаре, на дашборде, в Team Room.
+
+## Питомец как тамагочи
+
+Питомец «живёт» во времени ([app/services/pet.py](backend/app/services/pet.py)):
+
+- **Decay** — без заботы сытость/энергия/настроение постепенно падают
+  (≈4/3/2 ед. в час). Считается лениво при каждом чтении `/pets/me` по
+  `stats_updated_at`, плюс фоновый часовой тик воркера (`tick_pets`).
+- **Забота = работа** — закрытие задачи кормит, бодрит и радует питомца;
+  публикация статьи / завершение проекта дают больший прирост (milestone).
+- **Состояние** (`state`) выводится из показателей: `happy / ok / sad /
+  hungry / sleepy` + подпись `state_label`. Фронт показывает эмодзи, меняет
+  анимацию спрайта (прыгает/дрожит/спит/грустит) и подсказывает поработать.
+- XP/level по-прежнему меняет **только** бэкенд через награды (FR-PET-4) —
+  пользователь не управляет показателями напрямую.
+
+## Тесты
+
+```bash
+cd backend
+pytest                # 22 теста: auth/verify, питомец+тамагочи, права, награды, приватность
+```
+
+## Роли
+
+Workspace: `OWNER · ADMIN · PROJECT_LEAD · EDITOR · MEMBER · VIEWER`
+
+## Порты и частые проблемы
+
+- **Postgres публикуется на хосте как `5433`** (контейнер внутри — 5432), чтобы не
+  конфликтовать с локально установленным PostgreSQL на 5432. `DATABASE_URL` в
+  `backend/.env` указывает на `localhost:5433`.
+- Если видите `password authentication failed` / asyncpg `connection was closed in
+  the middle of operation` на `5432` — порт занят нативным PostgreSQL; используйте
+  `5433` (как настроено) или остановите службу `postgresql-x64-*`.
+- `[WinError 10048] address already in use` для `:8000` — остановите прошлый
+  процесс `uvicorn` (включая «висящий» reloader) и запустите заново.
+- После первого `docker compose up -d` дождитесь, пока Postgres станет `healthy`
+  (`docker compose ps`), и только потом запускайте `alembic`/`uvicorn`.
+
+## Миграции (Alembic)
+
+```bash
+cd backend
+alembic upgrade head                       # применить
+alembic revision --autogenerate -m "..."   # новая миграция по изменениям моделей
+alembic downgrade -1                        # откатить
+```
+
+В dev-режиме (`ENV != production`) схема также создаётся автоматически при старте
+приложения — для prod используйте только миграции.
+
+## Статус
+
+✅ Реализовано: auth + питомец, workspaces + участники, проекты со статусами,
+статьи с publication-workflow, универсальные/личные задачи, комментарии +
+mentions, domain events → награды → XP питомца (идемпотентно, с дневным лимитом
+на комментарии), activity feed, Team Room, уведомления (назначение, упоминание,
+дедлайн-воркер), Alembic-миграции. Покрыто тестами (11 passed).
+
+🚧 Дальше: подключение прототипа фронтенда к реальному API, e2e-проверки в
+Postgres, метрики/observability (счётчики PENDING/FAILED событий).
