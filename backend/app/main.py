@@ -1,9 +1,11 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import Base, engine
@@ -82,3 +84,11 @@ async def health():
 
 for r in (auth, pets, workspaces, projects, articles, tasks, comments, feed):
     app.include_router(r.router, prefix="/api")
+
+
+# ── Раздача фронтенда из того же сервиса (единый origin, без CORS-проблем) ──
+# Путь к статике задаётся FRONTEND_DIR (в Docker — /app/frontend). Монтируется
+# последним, чтобы не перехватывать /api и /health. html=True → отдаёт index.html.
+_frontend_dir = os.environ.get("FRONTEND_DIR", "")
+if _frontend_dir and os.path.isdir(_frontend_dir):
+    app.mount("/", StaticFiles(directory=_frontend_dir, html=True), name="frontend")

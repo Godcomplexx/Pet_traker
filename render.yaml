@@ -1,0 +1,76 @@
+# Render Blueprint — поднимает весь PetPro: API+фронт, воркер, Postgres, Redis.
+# Подключи репозиторий на render.com → New → Blueprint → выбери этот файл.
+databases:
+  - name: petpro-db
+    databaseName: petpro
+    user: petpro
+    plan: free
+
+services:
+  # Redis (брокер очереди Taskiq).
+  - type: redis
+    name: petpro-redis
+    plan: free
+    ipAllowList: []          # доступен только внутренним сервисам Render
+
+  # Веб-сервис: FastAPI отдаёт API (/api) и статику фронта (/) из одного origin.
+  - type: web
+    name: petpro-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENV
+        value: production
+      - key: EVENT_MODE
+        value: taskiq
+      - key: REQUIRE_EMAIL_VERIFICATION
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true          # Render сгенерирует секрет
+      - key: DATABASE_URL
+        fromDatabase:
+          name: petpro-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: petpro-redis
+          property: connectionString
+      # CORS не критичен (единый origin), но оставим явным на будущее.
+      - key: CORS_ORIGINS
+        value: ""
+      # SMTP — задайте в дашборде Render для реальных писем (иначе dev-режим).
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        value: PetPro <noreply@petpro.app>
+
+  # Фоновый воркер: обрабатывает domain events, награды, дедлайны, decay питомцев.
+  - type: worker
+    name: petpro-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    dockerCommand: taskiq worker app.worker:broker
+    envVars:
+      - key: ENV
+        value: production
+      - key: EVENT_MODE
+        value: taskiq
+      - key: DATABASE_URL
+        fromDatabase:
+          name: petpro-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: petpro-redis
+          property: connectionString

@@ -1,0 +1,16 @@
+.git/
+.venv/
+venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.ruff_cache/
+**/.env
+**/*.db
+backend/tests/
+backend/smoke.db
+backend/alembic_test.db
+*.egg-info/
+frontend/screenshots/
+frontend/prototype.html
+node_modules/

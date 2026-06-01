@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +11,19 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://petpro:petpro_dev_password@localhost:5432/petpro"
     redis_url: str = "redis://localhost:6379/0"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def _normalize_db_url(cls, v: str) -> str:
+        """Managed-провайдеры (Render, Heroku) дают URL вида postgres://… —
+        приводим к async-драйверу SQLAlchemy postgresql+asyncpg://…"""
+        if not isinstance(v, str):
+            return v
+        if v.startswith("postgres://"):
+            v = "postgresql://" + v[len("postgres://"):]
+        if v.startswith("postgresql://"):
+            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        return v
 
     jwt_secret: str = "change_me_in_production"
     jwt_algorithm: str = "HS256"

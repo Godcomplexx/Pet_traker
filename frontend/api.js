@@ -2,7 +2,21 @@
 (function () {
   'use strict';
 
-  const BASE = window.PETPRO_API || 'http://localhost:8000/api';
+  // Базовый URL API:
+  //  1) явный override через window.PETPRO_API;
+  //  2) если фронт открыт со страницы file:// или localhost:5500 (отдельный
+  //     статик-сервер) → ходим на бэкенд localhost:8000;
+  //  3) иначе (прод: фронт и API на одном origin) → относительный /api.
+  function resolveBase() {
+    if (window.PETPRO_API) return window.PETPRO_API;
+    const { protocol, hostname, port } = window.location;
+    const isLocalStatic =
+      protocol === 'file:' ||
+      ((hostname === 'localhost' || hostname === '127.0.0.1') && port === '5500');
+    return isLocalStatic ? 'http://localhost:8000/api' : '/api';
+  }
+
+  const BASE = resolveBase();
   const KEY = 'petpro.tokens';
 
   function getTokens() {
