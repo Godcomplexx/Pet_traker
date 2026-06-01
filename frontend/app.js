@@ -177,7 +177,7 @@
         const res = await api.register({ email, password, display_name });
         if (res.status === 'verification_required') {
           // Аккаунт создан — нужен код из письма.
-          showVerifyPane(email, res.dev_code);
+          showVerifyPane(email);
           return;
         }
         // Подтверждение отключено на сервере — логинимся сразу.
@@ -201,10 +201,10 @@
         // Email не подтверждён — отправим на шаг ввода кода.
         $('#authError').textContent = '';
         try {
-          const r = await api.post('/auth/resend-code', { email });
-          showVerifyPane(email, r && r.dev_code);
+          await api.post('/auth/resend-code', { email });
+          showVerifyPane(email);
         } catch {
-          showVerifyPane(email, null);
+          showVerifyPane(email);
         }
       } else if (!err.fields) {
         $('#authError').textContent = err.message || 'Ошибка авторизации';
@@ -223,7 +223,7 @@
   let pendingEmail = null;
   let pendingPassword = null;
 
-  function showVerifyPane(email, devCode) {
+  function showVerifyPane(email) {
     pendingEmail = email;
     pendingPassword = $('#password').value;
     $('#authPane').style.display = 'none';
@@ -231,14 +231,8 @@
     $('#verifyEmail').textContent = email;
     $('#verifyCode').value = '';
     setFieldError('verify_code', '');
-    // В dev-режиме (без SMTP) сервер вернул код — подсказываем его.
-    const hint = $('#devCodeHint');
-    if (devCode) {
-      hint.style.display = 'block';
-      hint.textContent = `Dev-режим (письма не настроены): ваш код ${devCode}`;
-    } else {
-      hint.style.display = 'none';
-    }
+    $('#resendStatus').textContent = '';
+    $('#devCodeHint').style.display = 'none';
     $('#verifyCode').focus();
   }
 
@@ -266,16 +260,20 @@
   });
 
   $('#resendBtn').addEventListener('click', async () => {
+    const btn = $('#resendBtn');
+    const status = $('#resendStatus');
+    btn.disabled = true;
+    status.textContent = '';
+    btn.textContent = 'Отправляем...';
     try {
       const r = await api.post('/auth/resend-code', { email: pendingEmail });
       toast('Код отправлен повторно', 'xp');
-      if (r && r.dev_code) {
-        const hint = $('#devCodeHint');
-        hint.style.display = 'block';
-        hint.textContent = `Dev-режим (письма не настроены): ваш код ${r.dev_code}`;
-      }
+      status.textContent = 'Код отправлен повторно';
     } catch (err) {
-      setFieldError('verify_code', err.message || 'Не удалось отправить');
+      status.textContent = err.message || 'Не удалось отправить код';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Отправить код ещё раз';
     }
   });
 
@@ -422,10 +420,10 @@
     { id: 'frog', label: '🐸 Лягушка' },
     { id: 'axolotl', label: '🦎 Аксолотль' },
   ];
-  const BODY_COLORS = ['#d99a52', '#e0795a', '#7bA86b', '#6f9ec0', '#b07cc6', '#d96f8f', '#9aa0a6', '#3a3a3a'];
-  const ACCENT_COLORS = ['#7a3a22', '#c5402f', '#33603f', '#3a5d7a', '#4f3f72', '#222222', '#e8c14a', '#ffffff'];
+  const BODY_COLORS = ['#9dbf9b', '#b5acce', '#c9a5ba', '#a8c4d4', '#d4c4a8', '#c4b5a0', '#a8b8c8', '#b8c8a8'];
+  const ACCENT_COLORS = ['#7a9e78', '#9b8fbd', '#b08a9e', '#7a9eb0', '#b09a7a', '#9a8a78', '#8a9ab0', '#9aaa8a'];
 
-  const pcDraft = { name: 'Кодзи', species: 'capybara', body_color: '#d99a52', accent_color: '#7a3a22' };
+  const pcDraft = { name: 'Кодзи', species: 'capybara', body_color: '#9dbf9b', accent_color: '#b08a9e' };
 
   function pcPreview() {
     const screen = $('#petcreate .petscreen');
@@ -438,8 +436,8 @@
     // Префилл из существующего питомца (на случай повторной настройки).
     pcDraft.name = pet.name && pet.name !== 'Питомец' ? pet.name : 'Кодзи';
     pcDraft.species = pet.species || 'capybara';
-    pcDraft.body_color = pet.body_color || '#d99a52';
-    pcDraft.accent_color = pet.accent_color || '#7a3a22';
+    pcDraft.body_color = pet.body_color || '#9dbf9b';
+    pcDraft.accent_color = pet.accent_color || '#b08a9e';
     $('#pcName').value = pcDraft.name;
 
     $('#pcSpecies').innerHTML = SPECIES_LIST.map(
@@ -638,8 +636,8 @@
     const rows = PET_SHAPES[pet.species] || PET_SHAPES.capybara;
     const el = document.createElement('div');
     el.className = 'pixelpet idle';
-    el.style.setProperty('--pp-body', pet.body_color || '#d99a52');
-    el.style.setProperty('--pp-mouth', pet.accent_color || '#7a3a22');
+    el.style.setProperty('--pp-body', pet.body_color || '#9dbf9b');
+    el.style.setProperty('--pp-mouth', pet.accent_color || '#b08a9e');
     // Тень — затемнённое тело.
     el.style.setProperty('--pp-shade', shade(pet.body_color || '#d99a52', -0.25));
     const frag = document.createDocumentFragment();
@@ -1182,6 +1180,7 @@
   });
 
   /* ---------------- my tasks ---------------- */
+
   // Показ полей в зависимости от scope: проект, исполнитель, дедлайн — только для командных.
   $('#taskScope').addEventListener('change', async () => {
     const scope = $('#taskScope').value;
@@ -1212,7 +1211,8 @@
     const title = $('#taskTitle').value.trim();
     if (!title) return;
     const scope = $('#taskScope').value;
-    const body = { scope, title };
+    const desc = $('#taskDesc').value.trim();
+    const body = { scope, title, ...(desc && { description: desc }) };
     if (scope === 'WORKSPACE') body.workspace_id = state.wsId;
     if (scope === 'PROJECT') {
       const pid = $('#taskProject').value;
@@ -1222,12 +1222,13 @@
     if (scope !== 'PERSONAL') {
       const a = $('#taskAssignee').value;
       if (a) body.assignee_id = a;
-      const due = $('#taskDue').value;
-      if (due) body.due_date = due;
     }
+    const due = $('#taskDue').value;
+    if (due) body.due_date = due;
     try {
       await api.post('/tasks', body);
       $('#taskTitle').value = '';
+      $('#taskDesc').value = '';
       $('#taskDue').value = '';
       toast('Задача добавлена', scope === 'PERSONAL' ? 'priv' : '');
       renderMyTasks();
@@ -1267,10 +1268,37 @@
     const personal = state.myPersonal || [];
     const ft = team.filter(taskMatches);
     const fp = personal.filter(taskMatches);
-    $('#teamCount').textContent = `${ft.filter((t) => t.status !== 'DONE').length} открыто`;
-    $('#teamTasks').innerHTML = ft.length ? ft.map(taskRow).join('') : '<div class="muted sm">Нет задач по фильтру.</div>';
-    $('#personalTasks').innerHTML = fp.length ? fp.map(taskRow).join('') : '<div class="muted sm">Нет задач по фильтру.</div>';
+
+    // активные — только не выполненные
+    const ftOpen = ft.filter((t) => t.status !== 'DONE');
+    const fpOpen = fp.filter((t) => t.status !== 'DONE');
+    $('#teamCount').textContent = `${ftOpen.length} открыто`;
+    $('#teamTasks').innerHTML = ftOpen.length ? ftOpen.map(taskRow).join('') : '<div class="muted sm">Нет задач.</div>';
+    $('#personalTasks').innerHTML = fpOpen.length ? fpOpen.map(taskRow).join('') : '<div class="muted sm">Нет задач.</div>';
+
+    // архив выполненных
+    const done = [...ft, ...fp].filter((t) => t.status === 'DONE');
+    const doneSection = $('#doneSection');
+    const doneTasks  = $('#doneTasks');
+    const doneCount  = $('#doneCount');
+    if (done.length) {
+      doneSection.style.display = '';
+      doneCount.textContent = done.length;
+      doneTasks.innerHTML = done.map(taskRow).join('');
+    } else {
+      doneSection.style.display = 'none';
+    }
   }
+
+  // сворачивание/разворачивание архива
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#doneToggle')) return;
+    const tasks = $('#doneTasks');
+    const chevron = $('#doneChevron');
+    const hidden = tasks.style.display === 'none';
+    tasks.style.display = hidden ? '' : 'none';
+    chevron.textContent = hidden ? '▼' : '▶';
+  });
 
   async function renderMyTasks() {
     const [all, personal] = await Promise.all([

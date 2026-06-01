@@ -370,9 +370,9 @@ mountPet(document.querySelector('[data-pet="big"]'), null);
 function avs(s){ return '<div class="avstack">'+s.split(',').map((x,i)=>'<div class="avatar '+(i%2?'hatch':'')+'">'+x+'</div>').join('')+'</div>'; }
 
 /* projects */
-const PCOLS=[['IDEA','Идея','#bdb4a0'],['PLANNING','План','#9bb0c4'],['ACTIVE','Активен','#e07a52'],
-  ['PAUSED','Пауза','#d8a24a'],['IN_REVIEW','Ревью','#7a9b8a'],['DONE','Готов','#5f9e6e'],['ARCHIVED','Архив','#b0a99a']];
-const PTYPE={RESEARCH:'#7a9b8a',SOFTWARE:'#6f8fb0',PUBLICATION:'#c98b6b',EXPERIMENT:'#b08fb0',ADMIN:'#bdb4a0',OTHER:'#aaa'};
+const PCOLS=[['IDEA','Идея','#b5acce'],['PLANNING','План','#a8c4d4'],['ACTIVE','Активен','#c9a5ba'],
+  ['PAUSED','Пауза','#c4b5a0'],['IN_REVIEW','Ревью','#a8b8c8'],['DONE','Готов','#9dbf9b'],['ARCHIVED','Архив','#b8bdb6']];
+const PTYPE={RESEARCH:'#9dbf9b',SOFTWARE:'#a8c4d4',PUBLICATION:'#c9a5ba',EXPERIMENT:'#b5acce',ADMIN:'#c4b5a0',OTHER:'#b8bdb6'};
 const PROJ={
   IDEA:[['Open-source датасет ЭКГ','RESEARCH','ИВ','']],
   PLANNING:[['Геном растений в засуху','RESEARCH','АП,СД','']],
@@ -488,5 +488,36 @@ try{
   } else { document.getElementById('auth').classList.add('on'); }
   const s=localStorage.getItem('petpro_screen'); if(s) go(s);
 }catch(e){ document.getElementById('auth').classList.add('on'); }
+
+/* ---------------- mobile sidebar toggle ---------------- */
+(function(){
+  const toggle  = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sideOverlay');
+  if(!toggle || !sidebar || !overlay) return;
+
+  function openSide(){
+    sidebar.classList.add('open');
+    overlay.classList.add('on');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSide(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('on');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', () =>
+    sidebar.classList.contains('open') ? closeSide() : openSide()
+  );
+  overlay.addEventListener('click', closeSide);
+
+  /* закрыть при навигации */
+  document.querySelectorAll('#nav a').forEach(a =>
+    a.addEventListener('click', () => {
+      if(window.innerWidth <= 900) closeSide();
+    })
+  );
+})();
 
 })();

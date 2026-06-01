@@ -1,7 +1,10 @@
 """Тесты регистрации, подтверждения email и входа."""
 import pytest
+from sqlalchemy import select
 
 from app.core.config import settings
+from app.core.database import SessionLocal
+from app.models import EmailVerification, User
 
 
 @pytest.fixture
@@ -12,6 +15,22 @@ def require_verification():
     settings.require_email_verification = False
 
 
+async def latest_verification_code(email: str) -> str:
+    async with SessionLocal() as db:
+        user = await db.scalar(select(User).where(User.email == email))
+        assert user is not None
+        ev = await db.scalar(
+            select(EmailVerification)
+            .where(
+                EmailVerification.user_id == user.id,
+                EmailVerification.consumed_at.is_(None),
+            )
+            .order_by(EmailVerification.created_at.desc())
+        )
+        assert ev is not None
+        return ev.code
+
+
 async def test_register_requires_verification(client, require_verification):
     r = await client.post(
         "/auth/register",
@@ -20,8 +39,7 @@ async def test_register_requires_verification(client, require_verification):
     assert r.status_code == 201
     body = r.json()
     assert body["status"] == "verification_required"
-    # В dev-режиме (без SMTP) код возвращается для теста.
-    assert body["dev_code"] and len(body["dev_code"]) == 6
+    assert "dev_code" not in body
 
     # Логин до подтверждения запрещён.
     login = await client.post("/auth/login", json={"email": "v@lab.ru", "password": "password123"})
@@ -34,7 +52,8 @@ async def test_register_requires_verification(client, require_verification):
         assert "код" in bad.json()["detail"].lower()
 
     # Верный код — выдаёт токены.
-    ok = await client.post("/auth/verify", json={"email": "v@lab.ru", "code": body["dev_code"]})
+    code = await latest_verification_code("v@lab.ru")
+    ok = await client.post("/auth/verify", json={"email": "v@lab.ru", "code": code})
     assert ok.status_code == 200
     assert "access_token" in ok.json()
 
@@ -50,7 +69,27 @@ async def test_resend_code_issues_new(client, require_verification):
     )
     r = await client.post("/auth/resend-code", json={"email": "r@lab.ru"})
     assert r.status_code == 200
-    assert r.json()["dev_code"]
+    assert r.json()["message"] == "Код отправлен повторно"
+    code = await latest_verification_code("r@lab.ru")
+    assert len(code) == 6
+
+
+async def test_register_existing_unverified_resends_code(client, require_verification):
+    first = await client.post(
+        "/auth/register",
+        json={"email": "pending@lab.ru", "password": "password123", "display_name": "Пётр"},
+    )
+    assert first.status_code == 201, first.text
+
+    again = await client.post(
+        "/auth/register",
+        json={"email": "pending@lab.ru", "password": "password123", "display_name": "Пётр"},
+    )
+    assert again.status_code == 201, again.text
+    body = again.json()
+    assert body["status"] == "verification_required"
+    assert body["email"] == "pending@lab.ru"
+    assert "dev_code" not in body
 
 
 async def test_password_validation(client):

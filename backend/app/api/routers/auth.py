@@ -37,10 +37,19 @@ def _tokens(user_id: str) -> TokenPair:
     )
 
 
-@router.post("/register", response_model=RegisterOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=RegisterOut,
+    response_model_exclude_none=True,
+    status_code=status.HTTP_201_CREATED,
+)
 async def register(data: RegisterIn, db: AsyncSession = Depends(get_db)):
     exists = await db.scalar(select(User).where(User.email == data.email))
     if exists:
+        if settings.require_email_verification and not exists.email_verified:
+            await issue_code(db, exists.id, exists.email)
+            await db.commit()
+            return RegisterOut(email=exists.email)
         raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
 
     user = User(
@@ -63,10 +72,9 @@ async def register(data: RegisterIn, db: AsyncSession = Depends(get_db)):
             message="Регистрация завершена",
         )
 
-    code, sent = await issue_code(db, user.id, user.email)
+    await issue_code(db, user.id, user.email)
     await db.commit()
-    # В dev-режиме (SMTP не настроен) возвращаем код, чтобы можно было ввести его без почты.
-    return RegisterOut(email=data.email, dev_code=None if sent else code)
+    return RegisterOut(email=data.email)
 
 
 @router.post("/verify", response_model=TokenPair)
@@ -94,12 +102,9 @@ async def resend_code(data: ResendCodeIn, db: AsyncSession = Depends(get_db)):
     # Не раскрываем, существует ли email.
     if user is None or user.email_verified:
         return {"message": "Если аккаунт существует и не подтверждён, код отправлен"}
-    code, sent = await issue_code(db, user.id, user.email)
+    await issue_code(db, user.id, user.email)
     await db.commit()
-    return {
-        "message": "Код отправлен повторно",
-        "dev_code": None if sent else code,
-    }
+    return {"message": "Код отправлен повторно"}
 
 
 @router.post("/login", response_model=TokenPair)

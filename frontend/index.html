@@ -6,7 +6,7 @@
 <title>petpro — lab tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;700&family=Patrick+Hand&family=Kalam:wght@400;700&family=Azeret+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wireframes.css">
 </head>
 <body data-density="comfortable">
@@ -15,8 +15,7 @@
 <div id="auth" class="on">
   <div class="authcard sk">
     <div class="brand" style="margin-bottom:6px;">
-      <div class="logo">п</div>
-      <div><b>petpro</b><div class="v">lab tracker · корми питомца работой</div></div>
+      <b>lab tracker</b>
     </div>
     <div class="line"></div>
     <div id="authPane">
@@ -49,7 +48,7 @@
         <button class="btn primary" style="width:100%;margin-top:8px;" id="authGo" type="submit">Войти →</button>
       </form>
       <p class="sm" id="authError" style="color:#c5402f;min-height:18px;margin:8px 0 0;"></p>
-      <p class="sm muted" style="text-align:center;margin:6px 0 0;">Закрывай задачи — питомец растёт.<br><span class="note">XP начисляет бэкенд</span></p>
+      <p class="sm muted" style="text-align:center;margin:6px 0 0;">Выполняй задачи и получай XP — твой питомец растёт вместе с тобой.</p>
     </div>
 
     <!-- Шаг подтверждения email -->
@@ -64,8 +63,9 @@
       </div>
       <div class="note" id="devCodeHint" style="display:none;"></div>
       <button class="btn primary" style="width:100%;margin-top:6px;" id="verifyBtn">Подтвердить →</button>
-      <p class="sm muted" style="text-align:center;margin-top:10px;">
-        Не пришло? <span class="btn-like" id="resendBtn" style="color:var(--accent);">Отправить код ещё раз</span><br>
+      <button class="btn" style="width:100%;margin-top:8px;" id="resendBtn" type="button">Отправить код ещё раз</button>
+      <div class="field-err" id="resendStatus" style="text-align:center;"></div>
+      <p class="sm muted" style="text-align:center;margin-top:8px;">
         <span class="btn-like" id="backToAuth" style="color:var(--ink2);">← назад</span>
       </p>
     </div>
@@ -76,8 +76,7 @@
 <div id="onboard">
   <div class="authcard sk">
     <div class="brand" style="margin-bottom:6px;">
-      <div class="logo">п</div>
-      <div><b>petpro</b><div class="v" id="onboardHi">добро пожаловать</div></div>
+      <b>lab tracker</b>
     </div>
     <div class="line"></div>
     <div class="tabs" id="onboardTabs">
@@ -117,8 +116,7 @@
 <div id="petcreate">
   <div class="authcard sk" style="width:440px;">
     <div class="brand" style="margin-bottom:6px;">
-      <div class="logo">п</div>
-      <div><b>создай питомца</b><div class="v">он будет расти от твоей работы</div></div>
+      <b>lab tracker</b>
     </div>
     <div class="line"></div>
 
@@ -151,10 +149,15 @@
 
 <!-- ========================= APP ========================= -->
 <div id="app" style="display:none;">
-  <aside class="side">
+  <!-- mobile top bar (hidden on desktop) -->
+  <div class="mobile-topbar" id="mobileTopbar" style="grid-column:1/-1;">
+    <div class="brand"><b>lab tracker</b></div>
+    <button id="menuToggle" aria-label="Меню">☰</button>
+  </div>
+  <div class="side-overlay" id="sideOverlay"></div>
+  <aside class="side" id="sidebar">
     <div class="brand">
-      <div class="logo">п</div>
-      <div><b>petpro</b><div class="v">лаборатория</div></div>
+      <b>lab tracker</b>
     </div>
     <div class="labpick soft">
       <select id="wsPick" class="rolepick" style="flex:1;border:0;background:transparent;font-size:15px;"></select>
@@ -388,17 +391,26 @@
         <div><h1>Мои задачи</h1><div class="muted sm">командные + личные</div></div>
       </div>
       <div class="card sk" style="margin-bottom:var(--gap);">
-        <div class="row" style="flex-wrap:wrap;gap:8px;">
-          <input class="input" id="taskTitle" placeholder="Что нужно сделать?" style="flex:1;min-width:200px;">
-          <select class="rolepick" id="taskScope">
-            <option value="PERSONAL">🔒 Личная</option>
-            <option value="WORKSPACE">Командная (workspace)</option>
-            <option value="PROJECT">Проектная</option>
-          </select>
-          <select class="rolepick" id="taskProject" style="display:none;"></select>
-          <select class="rolepick" id="taskAssignee" style="display:none;"></select>
-          <input class="input" id="taskDue" type="date" style="display:none;width:auto;">
-          <button class="btn primary" id="newTaskBtn">+ Добавить</button>
+        <div class="col" style="gap:10px;">
+          <input class="input" id="taskTitle" placeholder="Название задачи">
+          <textarea class="input" id="taskDesc" placeholder="Описание (необязательно)" rows="2" style="resize:vertical;"></textarea>
+          <div class="row" style="flex-wrap:wrap;gap:8px;">
+            <div class="col" style="gap:4px;flex:0 0 auto;">
+              <label class="field-label">Дата выполнения</label>
+              <input class="input" id="taskDue" type="date" style="width:auto;">
+            </div>
+            <div class="col" style="gap:4px;flex:0 0 auto;">
+              <label class="field-label">Тип</label>
+              <select class="rolepick" id="taskScope" style="height:40px;">
+                <option value="PERSONAL">🔒 Личная</option>
+                <option value="WORKSPACE">Командная</option>
+                <option value="PROJECT">Проектная</option>
+              </select>
+            </div>
+            <select class="rolepick" id="taskProject" style="display:none;height:40px;align-self:flex-end;"></select>
+            <select class="rolepick" id="taskAssignee" style="display:none;height:40px;align-self:flex-end;"></select>
+            <button class="btn primary" id="newTaskBtn" style="margin-left:auto;align-self:flex-end;">+ Добавить</button>
+          </div>
         </div>
       </div>
 
@@ -433,6 +445,15 @@
           <h3 style="color:var(--priv)">Личные <span class="lock" style="margin-left:auto;">🔒 только вы</span></h3>
           <div id="personalTasks"></div>
         </div>
+      </div>
+
+      <!-- архив выполненных -->
+      <div class="card sk" id="doneSection" style="margin-top:var(--gap);display:none;">
+        <div class="between" style="cursor:pointer;" id="doneToggle">
+          <h3>✓ Выполненные <span class="mono" id="doneCount"></span></h3>
+          <span class="mono" id="doneChevron">▼</span>
+        </div>
+        <div id="doneTasks" style="margin-top:10px;"></div>
       </div>
     </section>
 

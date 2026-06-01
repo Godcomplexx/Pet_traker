@@ -75,9 +75,6 @@ class RegisterOut(BaseModel):
     status: str = "verification_required"
     email: EmailStr
     message: str = "Код подтверждения отправлен на вашу почту"
-    # В dev-режиме (SMTP не настроен) код возвращается прямо здесь,
-    # чтобы можно было протестировать без почтового сервера.
-    dev_code: str | None = None
 
 
 class UserOut(ORMModel):
