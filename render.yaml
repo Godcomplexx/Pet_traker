@@ -1,4 +1,4 @@
-# Render Blueprint — поднимает весь PetPro: API+фронт, воркер, Postgres, Redis.
+# Render Blueprint — поднимает весь PetPro: API+фронт, Postgres, Redis (free-план).
 # Подключи репозиторий на render.com → New → Blueprint → выбери этот файл.
 databases:
   - name: petpro-db
@@ -23,8 +23,9 @@ services:
     envVars:
       - key: ENV
         value: production
+      # inline: события обрабатываются в самом веб-сервисе (free-план без отдельного worker).
       - key: EVENT_MODE
-        value: taskiq
+        value: inline
       - key: REQUIRE_EMAIL_VERIFICATION
         value: "true"
       - key: JWT_SECRET
@@ -53,24 +54,8 @@ services:
       - key: MAIL_FROM
         value: PetPro <noreply@petpro.app>
 
-  # Фоновый воркер: обрабатывает domain events, награды, дедлайны, decay питомцев.
-  - type: worker
-    name: petpro-worker
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    plan: free
-    dockerCommand: taskiq worker app.worker:broker
-    envVars:
-      - key: ENV
-        value: production
-      - key: EVENT_MODE
-        value: taskiq
-      - key: DATABASE_URL
-        fromDatabase:
-          name: petpro-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: petpro-redis
-          property: connectionString
+  # ПРИМЕЧАНИЕ: на free-плане Render фоновые workers недоступны, поэтому
+  # обработка событий идёт inline в веб-сервисе (EVENT_MODE=inline выше).
+  # Decay питомцев считается лениво при чтении (см. services/pet.py).
+  # Если позже перейдёшь на платный план — верни worker с EVENT_MODE=taskiq
+  # и переключи web обратно на taskiq.
