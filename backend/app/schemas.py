@@ -205,6 +205,7 @@ class ProjectCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str | None = None
     type: enums.ProjectType = enums.ProjectType.OTHER
+    status: enums.ProjectStatus | None = None
     deadline: date | None = None
 
 

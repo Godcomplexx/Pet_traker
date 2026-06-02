@@ -854,13 +854,27 @@ small, .sm { font-size: var(--fs-xs); }
 }
 .tbl tr:last-child td { border-bottom: 0; }
 
+/* email внутри таблицы/строк: обычный шрифт, без uppercase, перенос разрешён */
+.tbl .mono,
+.userrow .mono,
+.petmini .mono {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0;
+  word-break: break-all;
+  white-space: normal;
+}
+
 .rolepick {
   border: 1px solid var(--border-out);
   border-radius: var(--r2);
   background: rgba(255,255,255,0.40);
   font-family: 'Silkscreen', monospace;
   font-size: var(--fs-xs);
-  padding: 3px 7px;
+  padding: 5px 8px;
+  min-width: 120px;          /* чтобы email/имя не обрезались */
+  max-width: 100%;
   color: var(--ink2);
   cursor: pointer;
   text-transform: uppercase;

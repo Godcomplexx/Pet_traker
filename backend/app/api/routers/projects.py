@@ -61,6 +61,7 @@ async def create_project(
         type=data.type,
         deadline=data.deadline,
         owner_id=user.id,
+        **({"status": data.status} if data.status else {}),
     )
     db.add(project)
     await db.commit()

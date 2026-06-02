@@ -274,13 +274,29 @@
     <section class="screen" id="screen-projects">
       <div class="topbar">
         <div><h1>Проекты</h1><div class="muted sm">направления лаборатории</div></div>
-        <div class="grow"></div>
-        <input class="input" id="projName" placeholder="Название проекта" style="width:200px;">
-        <select class="rolepick" id="projType">
-          <option>RESEARCH</option><option>SOFTWARE</option><option>PUBLICATION</option>
-          <option>EXPERIMENT</option><option>ADMIN</option><option selected>OTHER</option>
-        </select>
-        <button class="btn primary" id="newProjectBtn">+ Создать</button>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="col" style="gap:10px;">
+          <input class="input" id="projName" placeholder="Название проекта">
+          <textarea class="input" id="projDescNew" placeholder="Описание (необязательно)" rows="2" style="resize:vertical;"></textarea>
+          <div class="row" style="flex-wrap:wrap;gap:8px;align-items:flex-end;">
+            <div class="col" style="gap:4px;flex:0 0 auto;">
+              <label class="field-label">Тип</label>
+              <select class="rolepick" id="projType" style="height:40px;">
+                <option>RESEARCH</option><option>SOFTWARE</option><option>PUBLICATION</option>
+                <option>EXPERIMENT</option><option>ADMIN</option><option selected>OTHER</option>
+              </select>
+            </div>
+            <div class="col" style="gap:4px;flex:0 0 auto;">
+              <label class="field-label">Статус</label>
+              <select class="rolepick" id="projStatusNew" style="height:40px;">
+                <option selected>IDEA</option><option>PLANNING</option><option>ACTIVE</option>
+                <option>PAUSED</option><option>IN_REVIEW</option><option>DONE</option><option>ARCHIVED</option>
+              </select>
+            </div>
+            <button class="btn primary" id="newProjectBtn" style="margin-left:auto;">+ Создать</button>
+          </div>
+        </div>
       </div>
       <div class="board" id="projectBoard"></div>
     </section>
@@ -289,9 +305,19 @@
     <section class="screen" id="screen-articles">
       <div class="topbar">
         <div><h1>Статьи</h1><div class="muted sm">научные артефакты · publication workflow</div></div>
-        <div class="grow"></div>
-        <input class="input" id="artTitle" placeholder="Заголовок статьи" style="width:240px;">
-        <button class="btn primary" id="newArticleBtn">+ Создать</button>
+      </div>
+      <div class="card sk" style="margin-bottom:var(--gap);">
+        <div class="col" style="gap:10px;">
+          <input class="input" id="artTitle" placeholder="Заголовок статьи">
+          <textarea class="input" id="artDescNew" placeholder="Описание / аннотация (необязательно)" rows="2" style="resize:vertical;"></textarea>
+          <div class="row" style="flex-wrap:wrap;gap:8px;align-items:flex-end;">
+            <div class="col" style="gap:4px;flex:1;min-width:160px;">
+              <label class="field-label">Целевой журнал (необязательно)</label>
+              <input class="input" id="artJournalNew" placeholder="например, Nature">
+            </div>
+            <button class="btn primary" id="newArticleBtn">+ Создать</button>
+          </div>
+        </div>
       </div>
       <div class="col" id="articleList"></div>
     </section>
@@ -309,8 +335,9 @@
           <div class="card sk"><h3>Описание</h3><div id="pdDesc" class="muted"></div></div>
           <div class="card sk">
             <div class="between"><h3>Задачи проекта <span class="mono" id="pdTaskCount"></span></h3></div>
-            <div class="row" style="gap:8px;margin-bottom:8px;">
-              <input class="input" id="pdNewTask" placeholder="Новая задача проекта" style="flex:1;">
+            <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <input class="input" id="pdNewTask" placeholder="Новая задача проекта" style="flex:1;min-width:160px;">
+              <input class="input" id="pdNewTaskDue" type="date" style="width:auto;">
               <button class="btn primary sm" id="pdAddTask">+ Задача</button>
             </div>
             <div id="pdTasks"></div>
@@ -347,6 +374,11 @@
             <div id="adFields" class="sm muted" style="margin-top:8px;"></div></div>
           <div class="card sk">
             <div class="between"><h3>Задачи статьи <span class="mono" id="adTaskCount"></span></h3></div>
+            <div class="row" style="gap:8px;margin:8px 0;flex-wrap:wrap;">
+              <input class="input" id="adNewTask" placeholder="Новая задача статьи" style="flex:1;min-width:160px;">
+              <input class="input" id="adNewTaskDue" type="date" style="width:auto;">
+              <button class="btn primary sm" id="adAddTask">+ Задача</button>
+            </div>
             <div id="adTasks"></div>
           </div>
         </div>
@@ -463,8 +495,14 @@
       <div class="card sk petbig" style="max-width:520px;">
         <div class="petscreen" style="height:220px;"><div class="scan">LVL <span data-petlevel>1</span></div></div>
         <div class="between" style="margin-top:12px;">
-          <h2><span data-petname>Питомец</span></h2>
+          <h2 id="petNameDisplay"><span data-petname>Питомец</span></h2>
           <button class="btn sm" id="renamePetBtn">✎ переименовать</button>
+        </div>
+        <!-- inline-редактирование имени (без всплывающего окна) -->
+        <div class="row" id="petNameEdit" style="margin-top:12px;display:none;gap:8px;">
+          <input class="input" id="petNameInput" placeholder="Имя питомца" style="flex:1;">
+          <button class="btn primary sm" id="petNameSave">Сохранить</button>
+          <button class="btn sm" id="petNameCancel">Отмена</button>
         </div>
         <div class="note" data-petstate style="margin-bottom:6px;"></div>
         <div class="stat"><span class="lbl">XP</span><div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div><span class="num" data-petnum>0/100</span></div>

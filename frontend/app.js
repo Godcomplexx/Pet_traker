@@ -718,11 +718,34 @@
     paintPet(pet);
   }
 
-  $('#renamePetBtn').addEventListener('click', async () => {
-    const name = prompt('Имя питомца:', state.pet ? state.pet.name : '');
+  // inline-переименование питомца (без prompt-окна)
+  function openPetNameEdit() {
+    $('#petNameInput').value = state.pet ? state.pet.name : '';
+    $('#petNameDisplay').style.display = 'none';
+    $('#renamePetBtn').style.display = 'none';
+    $('#petNameEdit').style.display = 'flex';
+    $('#petNameInput').focus();
+  }
+  function closePetNameEdit() {
+    $('#petNameEdit').style.display = 'none';
+    $('#petNameDisplay').style.display = '';
+    $('#renamePetBtn').style.display = '';
+  }
+  async function savePetName() {
+    const name = $('#petNameInput').value.trim();
     if (!name) return;
     await api.patch('/pets/me', { name });
     await refreshPet();
+    closePetNameEdit();
+    toast('Имя обновлено', 'xp');
+  }
+
+  $('#renamePetBtn').addEventListener('click', openPetNameEdit);
+  $('#petNameSave').addEventListener('click', savePetName);
+  $('#petNameCancel').addEventListener('click', closePetNameEdit);
+  $('#petNameInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') savePetName();
+    if (e.key === 'Escape') closePetNameEdit();
   });
 
   /* ---------------- task rendering ---------------- */
@@ -777,9 +800,10 @@
     state.articles = articles;
     const open = tasks.filter((t) => t.status !== 'DONE');
     $('#dashTaskCount').textContent = `${open.length} открыто`;
-    $('#dashTasks').innerHTML = tasks.length
-      ? tasks.slice(0, 8).map(taskRow).join('')
-      : '<div class="muted sm">Задач пока нет — создайте на «Мои задачи».</div>';
+    // на дашборде — только незавершённые; выполненные живут в архиве «Мои задачи»
+    $('#dashTasks').innerHTML = open.length
+      ? open.slice(0, 8).map(taskRow).join('')
+      : '<div class="muted sm">Открытых задач нет — создайте на «Мои задачи».</div>';
 
     $('#dashFeed').innerHTML = feed.length
       ? feed.map(feedRow).join('')
@@ -834,9 +858,10 @@
       const inCol = projects.filter((p) => p.status === st);
       const cards = inCol
         .map(
-          (p) => `<div class="acard soft" style="cursor:pointer;" data-open-project="${p.id}">
+          (p) => `<div class="acard soft">
             <div class="row"><span class="tag ptype">${p.type}</span></div>
-            <div class="ttl">${esc(p.name)}</div>
+            <div class="ttl" data-open-project="${p.id}" style="cursor:pointer;">${esc(p.name)}</div>
+            ${statusSelect('project', p.id, p.status, PROJECT_STATUSES)}
           </div>`,
         )
         .join('');
@@ -847,8 +872,16 @@
   $('#newProjectBtn').addEventListener('click', async () => {
     const name = $('#projName').value.trim();
     if (!name) return;
-    await api.post(`/workspaces/${state.wsId}/projects`, { name, type: $('#projType').value });
+    const desc = $('#projDescNew').value.trim();
+    const body = {
+      name,
+      type: $('#projType').value,
+      status: $('#projStatusNew').value,
+      ...(desc && { description: desc }),
+    };
+    await api.post(`/workspaces/${state.wsId}/projects`, body);
     $('#projName').value = '';
+    $('#projDescNew').value = '';
     toast('Проект создан', 'xp');
     renderProjects();
   });
@@ -871,8 +904,17 @@
   $('#newArticleBtn').addEventListener('click', async () => {
     const title = $('#artTitle').value.trim();
     if (!title) return;
-    await api.post(`/workspaces/${state.wsId}/articles`, { title });
+    const desc = $('#artDescNew').value.trim();
+    const journal = $('#artJournalNew').value.trim();
+    const body = {
+      title,
+      ...(desc && { description: desc }),
+      ...(journal && { target_journal: journal }),
+    };
+    await api.post(`/workspaces/${state.wsId}/articles`, body);
     $('#artTitle').value = '';
+    $('#artDescNew').value = '';
+    $('#artJournalNew').value = '';
     toast('Статья создана', 'xp');
     renderArticles();
   });
@@ -910,9 +952,12 @@
   $('#pdAddTask').addEventListener('click', async () => {
     const title = $('#pdNewTask').value.trim();
     if (!title) return;
+    const due = $('#pdNewTaskDue').value;
+    const body = { scope: 'PROJECT', project_id: state.openProject, title, ...(due && { due_date: due }) };
     try {
-      await api.post('/tasks', { scope: 'PROJECT', project_id: state.openProject, title });
+      await api.post('/tasks', body);
       $('#pdNewTask').value = '';
+      $('#pdNewTaskDue').value = '';
       toast('Задача добавлена', 'xp');
       openProject(state.openProject);
     } catch (err) {
@@ -937,14 +982,29 @@
     sel.innerHTML = statusOptions(a.status, ARTICLE_STATUSES);
     sel.dataset.status = `article:${id}`;
 
-    const tasks = await api.get(`/projects/${a.project_id}/tasks`).catch(() => []);
-    const own = tasks.filter((t) => t.article_id === id);
+    const own = await api.get(`/articles/${id}/tasks`).catch(() => []);
     $('#adTaskCount').textContent = `${own.length}`;
     $('#adTasks').innerHTML = own.length ? own.map(taskRowLinked).join('') : '<div class="muted sm">Нет задач статьи.</div>';
 
     renderMemberManager('article', id, a.workspace_id);
     mountComments('article', id);
   }
+
+  $('#adAddTask').addEventListener('click', async () => {
+    const title = $('#adNewTask').value.trim();
+    if (!title) return;
+    const due = $('#adNewTaskDue').value;
+    const body = { scope: 'ARTICLE', article_id: state.openArticle, title, ...(due && { due_date: due }) };
+    try {
+      await api.post('/tasks', body);
+      $('#adNewTask').value = '';
+      $('#adNewTaskDue').value = '';
+      toast('Задача добавлена', 'xp');
+      openArticle(state.openArticle);
+    } catch (err) {
+      toast(err.message, '');
+    }
+  });
 
   /* ---------------- project/article members ---------------- */
   const MEMBER_CONFIG = {
@@ -1174,6 +1234,10 @@
       await api.patch(`/${kind}s/${id}/status`, { status: sel.value });
       toast('Статус обновлён', 'xp');
       await refreshPet();
+      // если меняли из списка проектов — переставить карточку в нужную колонку
+      if (kind === 'project' && $('#screen-projects')?.classList.contains('on')) {
+        renderProjects();
+      }
     } catch (err) {
       toast(err.message, '');
     }
@@ -1188,7 +1252,7 @@
     const isTeam = scope !== 'PERSONAL';
     $('#taskProject').style.display = isProj ? '' : 'none';
     $('#taskAssignee').style.display = isTeam ? '' : 'none';
-    $('#taskDue').style.display = isTeam ? '' : 'none';
+    // дата выполнения доступна для всех типов задач (поле всегда видно)
 
     if (isProj) {
       const projects = state.projects.length

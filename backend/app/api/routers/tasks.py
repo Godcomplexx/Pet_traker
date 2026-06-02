@@ -261,13 +261,15 @@ async def reopen_task(
 
 @router.get("/me/tasks", response_model=list[TaskOut])
 async def my_tasks(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    # Assigned team tasks + own personal tasks.
+    # Задачи, к которым причастен пользователь:
+    #  - назначенные на него (assignee)
+    #  - созданные им (owner) — включая проектные/командные без исполнителя
     rows = await db.scalars(
         select(Task)
         .where(
             or_(
                 Task.assignee_id == user.id,
-                (Task.owner_id == user.id) & (Task.scope == TaskScope.PERSONAL),
+                Task.owner_id == user.id,
             )
         )
         .order_by(Task.created_at.desc())

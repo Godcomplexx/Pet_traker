@@ -5,13 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import ELEVATED_ROLES, WRITE_ROLES, get_current_user, require_membership
 from app.core.database import get_db
 from app.enums import ArticleStatus, DomainEventType, PrivacyLevel
-from app.models import Article, ArticleMember, Project, User, WorkspaceMember
+from app.models import Article, ArticleMember, Project, Task, User, WorkspaceMember
 from app.schemas import (
     ArticleCreate,
     ArticleMemberAdd,
     ArticleMemberOut,
     ArticleOut,
     ArticleStatusUpdate,
+    TaskOut,
 )
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
@@ -82,6 +83,20 @@ async def get_article(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
     await require_membership(article.workspace_id, db, user)  # FR-ART-5
     return article
+
+
+@router.get("/articles/{article_id}/tasks", response_model=list[TaskOut])
+async def article_tasks(
+    article_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    article = await db.get(Article, article_id)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
+    await require_membership(article.workspace_id, db, user)
+    rows = await db.scalars(
+        select(Task).where(Task.article_id == article_id).order_by(Task.created_at.desc())
+    )
+    return rows.all()
 
 
 @router.patch("/articles/{article_id}/status", response_model=ArticleOut)
