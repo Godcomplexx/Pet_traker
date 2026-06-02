@@ -40,7 +40,13 @@ def send_email(to: str, subject: str, body: str) -> bool:
         logger.info("Письмо отправлено на %s", to)
         return True
     except Exception as exc:  # noqa: BLE001
-        logger.error("Не удалось отправить письмо на %s: %s", to, exc)
+        # SMTP настроен, но отправка не удалась (неверный хост/логин/сеть).
+        # Дублируем содержимое в лог, чтобы код подтверждения не потерялся.
+        logger.error(
+            "Не удалось отправить письмо на %s: %s\n"
+            "FALLBACK (содержимое письма): %s\n%s",
+            to, exc, subject, body,
+        )
         return False
 
 
