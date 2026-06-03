@@ -1,7 +1,7 @@
 /* =============================================================
    PetPro — Dreamcore / Liquid Glass UI
    Palette: misty sage, pale lavender fog, soft warm ivory
-   Fonts: Inter (body) + Press Start 2P (pixel titles) + Silkscreen (labels/chips)
+   Font: Pixelify Sans (единый пиксельный шрифт, поддерживает кириллицу)
    ============================================================= */
 
 :root {
@@ -95,7 +95,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   /* Inter для основного текста — отличная читаемость */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-base);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -107,40 +107,41 @@ body {
   background-attachment: fixed;
 }
 
-/* Press Start 2P — только для заголовков */
+/* Заголовки — крупнее и жирным (Pixelify Sans лучше читается без капса) */
 h1, h2, h3, h4 {
-  font-family: 'Press Start 2P', monospace;
-  font-weight: 400;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-weight: 700;
   margin: 0;
-  line-height: 1.7;
+  line-height: 1.5;
 }
-h1 { font-size: var(--pxf-lg); color: var(--ink); }
-h2 { font-size: var(--pxf-md); color: var(--ink); }
-h3 { font-size: var(--pxf-sm); color: var(--ink); }
-h4 { font-size: var(--pxf-sm); color: var(--ink2); }
+h1 { font-size: var(--fs-xl); color: var(--ink); }
+h2 { font-size: var(--fs-lg); color: var(--ink); }
+h3 { font-size: var(--fs-md); color: var(--ink); }
+h4 { font-size: var(--fs-base); color: var(--ink2); }
 
-/* Silkscreen — только для мелких лейблов/чипов/кодов */
+/* мелкие лейблы/чипы/коды — без uppercase (на кириллице капс хуже читается) */
 .mono, .hud, .tag, .chip,
 .tbl th, .rolepick, .nav .grp, .colhead {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  letter-spacing: .02em;
+  text-transform: none;
   color: var(--ink2);
 }
 
 /* brand */
 .brand b, .lcd {
-  font-family: 'Press Start 2P', monospace;
-  font-size: var(--pxf-md);
+  font-family: 'Pixelify Sans', sans-serif;
+  font-weight: 700;
+  font-size: var(--fs-lg);
   color: var(--ink);
-  letter-spacing: .03em;
+  letter-spacing: .02em;
 }
 .brand .logo { display: none; }
 .brand .v    { display: none; }
 
 button {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-weight: 500;
   cursor: pointer;
 }
@@ -207,7 +208,7 @@ a:hover{ color: var(--xp2); }
   border: 1px solid var(--border2);
   border-radius: var(--r2);
   padding: 9px 20px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--ink);
@@ -265,7 +266,7 @@ a:hover{ color: var(--xp2); }
   border: 1px solid var(--border2);
   border-radius: 99px;
   padding: 3px 10px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   white-space: nowrap;
   color: var(--ink2);
@@ -291,10 +292,10 @@ a:hover{ color: var(--xp2); }
 
 /* ── TAGS ── */
 .tag {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   letter-spacing: .04em;
-  text-transform: uppercase;
+  text-transform: none;
   border: 1px solid var(--border-out);
   border-radius: 6px;
   padding: 2px 7px;
@@ -312,7 +313,7 @@ a:hover{ color: var(--xp2); }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 10px;
   background: var(--glass);
   backdrop-filter: blur(8px);
@@ -329,9 +330,9 @@ a:hover{ color: var(--xp2); }
   justify-content: center;
   text-align: center;
   color: var(--ink3);
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: .04em;
   background: rgba(255,255,255,0.20);
 }
@@ -350,7 +351,7 @@ a:hover{ color: var(--xp2); }
   gap: 4px;
   color: var(--priv);
   font-size: 12px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
 }
 
 /* ============================================================
@@ -359,9 +360,9 @@ a:hover{ color: var(--xp2); }
 .stat { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
 .stat .lbl {
   width: 70px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--ink2);
 }
 .track {
@@ -385,7 +386,7 @@ a:hover{ color: var(--xp2); }
 .stat .num {
   width: 40px;
   text-align: right;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--ink2);
 }
@@ -465,13 +466,13 @@ a:hover{ color: var(--xp2); }
   justify-content: center;
   background: var(--glass);
   backdrop-filter: blur(10px);
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 14px;
   color: var(--xp);
   box-shadow: 0 2px 12px rgba(122,158,120,0.18), 0 1px 0 rgba(255,255,255,0.9) inset;
 }
 .brand b {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 11px;
   color: var(--ink);
   letter-spacing: .02em;
@@ -484,7 +485,7 @@ a:hover{ color: var(--xp2); }
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-sm);
   font-weight: 500;
   cursor: pointer;
@@ -509,7 +510,7 @@ a:hover{ color: var(--xp2); }
   color: var(--ink2);
   text-decoration: none;
   border: 1px solid transparent;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-sm);
   font-weight: 500;
   letter-spacing: .01em;
@@ -540,7 +541,7 @@ a:hover{ color: var(--xp2); }
   border: 1px solid rgba(176,138,158,0.45);
   color: #5a3a4a;
   border-radius: 99px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   padding: 1px 6px;
   min-width: 18px;
@@ -548,10 +549,10 @@ a:hover{ color: var(--xp2); }
 }
 .nav a .badge.hide { display: none; }
 .nav .grp {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 8px;
   color: var(--ink3);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: .08em;
   margin: 10px 0 2px 8px;
 }
@@ -583,7 +584,7 @@ a:hover{ color: var(--xp2); }
   backdrop-filter: blur(8px);
 }
 .petmini .meta { flex: 1; min-width: 0; }
-.petmini .meta b { font-family: 'Silkscreen', monospace; font-size: var(--fs-xs); color: var(--ink); }
+.petmini .meta b { font-family: 'Pixelify Sans', sans-serif; font-size: var(--fs-xs); color: var(--ink); }
 
 /* ── USER ROW ── */
 .userrow {
@@ -681,7 +682,7 @@ small, .sm { font-size: var(--fs-xs); }
   position: absolute;
   inset: -3px 0 0 1px;
   font-size: 15px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
 }
 .task.priv .chk.done {
   background: var(--priv-soft);
@@ -727,15 +728,15 @@ small, .sm { font-size: var(--fs-xs); }
   gap: 8px;
   padding: 7px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.55);
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--ink2);
   letter-spacing: .05em;
 }
 .colhead .cnt {
   margin-left: auto;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--ink3);
 }
@@ -752,7 +753,7 @@ small, .sm { font-size: var(--fs-xs); }
   background: rgba(255,255,255,0.58);
   box-shadow: 0 6px 24px rgba(100,120,95,0.12), 0 1px 0 rgba(255,255,255,1) inset;
 }
-.acard .ttl { font-family: 'Silkscreen', monospace; font-size: 11px; line-height: 1.55; color: var(--ink); }
+.acard .ttl { font-family: 'Pixelify Sans', sans-serif; font-size: 11px; line-height: 1.55; color: var(--ink); }
 .acard .foot{ display: flex; align-items: center; gap: 6px; }
 
 .avstack { display: flex; }
@@ -785,13 +786,13 @@ small, .sm { font-size: var(--fs-xs); }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   flex: 0 0 auto;
   color: var(--ink2);
 }
 .feed .when {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--ink3);
 }
@@ -851,7 +852,7 @@ small, .sm { font-size: var(--fs-xs); }
   border: 0;
   background: transparent;
   padding: 6px 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   font-weight: 500;
   color: var(--ink2);
@@ -874,9 +875,9 @@ small, .sm { font-size: var(--fs-xs); }
 .tbl { width: 100%; border-collapse: collapse; }
 .tbl th {
   text-align: left;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--ink3);
   padding: 6px 8px;
   border-bottom: 1px solid rgba(255,255,255,0.55);
@@ -895,7 +896,7 @@ small, .sm { font-size: var(--fs-xs); }
 .tbl .mono,
 .userrow .mono,
 .petmini .mono {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   text-transform: none;
   letter-spacing: 0;
@@ -907,14 +908,14 @@ small, .sm { font-size: var(--fs-xs); }
   border: 1px solid var(--border-out);
   border-radius: var(--r2);
   background: rgba(255,255,255,0.40);
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   padding: 5px 8px;
   min-width: 120px;          /* чтобы email/имя не обрезались */
   max-width: 100%;
   color: var(--ink2);
   cursor: pointer;
-  text-transform: uppercase;
+  text-transform: none;
   backdrop-filter: blur(4px);
 }
 .rolepick:focus { border-color: var(--xp); outline: none; }
@@ -956,18 +957,18 @@ small, .sm { font-size: var(--fs-xs); }
 
 .field { margin: 12px 0; }
 .field-label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--ink2);
   letter-spacing: .07em;
 }
 .field label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--ink2);
   letter-spacing: .07em;
 }
@@ -977,7 +978,7 @@ small, .sm { font-size: var(--fs-xs); }
   width: 100%;
   background: rgba(255,255,255,0.50);
   backdrop-filter: blur(8px);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-base);
   border: 1px solid rgba(255,255,255,0.70);
   border-radius: var(--r2);
@@ -1005,7 +1006,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 
 .field-err {
   color: var(--danger);
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   min-height: 0;
   margin-top: 4px;
@@ -1030,7 +1031,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   border: 0;
   background: transparent;
   padding: 9px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--ink2);
@@ -1053,7 +1054,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 @media(max-width:1080px) { .g2,.g3,.g-2-1,.g-1-2 { grid-template-columns:1fr; } }
 
 .note {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--xp);
   display: inline-block;
@@ -1083,7 +1084,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .toast {
   padding: 10px 20px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 12px;
   display: flex;
   align-items: center;
@@ -1109,7 +1110,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   background: rgba(240,220,230,0.72);
   border: 1px solid rgba(176,138,158,0.55);
   color: #5a3040;
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 10px;
 }
 .toast.fade { animation: toastout .35s forwards; }
@@ -1139,7 +1140,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   background: none;
   text-align: left;
   padding: 6px 12px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 11px;
   color: var(--ink);
   border-radius: var(--r2);
@@ -1148,7 +1149,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .menu button:hover { background: rgba(255,255,255,0.60); }
 .menu button .rw {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--xp);
   margin-left: 6px;
@@ -1185,7 +1186,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 .petscreen .scan {
   position: absolute;
   left: 8px; bottom: 6px;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 8px;
   color: var(--xp);
   opacity: .7;
@@ -1260,7 +1261,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-radius: var(--r3);
   background: rgba(255,255,255,0.40);
   cursor: pointer;
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: 11px;
   color: var(--ink2);
   backdrop-filter: blur(6px);
@@ -1291,11 +1292,11 @@ textarea.input { resize: vertical; min-height: 70px; }
    HUD
    ============================================================ */
 .hud {
-  font-family: 'Silkscreen', monospace;
+  font-family: 'Pixelify Sans', sans-serif;
   font-size: var(--fs-xs);
   color: var(--xp);
   letter-spacing: .04em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 /* ============================================================
@@ -1370,8 +1371,8 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .shopcard .nm { font-size: var(--fs-sm); color: var(--ink); }
 .shopcard .rar {
-  font-family: 'Silkscreen', monospace; font-size: var(--fs-xs);
-  text-transform: uppercase; letter-spacing: .04em;
+  font-family: 'Pixelify Sans', sans-serif; font-size: var(--fs-xs);
+  text-transform: none; letter-spacing: .04em;
 }
 .rar-common    { color: var(--ink3); }
 .rar-rare      { color: var(--xp); }
