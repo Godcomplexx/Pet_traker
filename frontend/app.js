@@ -724,6 +724,23 @@
     }
   });
 
+  // Добавление участника по email.
+  $('#inviteBtn').addEventListener('click', async () => {
+    const email = $('#inviteEmail').value.trim();
+    const role = $('#inviteRole').value;
+    $('#inviteErr').textContent = '';
+    if (!email) return;
+    try {
+      await api.post(`/workspaces/${state.wsId}/invite`, { email, role });
+      $('#inviteEmail').value = '';
+      toast('Участник добавлен', 'xp');
+      renderLab();
+    } catch (err) {
+      $('#inviteErr').textContent =
+        err.status === 404 ? 'Нет пользователя с таким email (он должен зарегистрироваться)' : (err.message || 'Не удалось добавить');
+    }
+  });
+
   // Смена роли участника.
   document.addEventListener('change', async (e) => {
     const sel = e.target.closest('[data-role-of]');
@@ -1370,8 +1387,17 @@
     go('taskdetail');
     const t = await api.get(`/tasks/${id}`);
     state.openTaskObj = t;
+    // участники нужны, чтобы показать имена исполнителей и кто выполнил
+    if (t.scope !== 'PERSONAL' && (!state.members || !state.members.length)) {
+      state.members = await api.get(`/workspaces/${state.wsId}/members`).catch(() => []);
+    }
     $('#tdTitle').textContent = t.title;
-    $('#tdMeta').textContent = `${t.scope} · ${t.type} · ${t.status}${t.due_date ? ' · до ' + t.due_date : ''}`;
+    const parts = [t.scope, t.type, t.status];
+    if (t.due_date) parts.push('до ' + t.due_date);
+    const who = (t.assignees && t.assignees.length ? t.assignees : (t.assignee_id ? [t.assignee_id] : []));
+    if (who.length) parts.push('исполнители: ' + who.map(memberName).join(', '));
+    if (t.status === 'DONE' && t.completed_by) parts.push('✓ выполнил: ' + memberName(t.completed_by));
+    $('#tdMeta').textContent = parts.join(' · ');
     $('#tdDesc').textContent = t.description || 'Без описания';
     $('#tdToggle').textContent = t.status === 'DONE' ? 'Переоткрыть' : 'Закрыть задачу';
     mountComments('task', id);
@@ -1409,21 +1435,75 @@
     const form = box.querySelector('.cmt-form');
     box.dataset.id = id;
 
-    form.innerHTML = `
-      <textarea class="input" data-cmt-text placeholder="Комментарий… упоминайте через @email"></textarea>
-      <button class="btn primary sm" data-cmt-send style="margin-top:6px;">Отправить</button>`;
+    // подгрузим участников лаборатории для упоминаний
+    if (!state.members || !state.members.length) {
+      state.members = await api.get(`/workspaces/${state.wsId}/members`).catch(() => []);
+    }
+    const memberOpts = (state.members || [])
+      .map((m) => `<option value="${m.user_id}">${esc(m.display_name || m.email || m.user_id.slice(0, 6))}</option>`)
+      .join('');
 
+    form.innerHTML = `
+      <textarea class="input" data-cmt-text placeholder="Комментарий…"></textarea>
+      <div class="row" style="gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center;">
+        <button class="btn primary sm" data-cmt-send>Отправить</button>
+        <span class="mono">упомянуть:</span>
+        <select class="rolepick" data-cmt-mention>
+          <option value="">＠ выбрать…</option>${memberOpts}
+        </select>
+      </div>
+      <div class="row" data-cmt-chips style="gap:6px;margin-top:6px;flex-wrap:wrap;"></div>`;
+
+    box._mentions = [];
     await reloadComments(kind, id, list);
   }
+
+  // отображение имени участника по id
+  function memberName(uid) {
+    const m = (state.members || []).find((x) => x.user_id === uid);
+    return m ? (m.display_name || m.email || uid.slice(0, 6)) : uid.slice(0, 6);
+  }
+
+  // выбор упоминания из выпадающего списка
+  document.addEventListener('change', (e) => {
+    const sel = e.target.closest('[data-cmt-mention]');
+    if (!sel || !sel.value) return;
+    const box = sel.closest('.cmtbox');
+    box._mentions = box._mentions || [];
+    if (!box._mentions.includes(sel.value)) {
+      box._mentions.push(sel.value);
+      renderMentionChips(box);
+    }
+    sel.value = '';
+  });
+
+  function renderMentionChips(box) {
+    const wrap = box.querySelector('[data-cmt-chips]');
+    if (!wrap) return;
+    wrap.innerHTML = (box._mentions || [])
+      .map((uid) => `<span class="chip acc btn-like" data-cmt-unmention="${uid}">@${esc(memberName(uid))} ✕</span>`)
+      .join('');
+  }
+
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-cmt-unmention]');
+    if (!chip) return;
+    const box = chip.closest('.cmtbox');
+    box._mentions = (box._mentions || []).filter((u) => u !== chip.dataset.cmtUnmention);
+    renderMentionChips(box);
+  });
 
   async function reloadComments(kind, id, list) {
     try {
       const items = await api.get(`${cmtBase(kind, id)}/comments`);
       list.innerHTML = items.length
-        ? items.map((c) => `<div class="feed"><div class="it">
-            <div class="av">${initials((c.author_id || '').slice(0, 2))}</div>
-            <div><span>${esc(c.text)}</span><div class="when">${new Date(c.created_at).toLocaleString('ru')}</div></div>
-          </div></div>`).join('')
+        ? items.map((c) => {
+            const nm = memberName(c.author_id);
+            return `<div class="feed"><div class="it">
+            <div class="av">${initials(nm)}</div>
+            <div><b>${esc(nm)}</b> <span>${esc(c.text)}</span><div class="when">${new Date(c.created_at).toLocaleString('ru')}</div></div>
+          </div></div>`;
+          }).join('')
         : '<div class="muted sm">Пока нет комментариев.</div>';
     } catch {
       list.innerHTML = '<div class="muted sm">Не удалось загрузить.</div>';
@@ -1442,8 +1522,11 @@
     if (!text) return;
     send.disabled = true;
     try {
-      await api.post(`${cmtBase(kind, id)}/comments`, { text });
+      const mentions = box._mentions || [];
+      await api.post(`${cmtBase(kind, id)}/comments`, { text, mention_user_ids: mentions });
       ta.value = '';
+      box._mentions = [];
+      renderMentionChips(box);
       await reloadComments(kind, id, box.querySelector('.cmt-list'));
       refreshPet();
     } catch (err) {
@@ -1484,13 +1567,36 @@
   /* ---------------- my tasks ---------------- */
 
   // Показ полей в зависимости от scope: проект, исполнитель, дедлайн — только для командных.
+  // выбранные исполнители новой задачи
+  let taskAssignees = [];
+  function renderTaskAssigneeChips() {
+    $('#taskAssigneeChips').innerHTML = taskAssignees
+      .map((uid) => `<span class="chip acc btn-like" data-task-unassign="${uid}">${esc(memberName(uid))} ✕</span>`)
+      .join('');
+  }
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-task-unassign]');
+    if (!chip) return;
+    taskAssignees = taskAssignees.filter((u) => u !== chip.dataset.taskUnassign);
+    renderTaskAssigneeChips();
+  });
+  // выбор исполнителя из списка → добавить чип
+  $('#taskAssignee').addEventListener('change', () => {
+    const v = $('#taskAssignee').value;
+    if (v && !taskAssignees.includes(v)) {
+      taskAssignees.push(v);
+      renderTaskAssigneeChips();
+    }
+    $('#taskAssignee').value = '';
+  });
+
   $('#taskScope').addEventListener('change', async () => {
     const scope = $('#taskScope').value;
     const isProj = scope === 'PROJECT';
     const isTeam = scope !== 'PERSONAL';
     $('#taskProject').style.display = isProj ? '' : 'none';
-    $('#taskAssignee').style.display = isTeam ? '' : 'none';
-    // дата выполнения доступна для всех типов задач (поле всегда видно)
+    $('#taskAssigneeWrap').style.display = isTeam ? '' : 'none';
+    if (!isTeam) { taskAssignees = []; renderTaskAssigneeChips(); }
 
     if (isProj) {
       const projects = state.projects.length
@@ -1500,11 +1606,10 @@
       $('#taskProject').innerHTML = projects.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
     }
     if (isTeam) {
-      // Список участников лаборатории для выбора исполнителя.
       const members = await api.get(`/workspaces/${state.wsId}/members`);
       state.members = members;
       $('#taskAssignee').innerHTML =
-        '<option value="">без исполнителя</option>' +
+        '<option value="">＋ добавить исполнителя…</option>' +
         members.map((m) => `<option value="${m.user_id}">${esc(m.display_name || m.email)}</option>`).join('');
     }
   });
@@ -1521,9 +1626,8 @@
       if (!pid) return toast('Сначала создайте проект', '');
       body.project_id = pid;
     }
-    if (scope !== 'PERSONAL') {
-      const a = $('#taskAssignee').value;
-      if (a) body.assignee_id = a;
+    if (scope !== 'PERSONAL' && taskAssignees.length) {
+      body.assignee_ids = taskAssignees;
     }
     const due = $('#taskDue').value;
     if (due) body.due_date = due;
@@ -1532,6 +1636,8 @@
       $('#taskTitle').value = '';
       $('#taskDesc').value = '';
       $('#taskDue').value = '';
+      taskAssignees = [];
+      renderTaskAssigneeChips();
       toast('Задача добавлена', scope === 'PERSONAL' ? 'priv' : '');
       renderMyTasks();
     } catch (err) {
@@ -2208,9 +2314,11 @@
     $('#notifList').innerHTML = list.length
       ? list
           .map(
-            (n) => `<div class="task ${n.is_read ? 'done' : ''}" data-notif="${n.id}">
+            (n) => `<div class="task ${n.is_read ? 'done' : ''}" data-notif="${n.id}"
+                 data-entity-type="${n.entity_type || ''}" data-entity-id="${n.entity_id || ''}"
+                 style="cursor:pointer;">
               <div class="t"><b>${esc(n.title)}</b>${n.body ? ' — ' + esc(n.body) : ''}
-                <div class="mono">${n.type} · ${new Date(n.created_at).toLocaleString('ru')}</div></div>
+                <div class="mono">${new Date(n.created_at).toLocaleString('ru')}${n.entity_type ? ' · нажмите, чтобы открыть' : ''}</div></div>
               ${n.is_read ? '' : '<span class="chip acc btn-like" data-read="' + n.id + '">прочитать</span>'}
             </div>`,
           )
@@ -2219,11 +2327,31 @@
     await refreshNotifBadge();
   }
 
+  // переход к источнику уведомления
+  function openNotifTarget(entityType, entityId) {
+    if (!entityType || !entityId) return;
+    if (entityType === 'task') openTask(entityId);
+    else if (entityType === 'project') openProject(entityId);
+    else if (entityType === 'article') openArticle(entityId);
+  }
+
   document.addEventListener('click', async (e) => {
+    // кнопка «прочитать» — только отметить, без перехода
     const r = e.target.closest('[data-read]');
-    if (!r) return;
-    await api.patch(`/notifications/${r.dataset.read}/read`, {});
-    renderNotifications();
+    if (r) {
+      e.stopPropagation();
+      await api.patch(`/notifications/${r.dataset.read}/read`, {});
+      renderNotifications();
+      return;
+    }
+    // клик по самому уведомлению — отметить прочитанным и перейти к источнику
+    const note = e.target.closest('#notifList [data-notif]');
+    if (!note) return;
+    const id = note.dataset.notif;
+    const et = note.dataset.entityType;
+    const eid = note.dataset.entityId;
+    api.patch(`/notifications/${id}/read`, {}).then(() => refreshNotifBadge()).catch(() => {});
+    openNotifTarget(et, eid);
   });
 
   $('#readAllBtn').addEventListener('click', async () => {

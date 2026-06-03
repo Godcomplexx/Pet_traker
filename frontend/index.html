@@ -203,12 +203,26 @@
       </div>
 
       <div class="card sk" id="inviteCard" style="margin-bottom:var(--gap);display:none;">
-        <h3>Код приглашения <span class="mono">для новых участников</span></h3>
-        <div class="row" style="gap:12px;align-items:center;">
-          <div class="lcd" id="joinCode" style="font-size:30px;letter-spacing:.2em;padding:6px 16px;border:2.5px solid var(--ink);border-radius:var(--radius);background:var(--paper2);">········</div>
-          <button class="btn" id="copyCodeBtn"><span class="asset-icon" data-icon="copy" data-label="Копировать"></span> Копировать</button>
+        <h3>Пригласить в команду</h3>
+        <div class="row" style="gap:12px;align-items:center;flex-wrap:wrap;">
+          <div class="lcd" id="joinCode" style="font-size:26px;letter-spacing:.2em;padding:6px 16px;border:2px solid var(--border2);border-radius:var(--r2);background:rgba(255,255,255,0.4);">········</div>
+          <button class="btn" id="copyCodeBtn"><span class="asset-icon" data-icon="copy" data-label="Копировать"></span> Копировать код</button>
         </div>
-        <p class="note">Передайте код коллеге — он введёт его при входе и присоединится как MEMBER.</p>
+        <p class="note">Передайте код коллеге — он введёт его при входе и присоединится как участник.</p>
+        <div class="line"></div>
+        <h4 style="margin-bottom:6px;">…или добавить по email</h4>
+        <div class="row" style="gap:8px;flex-wrap:wrap;">
+          <input class="input" id="inviteEmail" type="email" placeholder="email коллеги" style="flex:1;min-width:200px;">
+          <select class="rolepick" id="inviteRole">
+            <option value="MEMBER">MEMBER</option>
+            <option value="EDITOR">EDITOR</option>
+            <option value="VIEWER">VIEWER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+          <button class="btn primary" id="inviteBtn">Добавить</button>
+        </div>
+        <div class="field-err" id="inviteErr"></div>
+        <p class="note">Человек должен быть уже зарегистрирован в lab tracker.</p>
       </div>
 
       <div class="card sk">
@@ -239,7 +253,7 @@
             <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
             <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
             <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
-            <div class="note" style="margin-top:4px;">level = floor(XP/100)+1 · меняется только воркером</div>
+            <div class="note" style="margin-top:4px;">Каждые 100 XP — новый уровень. Закрывай задачи, чтобы питомец рос!</div>
           </div>
         </div>
       </div>
@@ -442,9 +456,13 @@
               </select>
             </div>
             <select class="rolepick" id="taskProject" style="display:none;height:40px;align-self:flex-end;"></select>
-            <select class="rolepick" id="taskAssignee" style="display:none;height:40px;align-self:flex-end;"></select>
+            <div class="col" id="taskAssigneeWrap" style="gap:4px;flex:0 0 auto;display:none;align-self:flex-end;">
+              <label class="field-label">Исполнители</label>
+              <select class="rolepick" id="taskAssignee" style="height:40px;"></select>
+            </div>
             <button class="btn primary" id="newTaskBtn" style="margin-left:auto;align-self:flex-end;">+ Добавить</button>
           </div>
+          <div class="row" id="taskAssigneeChips" style="gap:6px;flex-wrap:wrap;"></div>
         </div>
       </div>
 

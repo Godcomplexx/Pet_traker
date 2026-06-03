@@ -219,9 +219,13 @@ class Task(Base):
     type: Mapped[enums.TaskType] = mapped_column(SAEnum(enums.TaskType), default=enums.TaskType.OTHER)
     priority: Mapped[enums.TaskPriority] = mapped_column(SAEnum(enums.TaskPriority), default=enums.TaskPriority.MEDIUM)
     assignee_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    # Несколько исполнителей (список user_id). assignee_id оставлен для совместимости/основного.
+    assignees: Mapped[list] = mapped_column(JsonType, default=list)
     created_by: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Кто отметил задачу выполненной.
+    completed_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 

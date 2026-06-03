@@ -94,15 +94,17 @@ async def create_task(
     if member.role not in WRITE_ROLES:  # FR-WS-5
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
 
-    if data.assignee_id:  # FR-TASK-7: assignee must be a workspace member
-        ok = await db.scalar(
-            select(WorkspaceMember).where(
-                WorkspaceMember.workspace_id == workspace_id,
-                WorkspaceMember.user_id == data.assignee_id,
-            )
+    # Собираем итоговый список исполнителей: assignee_ids (новый) ∪ assignee_id (старый).
+    assignee_ids = list(dict.fromkeys([*(data.assignee_ids or []), *([data.assignee_id] if data.assignee_id else [])]))
+    if assignee_ids:  # FR-TASK-7: каждый исполнитель должен быть участником лаборатории
+        member_ids = set(
+            (await db.scalars(
+                select(WorkspaceMember.user_id).where(WorkspaceMember.workspace_id == workspace_id)
+            )).all()
         )
-        if ok is None:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Assignee is not a workspace member")
+        bad = [a for a in assignee_ids if a not in member_ids]
+        if bad:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Исполнитель не состоит в лаборатории")
 
     task = Task(
         workspace_id=workspace_id,
@@ -110,7 +112,8 @@ async def create_task(
         article_id=article_id,
         owner_id=user.id,
         created_by=user.id,
-        assignee_id=data.assignee_id,
+        assignee_id=assignee_ids[0] if assignee_ids else None,
+        assignees=assignee_ids,
         title=data.title,
         description=data.description,
         scope=data.scope,
@@ -121,10 +124,10 @@ async def create_task(
     )
     db.add(task)
     await db.flush()
-    if task.assignee_id:  # FR-NOTIF-1
+    for aid in assignee_ids:  # FR-NOTIF-1 — уведомляем каждого исполнителя
         await notify_assignment(
             db,
-            assignee_id=task.assignee_id,
+            assignee_id=aid,
             actor_id=user.id,
             workspace_id=workspace_id,
             task_id=task.id,
@@ -152,8 +155,17 @@ async def update_task(
     task = await _load_task_with_access(db, task_id, user)
     changes = data.model_dump(exclude_unset=True)
     prev_assignee = task.assignee_id
+    # assignee_ids → синхронизируем основной assignee_id + список assignees
+    if "assignee_ids" in changes:
+        ids = changes.pop("assignee_ids") or []
+        task.assignees = ids
+        task.assignee_id = ids[0] if ids else None
     for field, value in changes.items():
         setattr(task, field, value)
+    # отметка «кто выполнил» при ручной смене статуса на DONE
+    if changes.get("status") == TaskStatus.DONE and task.completed_by is None:
+        task.completed_by = user.id
+        task.completed_at = datetime.now(timezone.utc)
     # Notify on a (re)assignment to a different team member (FR-NOTIF-1).
     if (
         task.scope != TaskScope.PERSONAL
@@ -208,6 +220,7 @@ async def complete_task(
 
     task.status = TaskStatus.DONE
     task.completed_at = datetime.now(timezone.utc)
+    task.completed_by = user.id
     before_due = task.due_date is not None and date.today() <= task.due_date
     is_personal = task.scope == TaskScope.PERSONAL
 

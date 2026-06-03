@@ -297,6 +297,8 @@ class TaskCreate(BaseModel):
     type: enums.TaskType = enums.TaskType.OTHER
     priority: enums.TaskPriority = enums.TaskPriority.MEDIUM
     assignee_id: str | None = None
+    # Несколько исполнителей (если задано — имеет приоритет над assignee_id).
+    assignee_ids: list[str] = Field(default_factory=list)
     due_date: date | None = None
 
 
@@ -307,6 +309,7 @@ class TaskUpdate(BaseModel):
     priority: enums.TaskPriority | None = None
     status: enums.TaskStatus | None = None
     assignee_id: str | None = None
+    assignee_ids: list[str] | None = None
     due_date: date | None = None
 
 
@@ -324,8 +327,10 @@ class TaskOut(ORMModel):
     type: enums.TaskType
     priority: enums.TaskPriority
     assignee_id: str | None = None
+    assignees: list[str] = Field(default_factory=list)
     due_date: date | None = None
     completed_at: datetime | None = None
+    completed_by: str | None = None
     created_at: datetime
 
 
