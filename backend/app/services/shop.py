@@ -19,7 +19,7 @@ RARITY_WEIGHTS = {
 # Каждый предмет: id, название, тип, редкость, цена (для прямой покупки), data.
 #  - body  : цвет тела питомца
 #  - accent: цвет акцента (рот/детали)
-#  - hat    : косметическая «шапка» (эмодзи поверх питомца)
+#  - hat    : косметическая «шапка» (PNG поверх питомца)
 #  - bg     : фон экрана питомца
 SHOP_ITEMS: list[dict] = [
     # ── цвета тела ──
@@ -39,18 +39,32 @@ SHOP_ITEMS: list[dict] = [
     {"id": "accent_ocean", "name": "Океан",     "type": "accent", "rarity": "rare",   "price": 55,  "data": "#3c7da8"},
     {"id": "accent_lava",  "name": "Лава",      "type": "accent", "rarity": "epic",   "price": 120, "data": "#b34b2e"},
     {"id": "accent_void",  "name": "Войд",      "type": "accent", "rarity": "legendary", "price": 280, "data": "#43224e"},
-    # ── шапки (эмодзи) ──
-    {"id": "hat_crown",   "name": "Корона",     "type": "hat", "rarity": "legendary", "price": 350, "data": "👑"},
-    {"id": "hat_party",   "name": "Колпак",     "type": "hat", "rarity": "common", "price": 25,  "data": "🎉"},
-    {"id": "hat_grad",    "name": "Выпускник",  "type": "hat", "rarity": "rare",   "price": 80,  "data": "🎓"},
-    {"id": "hat_flower",  "name": "Цветок",     "type": "hat", "rarity": "common", "price": 25,  "data": "🌸"},
-    {"id": "hat_star",    "name": "Звезда",     "type": "hat", "rarity": "epic",   "price": 160, "data": "⭐"},
-    {"id": "hat_goggles", "name": "Очки",       "type": "hat", "rarity": "rare",   "price": 90,  "data": "😎"},
-    {"id": "hat_lab",     "name": "Лаборатория", "type": "hat", "rarity": "epic",   "price": 180, "data": "🔬"},
-    {"id": "hat_moon",    "name": "Луна",       "type": "hat", "rarity": "rare",   "price": 95,  "data": "🌙"},
-    {"id": "hat_ribbon",  "name": "Бант",       "type": "hat", "rarity": "common", "price": 35,  "data": "🎀"},
-    {"id": "hat_fire",    "name": "Огонь",      "type": "hat", "rarity": "epic",   "price": 190, "data": "🔥"},
-    {"id": "hat_gem",     "name": "Кристалл",   "type": "hat", "rarity": "legendary", "price": 420, "data": "💎"},
+    # ── шапки (PNG из assets/Small Size) ──
+    {"id": "hat_01", "name": "Шапка 01", "type": "hat", "rarity": "common", "price": 35, "data": "hat_01.png"},
+    {"id": "hat_02", "name": "Шапка 02", "type": "hat", "rarity": "common", "price": 35, "data": "hat_02.png"},
+    {"id": "hat_03", "name": "Шапка 03", "type": "hat", "rarity": "common", "price": 35, "data": "hat_03.png"},
+    {"id": "hat_04", "name": "Шапка 04", "type": "hat", "rarity": "common", "price": 35, "data": "hat_04.png"},
+    {"id": "hat_05", "name": "Шапка 05", "type": "hat", "rarity": "common", "price": 35, "data": "hat_05.png"},
+    {"id": "hat_06", "name": "Шапка 06", "type": "hat", "rarity": "common", "price": 45, "data": "hat_06.png"},
+    {"id": "hat_07", "name": "Шапка 07", "type": "hat", "rarity": "common", "price": 45, "data": "hat_07.png"},
+    {"id": "hat_08", "name": "Шапка 08", "type": "hat", "rarity": "common", "price": 45, "data": "hat_08.png"},
+    {"id": "hat_09", "name": "Шапка 09", "type": "hat", "rarity": "common", "price": 45, "data": "hat_09.png"},
+    {"id": "hat_10", "name": "Шапка 10", "type": "hat", "rarity": "common", "price": 45, "data": "hat_10.png"},
+    {"id": "hat_11", "name": "Шапка 11", "type": "hat", "rarity": "rare", "price": 80, "data": "hat_11.png"},
+    {"id": "hat_12", "name": "Шапка 12", "type": "hat", "rarity": "rare", "price": 80, "data": "hat_12.png"},
+    {"id": "hat_13", "name": "Шапка 13", "type": "hat", "rarity": "rare", "price": 90, "data": "hat_13.png"},
+    {"id": "hat_14", "name": "Шапка 14", "type": "hat", "rarity": "rare", "price": 90, "data": "hat_14.png"},
+    {"id": "hat_15", "name": "Шапка 15", "type": "hat", "rarity": "rare", "price": 95, "data": "hat_15.png"},
+    {"id": "hat_16", "name": "Шапка 16", "type": "hat", "rarity": "rare", "price": 95, "data": "hat_16.png"},
+    {"id": "hat_17", "name": "Шапка 17", "type": "hat", "rarity": "rare", "price": 100, "data": "hat_17.png"},
+    {"id": "hat_18", "name": "Шапка 18", "type": "hat", "rarity": "rare", "price": 100, "data": "hat_18.png"},
+    {"id": "hat_19", "name": "Шапка 19", "type": "hat", "rarity": "epic", "price": 160, "data": "hat_19.png"},
+    {"id": "hat_20", "name": "Шапка 20", "type": "hat", "rarity": "epic", "price": 160, "data": "hat_20.png"},
+    {"id": "hat_21", "name": "Шапка 21", "type": "hat", "rarity": "epic", "price": 180, "data": "hat_21.png"},
+    {"id": "hat_22", "name": "Шапка 22", "type": "hat", "rarity": "epic", "price": 180, "data": "hat_22.png"},
+    {"id": "hat_23", "name": "Шапка 23", "type": "hat", "rarity": "epic", "price": 190, "data": "hat_23.png"},
+    {"id": "hat_24", "name": "Шапка 24", "type": "hat", "rarity": "legendary", "price": 350, "data": "hat_24.png"},
+    {"id": "hat_25", "name": "Шапка 25", "type": "hat", "rarity": "legendary", "price": 420, "data": "hat_25.png"},
     # ── фоны ──
     {"id": "bg_space",    "name": "Космос",     "type": "bg", "rarity": "epic",   "price": 140, "data": "#1b1740"},
     {"id": "bg_forest",   "name": "Лес",        "type": "bg", "rarity": "rare",   "price": 70,  "data": "#1d3a24"},

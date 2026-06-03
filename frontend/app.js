@@ -29,6 +29,7 @@
     members: [],
     pollTimer: null,
     shopTab: 'all',
+    shopOpen: false,
     dockBagPage: 0,
     foodBagPage: 0,
     wallImageData: null,
@@ -124,7 +125,7 @@
     const s = PICKUP_SPRITES[name];
     const framesClass = s.frames === 4 ? 'pickup-4' : (s.frames === 3 ? 'pickup-3' : 'pickup-static');
     const label = alt || s.label || name;
-    const scale = size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25);
+    const scale = size.includes('case-xl') ? 3.05 : (size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25));
     const w = Math.round(s.w * scale);
     const h = Math.round(s.h * scale);
     const sheet = Math.round(s.w * s.frames * scale);
@@ -145,7 +146,7 @@
     $$('.asset-icon[data-icon]', root).forEach((el) => {
       if (el.dataset.hydrated === '1') return;
       el.dataset.hydrated = '1';
-      el.innerHTML = iconImg(el.dataset.icon, el.dataset.label || '');
+      el.innerHTML = iconImg(el.dataset.icon, el.dataset.label || '', el.dataset.size || '');
     });
   }
 
@@ -833,19 +834,6 @@
 
   // id предмета -> объект из каталога (заполняется при загрузке магазина).
   const SHOP_INDEX = {};
-  const SHOP_ICON_BY_ID = {
-    hat_crown: 'crown',
-    hat_party: 'party',
-    hat_grad: 'grad',
-    hat_flower: 'flower',
-    hat_star: 'star',
-    hat_goggles: 'sunglasses',
-    hat_lab: 'microscope',
-    hat_moon: 'moon',
-    hat_ribbon: 'ribbon',
-    hat_fire: 'fire',
-    hat_gem: 'gem',
-  };
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
   const PET_EMOTES = {
     alert: 'alert',
@@ -871,7 +859,19 @@
 
   function itemIcon(it) {
     if (it?.type === 'food' && it.data?.icon) return it.data.icon;
-    return SHOP_ICON_BY_ID[it.id] || it.id;
+    return it?.id || '';
+  }
+
+  function hatAssetSrc(it) {
+    if (it?.type !== 'hat' || typeof it.data !== 'string' || !/\.png$/i.test(it.data)) return '';
+    return `assets/hats/${it.data}`;
+  }
+
+  function hatImg(it, className = 'hat-icon') {
+    const src = hatAssetSrc(it);
+    return src
+      ? `<img class="${className}" src="${esc(src)}" alt="${esc(it.name || '')}">`
+      : iconImg(itemIcon(it), it.name, 'lg');
   }
 
   function emoteImg(name, alt = '') {
@@ -912,13 +912,20 @@
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
       showPetEmote(screen, stateEmote(pet), 'state');
-      // шапка-эмодзи поверх питомца
+      // PNG-шапка поверх питомца
       if (hatItem) {
         const hat = document.createElement('div');
         hat.className = 'pet-hat';
-        hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
-        hat.style.cssText =
-          'position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;pointer-events:none;';
+        const src = hatAssetSrc(hatItem);
+        if (src) {
+          const img = document.createElement('img');
+          img.className = 'pet-hat-img';
+          img.src = src;
+          img.alt = hatItem.name || '';
+          hat.appendChild(img);
+        } else {
+          hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
+        }
         screen.appendChild(hat);
       }
     });
@@ -2050,12 +2057,16 @@
       cat.items.forEach((it) => (SHOP_INDEX[it.id] = it));
       $('#casePrice').textContent = cat.case_price;
     }
+    const panel = $('#shopPanel');
+    if (panel) panel.hidden = !state.shopOpen;
+    const toggle = $('#shopToggle');
+    if (toggle) toggle.classList.toggle('primary', state.shopOpen);
     renderShop();
   }
 
   function itemPreview(it) {
     if (it.type === 'food') return `<div class="swatch-prev food-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
-    if (it.type === 'hat') return `<div class="swatch-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
+    if (it.type === 'hat') return `<div class="swatch-prev hat-prev">${hatImg(it)}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
     return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
   }
@@ -2290,10 +2301,15 @@
 
   // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
   const playAnim = (iconName) => {
-    const screen = $('#gamePetScreen');
-    const sprite = screen && screen.querySelector('.pixelpet');
-    if (sprite) { sprite.classList.add('state-happy'); setTimeout(() => sprite.classList.remove('state-happy'), 1500); }
-    if (screen) {
+    const screens = ['#dockPetScreen', '#screen-pet .petscreen']
+      .map((sel) => $(sel))
+      .filter(Boolean);
+    screens.forEach((screen) => {
+      const sprite = screen.querySelector('.pixelpet');
+      if (sprite) {
+        sprite.classList.add('state-happy');
+        setTimeout(() => sprite.classList.remove('state-happy'), 1500);
+      }
       if (PET_EMOTES[iconName]) {
         showPetEmote(screen, iconName, 'burst');
         return;
@@ -2303,7 +2319,7 @@
       burst.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:32px;z-index:6;animation:toastin .4s;pointer-events:none;';
       screen.appendChild(burst);
       setTimeout(() => burst.remove(), 1200);
-    }
+    });
   };
   function updatePlayControls() {
     const pet = state.pet || {};
@@ -2376,7 +2392,7 @@
     feedWithFood(card.dataset.food);
   });
 
-  $('#playFeed').addEventListener('click', () => {
+  $('#playFeed')?.addEventListener('click', () => {
     if (Number(state.pet?.hunger || 0) >= 95) {
       $('#playMsg').textContent = 'Питомец уже сыт.';
       return;
@@ -2393,6 +2409,10 @@
   $('#petSleep')?.addEventListener('click', () => {
     go('gameroom');
     playWithPet('sleep', 'sleep', 'Питомец выспался и восстановил энергию.');
+  });
+  $('#shopToggle')?.addEventListener('click', () => {
+    state.shopOpen = !state.shopOpen;
+    renderGameRoom();
   });
   $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
 

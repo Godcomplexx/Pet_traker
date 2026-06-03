@@ -1434,6 +1434,45 @@ textarea.input { resize: vertical; min-height: 70px; }
   object-fit: contain;
   image-rendering: pixelated;
 }
+.pet-hat {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  width: 58px;
+  height: 42px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: grid;
+  place-items: end center;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 3px rgba(35,42,32,0.18));
+}
+.pet-hat-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+}
+.petbig .pet-hat {
+  top: 10%;
+  width: 72px;
+  height: 48px;
+}
+.petbig .pet-hat-img {
+  width: 78px;
+  height: 78px;
+}
+#dockPetScreen .pet-hat {
+  top: 10%;
+  width: 46px;
+  height: 32px;
+}
+#dockPetScreen .pet-hat-img {
+  width: 52px;
+  height: 52px;
+}
 @keyframes emoteFloat {
   0%,100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-5px) scale(1.04); }
@@ -1619,6 +1658,49 @@ textarea.input { resize: vertical; min-height: 70px; }
 .petdock .track {
   min-width: 0;
 }
+.pet-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border2);
+}
+.pet-action-btn {
+  min-width: 0;
+  min-height: 54px;
+  padding: 6px 3px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.38);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 7px;
+  line-height: 1.25;
+}
+.pet-action-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.66);
+  transform: translateY(-1px);
+}
+.pet-action-btn:disabled {
+  opacity: .42;
+  cursor: default;
+}
+.pet-action-btn .ui-icon:not(.pickup-sprite) {
+  width: 22px;
+  height: 22px;
+}
+.dock-food-hint {
+  margin-top: 7px;
+  font-size: 8px;
+  line-height: 1.45;
+}
 .dock-bag {
   margin-top: 10px;
   padding-top: 10px;
@@ -1647,6 +1729,10 @@ textarea.input { resize: vertical; min-height: 70px; }
 .dock-bag .shopcard .swatch-prev .ui-icon {
   width: 20px;
   height: 20px;
+}
+.dock-bag .shopcard .hat-icon {
+  width: 30px;
+  height: 30px;
 }
 .dock-bag .shopcard .sm {
   font-size: 7px;
@@ -1755,6 +1841,37 @@ textarea.input { resize: vertical; min-height: 70px; }
 /* ============================================================
    GAME ROOM / SHOP
    ============================================================ */
+.game-room {
+  display: grid;
+  gap: var(--gap);
+  max-width: 760px;
+}
+.case-card {
+  text-align: center;
+  align-items: center;
+}
+.case-chest-preview {
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 4px;
+  filter: drop-shadow(0 10px 14px rgba(92,58,69,0.16));
+}
+.case-chest-preview .pickup-sprite {
+  animation-duration: .66s;
+}
+.case-open-btn {
+  min-width: min(320px, 100%);
+  justify-content: center;
+}
+.shop-toggle-row {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.shop-panel[hidden] {
+  display: none;
+}
 .shopcard {
   border: 1px solid var(--border-out);
   border-radius: var(--r2);
@@ -1775,9 +1892,20 @@ textarea.input { resize: vertical; min-height: 70px; }
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
 }
+.shopcard .swatch-prev.hat-prev {
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.46);
+}
 .shopcard .swatch-prev .ui-icon {
   width: 24px;
   height: 24px;
+}
+.shopcard .hat-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
 }
 .pet-hat .ui-icon {
   width: 34px;
