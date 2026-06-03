@@ -321,4 +321,16 @@ class WallPost(Base):
     workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     author_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    image_data: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = TS()
+
+
+class WallReaction(Base):
+    __tablename__ = "wall_reactions"
+    __table_args__ = (UniqueConstraint("post_id", "user_id", "emoji", name="uq_wall_reaction"),)
+
+    id: Mapped[str] = PK()
+    post_id: Mapped[str] = mapped_column(ForeignKey("wall_posts.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    emoji: Mapped[str] = mapped_column(String(16), nullable=False)
     created_at: Mapped[datetime] = TS()

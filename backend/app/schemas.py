@@ -367,7 +367,35 @@ class NotificationOut(ORMModel):
 
 
 class WallPostCreate(BaseModel):
-    text: str = Field(min_length=1, max_length=2000)
+    text: str = Field(default="", max_length=2000)
+    image_data: str | None = Field(default=None, max_length=700_000)
+
+    @field_validator("image_data")
+    @classmethod
+    def check_wall_image(cls, v: str | None) -> str | None:
+        if not v:
+            return None
+        allowed = (
+            "data:image/png;base64,",
+            "data:image/jpeg;base64,",
+            "data:image/webp;base64,",
+            "data:image/gif;base64,",
+        )
+        if not v.startswith(allowed):
+            raise ValueError("Можно прикрепить только png, jpg, webp или gif")
+        return v
+
+
+class WallReactionIn(BaseModel):
+    emoji: str = Field(min_length=1, max_length=16)
+
+    @field_validator("emoji")
+    @classmethod
+    def check_emoji(cls, v: str) -> str:
+        allowed = {"👍", "❤️", "😂", "🎉", "👀", "🔥"}
+        if v not in allowed:
+            raise ValueError("Недоступная реакция")
+        return v
 
 
 class WallPostOut(BaseModel):
@@ -375,5 +403,7 @@ class WallPostOut(BaseModel):
     author_id: str
     author_name: str
     text: str
-    created_at: datetime
+    image_data: str | None = None
+    reactions: dict[str, int] = Field(default_factory=dict)
+    my_reactions: list[str] = Field(default_factory=list)
     created_at: datetime

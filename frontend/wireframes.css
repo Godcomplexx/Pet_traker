@@ -869,6 +869,59 @@ small, .sm { font-size: var(--fs-xs); }
   from { opacity:0; transform:translateX(-6px); }
   to   { opacity:1; }
 }
+.wall-warning {
+  margin-bottom: 10px;
+  color: var(--warn);
+}
+.wall-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.55);
+}
+.wall-image-preview img {
+  max-width: 120px;
+  max-height: 80px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  object-fit: cover;
+}
+.wall-image {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 260px;
+  margin-top: 8px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  object-fit: contain;
+  background: rgba(255,255,255,0.35);
+}
+.wall-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.wall-react {
+  min-width: 34px;
+  height: 26px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.36);
+  color: var(--ink2);
+  cursor: pointer;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 10px;
+  line-height: 1;
+}
+.wall-react.on,
+.wall-react:hover {
+  background: var(--xp-soft);
+  border-color: rgba(90,138,88,0.55);
+  color: var(--ink);
+}
 
 .team-playground {
   position: relative;
@@ -1515,11 +1568,11 @@ textarea.input { resize: vertical; min-height: 70px; }
 .dock-bag-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 .dock-bag .shopcard {
-  padding: 7px 5px;
-  min-height: 68px;
+  padding: 7px 5px 6px;
+  min-height: 66px;
 }
 .dock-bag .shopcard .swatch-prev {
   width: 28px;
@@ -1536,6 +1589,36 @@ textarea.input { resize: vertical; min-height: 70px; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.dock-bag-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 7px;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 8px;
+  color: var(--ink3);
+}
+.dock-page-btn {
+  width: 24px;
+  height: 20px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.48);
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+.dock-page-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.75);
+  color: var(--ink);
+}
+.dock-page-btn:disabled {
+  opacity: .35;
+  cursor: default;
 }
 
 /* основной контент уступает место доку на широких экранах */

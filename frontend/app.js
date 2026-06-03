@@ -29,6 +29,8 @@
     members: [],
     pollTimer: null,
     shopTab: 'all',
+    dockBagPage: 0,
+    wallImageData: null,
   };
 
   const esc = (s) =>
@@ -1642,11 +1644,19 @@
 
   function wallRow(p) {
     const mine = p.author_id === (state.me && state.me.id);
+    const reactions = ['👍', '❤️', '😂', '🎉', '👀', '🔥'];
+    const reactionHtml = reactions.map((emoji) => {
+      const count = (p.reactions && p.reactions[emoji]) || 0;
+      const active = (p.my_reactions || []).includes(emoji);
+      return `<button class="wall-react ${active ? 'on' : ''}" data-wall-react="${p.id}" data-emoji="${emoji}">${emoji}${count ? ` ${count}` : ''}</button>`;
+    }).join('');
     return `<div class="it" data-wall="${p.id}">
       <div class="av">${initials((p.author_name || '??').slice(0, 2))}</div>
       <div style="flex:1;">
         <b>${esc(p.author_name)}</b>
-        <div>${esc(p.text)}</div>
+        ${p.text ? `<div>${esc(p.text)}</div>` : ''}
+        ${p.image_data ? `<img class="wall-image" src="${esc(p.image_data)}" alt="Картинка на стене">` : ''}
+        <div class="wall-reactions">${reactionHtml}</div>
         <div class="when">${new Date(p.created_at).toLocaleString('ru')}
           ${mine ? `· <span class="btn-like" data-wall-del="${p.id}" style="color:var(--danger);">удалить</span>` : ''}
         </div>
@@ -1664,12 +1674,45 @@
     $('#wallMore').style.display = posts.length >= 50 ? '' : 'none';
   }
 
+  function clearWallImage() {
+    state.wallImageData = null;
+    const file = $('#wallImageFile');
+    if (file) file.value = '';
+    const box = $('#wallImagePreview');
+    if (box) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+    }
+  }
+
+  $('#wallImageBtn').addEventListener('click', () => $('#wallImageFile').click());
+  $('#wallImageFile').addEventListener('change', () => {
+    const file = $('#wallImageFile').files && $('#wallImageFile').files[0];
+    if (!file) return clearWallImage();
+    if (!file.type.startsWith('image/')) return toast('Можно прикрепить только картинку', '');
+    if (file.size > 500 * 1024) {
+      clearWallImage();
+      return toast('Картинка слишком большая. Максимум 500 KB.', '');
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.wallImageData = String(reader.result || '');
+      $('#wallImagePreview').style.display = '';
+      $('#wallImagePreview').innerHTML = `<img src="${esc(state.wallImageData)}" alt="Предпросмотр"><button class="btn sm" id="wallImageClear" type="button">Убрать</button>`;
+    };
+    reader.readAsDataURL(file);
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#wallImageClear')) clearWallImage();
+  });
+
   $('#wallSend').addEventListener('click', async () => {
     const text = $('#wallInput').value.trim();
-    if (!text) return;
+    if (!text && !state.wallImageData) return;
     try {
-      await api.post(`/workspaces/${state.wsId}/wall`, { text });
+      await api.post(`/workspaces/${state.wsId}/wall`, { text, image_data: state.wallImageData });
       $('#wallInput').value = '';
+      clearWallImage();
       state.wallBefore = null;
       await loadWall(false);
     } catch (err) { toast(err.message, ''); }
@@ -1678,6 +1721,15 @@
     if (e.key === 'Enter') $('#wallSend').click();
   });
   $('#wallMore').addEventListener('click', () => loadWall(true));
+  document.addEventListener('click', async (e) => {
+    const react = e.target.closest('[data-wall-react]');
+    if (!react) return;
+    try {
+      await api.post(`/wall/${react.dataset.wallReact}/react`, { emoji: react.dataset.emoji });
+      state.wallBefore = null;
+      await loadWall(false);
+    } catch (err) { toast(err.message, ''); }
+  });
   document.addEventListener('click', async (e) => {
     const del = e.target.closest('[data-wall-del]');
     if (!del) return;
@@ -1756,13 +1808,33 @@
     }
     const dock = $('#dockBackpack');
     if (dock) {
+      const pageSize = 4;
+      const pages = Math.max(1, Math.ceil(items.length / pageSize));
+      state.dockBagPage = Math.max(0, Math.min(state.dockBagPage || 0, pages - 1));
+      const pageItems = items.slice(state.dockBagPage * pageSize, state.dockBagPage * pageSize + pageSize);
       dock.innerHTML = `<div class="dock-bag-title">Рюкзак</div>${
         items.length
-          ? `<div class="dock-bag-grid">${items.slice(0, 6).map((it) => inventoryCard(it, true)).join('')}</div>`
+          ? `<div class="dock-bag-grid">${pageItems.map((it) => inventoryCard(it, true)).join('')}</div>
+            <div class="dock-bag-pager">
+              <button class="dock-page-btn" data-dock-bag-page="-1" ${pages <= 1 ? 'disabled' : ''} aria-label="Назад">&lt;</button>
+              <span>${state.dockBagPage + 1}/${pages}</span>
+              <button class="dock-page-btn" data-dock-bag-page="1" ${pages <= 1 ? 'disabled' : ''} aria-label="Вперед">&gt;</button>
+            </div>`
           : '<div class="muted sm">Пусто</div>'
       }`;
     }
   }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-dock-bag-page]');
+    if (!btn) return;
+    e.preventDefault();
+    const pet = state.pet || {};
+    const total = (pet.inventory || []).map((id) => SHOP_INDEX[id]).filter(Boolean).length;
+    const pages = Math.max(1, Math.ceil(total / 4));
+    state.dockBagPage = (state.dockBagPage + Number(btn.dataset.dockBagPage) + pages) % pages;
+    renderBackpack();
+  });
 
   $('#shopTabs')?.addEventListener('click', (e) => {
     const tab = e.target.closest('[data-shop-tab]');

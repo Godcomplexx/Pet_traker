@@ -521,10 +521,14 @@
       <div class="grid g-2-1">
         <div class="col">
           <div class="card sk">
+            <div class="note wall-warning">Стена очищается каждые 24 часа. Важные картинки и сообщения лучше сохранить отдельно.</div>
             <div class="row" style="gap:8px;">
               <input class="input" id="wallInput" placeholder="Написать на стене…" style="flex:1;" maxlength="2000">
+              <input type="file" id="wallImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+              <button class="btn sm" id="wallImageBtn" type="button">Картинка</button>
               <button class="btn primary" id="wallSend">Отправить</button>
             </div>
+            <div id="wallImagePreview" class="wall-image-preview" style="display:none;"></div>
           </div>
           <div class="card sk2 feed"><div class="feedbody" id="wallFeed"></div>
             <div style="text-align:center;margin-top:10px;">

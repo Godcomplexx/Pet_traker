@@ -1,5 +1,8 @@
 """Comments, mentions, assignment & deadline notifications (spec §8.7, §8.10)."""
+from datetime import datetime, timedelta, timezone
+
 from app.core.database import SessionLocal
+from app.models import WallPost
 from app.services.deadlines import run_deadline_check
 from tests.conftest import auth_headers, register
 
@@ -49,6 +52,36 @@ async def test_wall_post_notifies_workspace_members(client):
 
     owner_notifs = (await client.get("/notifications", headers=ho)).json()
     assert all(n["type"] != "WALL_POST" for n in owner_notifs)
+
+
+async def test_wall_images_reactions_and_daily_cleanup(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    image = "data:image/png;base64,iVBORw0KGgo="
+    post_resp = await client.post(
+        f"/workspaces/{ws['id']}/wall",
+        json={"text": "", "image_data": image},
+        headers=ho,
+    )
+    assert post_resp.status_code == 201, post_resp.text
+    post = post_resp.json()
+    assert post["image_data"] == image
+
+    react = await client.post(f"/wall/{post['id']}/react", json={"emoji": "👍"}, headers=hb)
+    assert react.status_code == 200, react.text
+    assert react.json()["reactions"]["👍"] == 1
+    assert react.json()["my_reactions"] == ["👍"]
+
+    unreact = await client.post(f"/wall/{post['id']}/react", json={"emoji": "👍"}, headers=hb)
+    assert unreact.status_code == 200, unreact.text
+    assert unreact.json()["reactions"].get("👍") is None
+
+    async with SessionLocal() as db:
+        old = await db.get(WallPost, post["id"])
+        old.created_at = datetime.now(timezone.utc) - timedelta(hours=25)
+        await db.commit()
+
+    wall = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
+    assert all(p["id"] != post["id"] for p in wall)
 
 
 async def test_mention_of_self_or_outsider_does_not_notify(client):
