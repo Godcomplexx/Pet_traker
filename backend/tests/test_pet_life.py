@@ -56,3 +56,17 @@ async def test_pet_state_in_api(client):
     r = await client.get("/pets/me", headers=auth_headers(tokens))
     body = r.json()
     assert "state" in body and "state_label" in body
+
+
+async def test_pet_play_grants_coins(client):
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "play@lab.ru")
+    headers = auth_headers(tokens)
+    r = await client.post("/pets/me/play", json={"action": "feed"}, headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["coins"] == 25
+
+    boost = await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
+    assert boost.status_code == 200, boost.text
+    assert boost.json()["coins"] == 125

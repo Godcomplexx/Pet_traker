@@ -35,6 +35,79 @@
   const initials = (name) =>
     (name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
+  const cdnIcon = (code) => `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${code}.svg`;
+  const ICON_FALLBACKS = {
+    dashboard: cdnIcon('1f4ca'),
+    lab: cdnIcon('1f9ea'),
+    projects: cdnIcon('1f4c1'),
+    articles: cdnIcon('1f4c4'),
+    tasks: cdnIcon('2705'),
+    pet: cdnIcon('1f43e'),
+    game: cdnIcon('1f3ae'),
+    wall: cdnIcon('1f4ac'),
+    notifications: cdnIcon('1f514'),
+    logout: cdnIcon('1f6aa'),
+    copy: cdnIcon('1f4cb'),
+    coin: cdnIcon('1fa99'),
+    apple: cdnIcon('1f34e'),
+    heart: cdnIcon('1f49a'),
+    ball: cdnIcon('1f3be'),
+    party: cdnIcon('1f389'),
+    crown: cdnIcon('1f451'),
+    grad: cdnIcon('1f393'),
+    flower: cdnIcon('1f338'),
+    star: cdnIcon('2b50'),
+    happy: cdnIcon('1f60a'),
+    ok: cdnIcon('1f642'),
+    sad: cdnIcon('1f61f'),
+    hungry: cdnIcon('1f37d'),
+    sleepy: cdnIcon('1f634'),
+    cat: cdnIcon('1f431'),
+    dog: cdnIcon('1f436'),
+    frog: cdnIcon('1f438'),
+    axolotl: cdnIcon('1f98e'),
+    capybara: cdnIcon('1f9ab'),
+  };
+
+  window.petproIconFallback = (img) => {
+    const step = Number(img.dataset.fallbackStep || 0);
+    const name = img.dataset.iconName;
+    if (step === 0 && name) {
+      img.dataset.fallbackStep = '1';
+      img.src = `assets/custom-icons/${name}.png`;
+      return;
+    }
+    const fallback = img.dataset.fallback;
+    if (step <= 1 && fallback) {
+      img.dataset.fallbackStep = '2';
+      img.src = fallback;
+      return;
+    }
+    img.style.display = 'none';
+  };
+
+  function iconImg(name, alt = '', size = '') {
+    return `<img class="ui-icon ${size}" src="assets/custom-icons/${name}.svg" data-icon-name="${esc(name)}" data-fallback="${esc(ICON_FALLBACKS[name] || '')}" alt="${esc(alt)}" onerror="window.petproIconFallback&&window.petproIconFallback(this)">`;
+  }
+
+  function iconLabel(name, text, size = '') {
+    return `<span class="icon-label">${iconImg(name, '', size)}<span>${esc(text)}</span></span>`;
+  }
+
+  function iconNode(name, size = '') {
+    const holder = document.createElement('span');
+    holder.innerHTML = iconImg(name, '', size);
+    return holder.firstElementChild;
+  }
+
+  function hydrateAssetIcons(root = document) {
+    $$('.asset-icon[data-icon]', root).forEach((el) => {
+      if (el.dataset.hydrated === '1') return;
+      el.dataset.hydrated = '1';
+      el.innerHTML = iconImg(el.dataset.icon, el.dataset.label || '');
+    });
+  }
+
   /* ---------------- toasts ---------------- */
   function toast(text, kind = '') {
     const el = document.createElement('div');
@@ -317,6 +390,8 @@
     $('#onboard').classList.remove('on');
     $('#petcreate').classList.remove('on');
     $('#app').style.display = 'grid';
+    hydrateAssetIcons();
+    initSidebarControls();
     $('#meName').innerHTML = `${esc(state.me.display_name)}<div class="mono">${esc(state.me.email)}</div>`;
     $('#meAvatar').textContent = initials(state.me.display_name);
 
@@ -442,11 +517,11 @@
 
   /* ---------------- pet creator ---------------- */
   const SPECIES_LIST = [
-    { id: 'capybara', label: '🦫 Капибара' },
-    { id: 'cat', label: '🐱 Кот' },
-    { id: 'dog', label: '🐶 Пёс' },
-    { id: 'frog', label: '🐸 Лягушка' },
-    { id: 'axolotl', label: '🦎 Аксолотль' },
+    { id: 'capybara', label: 'Капибара' },
+    { id: 'cat', label: 'Кот' },
+    { id: 'dog', label: 'Пёс' },
+    { id: 'frog', label: 'Лягушка' },
+    { id: 'axolotl', label: 'Аксолотль' },
   ];
   const BODY_COLORS = ['#9dbf9b', '#b5acce', '#c9a5ba', '#a8c4d4', '#d4c4a8', '#c4b5a0', '#a8b8c8', '#b8c8a8'];
   const ACCENT_COLORS = ['#7a9e78', '#9b8fbd', '#b08a9e', '#7a9eb0', '#b09a7a', '#9a8a78', '#8a9ab0', '#9aaa8a'];
@@ -469,7 +544,7 @@
     $('#pcName').value = pcDraft.name;
 
     $('#pcSpecies').innerHTML = SPECIES_LIST.map(
-      (s) => `<div class="species-opt ${s.id === pcDraft.species ? 'on' : ''}" data-species="${s.id}">${s.label}</div>`,
+      (s) => `<div class="species-opt ${s.id === pcDraft.species ? 'on' : ''}" data-species="${s.id}">${iconLabel(s.id, s.label)}</div>`,
     ).join('');
     $('#pcBody').innerHTML = BODY_COLORS.map(
       (c) => `<div class="swatch ${c === pcDraft.body_color ? 'on' : ''}" data-body="${c}" style="background:${c}"></div>`,
@@ -522,7 +597,7 @@
       const pet = await api.put('/pets/me', { ...pcDraft, name });
       state.pet = pet;
       state.prevXp = pet.xp;
-      toast(`${pet.name} готов! 🎉`, 'xp');
+      toast(`${pet.name} готов!`, 'xp');
       launchApp();
     } catch (err) {
       setObError('pc_name', err.message || 'Не удалось сохранить');
@@ -534,7 +609,7 @@
   function renderWorkspacePicker() {
     const sel = $('#wsPick');
     sel.innerHTML = state.workspaces
-      .map((w) => `<option value="${w.id}">🧪 ${esc(w.name)}</option>`)
+      .map((w) => `<option value="${w.id}">${esc(w.name)}</option>`)
       .join('');
     sel.value = state.wsId;
     sel.onchange = () => {
@@ -693,6 +768,18 @@
 
   // id предмета -> объект из каталога (заполняется при загрузке магазина).
   const SHOP_INDEX = {};
+  const SHOP_ICON_BY_ID = {
+    hat_crown: 'crown',
+    hat_party: 'party',
+    hat_grad: 'grad',
+    hat_flower: 'flower',
+    hat_star: 'star',
+  };
+  const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
+
+  function itemIcon(it) {
+    return SHOP_ICON_BY_ID[it.id] || it.id;
+  }
 
   // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
   function paintSprites(pet) {
@@ -711,7 +798,7 @@
       if (hatItem) {
         const hat = document.createElement('div');
         hat.className = 'pet-hat';
-        hat.textContent = hatItem.data;
+        hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
         hat.style.cssText =
           'position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;pointer-events:none;';
         screen.appendChild(hat);
@@ -719,7 +806,68 @@
     });
   }
 
-  const STATE_EMOJI = { happy: '😊', ok: '🙂', sad: '😟', hungry: '🍽️', sleepy: '😴' };
+  function initSidebarControls() {
+    const app = $('#app');
+    const toggle = $('#menuToggle');
+    const sidebar = $('#sidebar');
+    const overlay = $('#sideOverlay');
+    const collapseBtn = $('#sideCollapse');
+    if (app && app.dataset.sidebarReady === '1') return;
+    if (app) app.dataset.sidebarReady = '1';
+
+    const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+    const closeSide = () => {
+      sidebar && sidebar.classList.remove('open');
+      overlay && overlay.classList.remove('on');
+      document.body.style.overflow = '';
+    };
+    const openSide = () => {
+      if (!sidebar || !overlay) return;
+      sidebar.classList.add('open');
+      overlay.classList.add('on');
+      document.body.style.overflow = 'hidden';
+    };
+
+    if (toggle && sidebar && overlay) {
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        sidebar.classList.contains('open') ? closeSide() : openSide();
+      });
+      overlay.addEventListener('click', closeSide);
+      $$('#nav a').forEach((a) => a.addEventListener('click', () => {
+        if (isMobile()) closeSide();
+      }));
+    }
+
+    if (collapseBtn && app) {
+      try {
+        app.classList.toggle(
+          'side-collapsed',
+          localStorage.getItem('petpro_side_collapsed') === '1' && !isMobile(),
+        );
+      } catch (e) {}
+      collapseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isMobile()) {
+          closeSide();
+          return;
+        }
+        const collapsed = app.classList.toggle('side-collapsed');
+        try { localStorage.setItem('petpro_side_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (isMobile()) {
+        app && app.classList.remove('side-collapsed');
+        return;
+      }
+      closeSide();
+      try {
+        app && app.classList.toggle('side-collapsed', localStorage.getItem('petpro_side_collapsed') === '1');
+      } catch (e) {}
+    });
+  }
 
   /* ---------------- pet ---------------- */
   function levelOf(xp) {
@@ -739,12 +887,16 @@
     set('[data-pethunger]', pet.hunger); num('[data-pethungernum]', pet.hunger);
     set('[data-petenergy]', pet.energy); num('[data-petenergynum]', pet.energy);
     // Подпись состояния (тамагочи).
-    const emoji = STATE_EMOJI[pet.state] || '';
-    $$('[data-petstate]').forEach((e) => (e.textContent = `${emoji} ${pet.state_label || ''}`.trim()));
-    $$('[data-petstate-mini]').forEach((e) => (e.textContent = emoji));
+    const stateIcon = STATE_ICON[pet.state];
+    $$('[data-petstate]').forEach((e) => {
+      e.innerHTML = stateIcon ? iconLabel(stateIcon, pet.state_label || '') : esc(pet.state_label || '');
+    });
+    $$('[data-petstate-mini]').forEach((e) => {
+      e.innerHTML = stateIcon ? iconImg(stateIcon, pet.state || '') : '';
+    });
     // Монеты (для дока и комнаты игр).
-    $$('[data-petcoins]').forEach((e) => (e.textContent = `🪙 ${pet.coins || 0}`));
-    $('#coinBalance') && ($('#coinBalance').textContent = `🪙 ${pet.coins || 0}`);
+    $$('[data-petcoins]').forEach((e) => (e.innerHTML = iconLabel('coin', String(pet.coins || 0))));
+    $('#coinBalance') && ($('#coinBalance').innerHTML = iconLabel('coin', String(pet.coins || 0)));
     paintSprites(pet);
   }
   async function refreshPet() {
@@ -756,10 +908,10 @@
     }
     // Подсказки-«тамагочи»: если питомцу плохо — мягко напоминаем поработать.
     if (state.prevState && pet.state !== state.prevState) {
-      if (pet.state === 'hungry') toast('Питомец проголодался — закрой задачу 🍽️', '');
-      else if (pet.state === 'sad') toast('Питомец загрустил без работы 😟', '');
-      else if (pet.state === 'sleepy') toast('Питомцу нужен отдых 😴', '');
-      else if (pet.state === 'happy') toast('Питомец доволен! 😊', 'xp');
+      if (pet.state === 'hungry') toast('Питомец проголодался - закрой задачу', '');
+      else if (pet.state === 'sad') toast('Питомец загрустил без работы', '');
+      else if (pet.state === 'sleepy') toast('Питомцу нужен отдых', '');
+      else if (pet.state === 'happy') toast('Питомец доволен!', 'xp');
     }
     state.prevState = pet.state;
     state.prevXp = pet.xp;
@@ -831,7 +983,7 @@
 
   /* ---------------- dashboard ---------------- */
   async function renderDashboard() {
-    $('#dashHi').textContent = `Привет, ${state.me.display_name.split(' ')[0]} 👋`;
+    $('#dashHi').textContent = `Привет, ${state.me.display_name.split(' ')[0]}`;
     const ws = state.workspaces.find((w) => w.id === state.wsId);
     $('#dashSub').textContent = ws ? ws.name : '';
     await refreshPet();
@@ -1410,7 +1562,7 @@
     const chevron = $('#doneChevron');
     const hidden = tasks.style.display === 'none';
     tasks.style.display = hidden ? '' : 'none';
-    chevron.textContent = hidden ? '▼' : '▶';
+    chevron.textContent = hidden ? 'v' : '>';
   });
 
   async function renderMyTasks() {
@@ -1507,7 +1659,7 @@
   }
 
   function itemPreview(it) {
-    if (it.type === 'hat') return `<div class="swatch-prev">${it.data}</div>`;
+    if (it.type === 'hat') return `<div class="swatch-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
     return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
   }
@@ -1523,7 +1675,7 @@
         const cls = `shopcard ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}`;
         const action = owned
           ? (equipped ? 'надето' : 'надеть')
-          : `🪙 ${it.price}`;
+          : iconLabel('coin', String(it.price));
         return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
           ${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
@@ -1562,7 +1714,7 @@
         `<div class="shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
           <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
-          <div class="sm">${res.is_new ? '🎉 Новый предмет!' : 'Дубликат — вернули монеты'}</div>
+          <div class="sm">${res.is_new ? iconLabel('party', 'Новый предмет!') : 'Дубликат - вернули монеты'}</div>
         </div>`;
       await refreshPet();
       renderShop();
@@ -1571,21 +1723,32 @@
   });
 
   // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
-  const playAnim = (emoji) => {
+  const playAnim = (iconName) => {
     const screen = $('#gamePetScreen');
     const sprite = screen && screen.querySelector('.pixelpet');
     if (sprite) { sprite.classList.add('state-happy'); setTimeout(() => sprite.classList.remove('state-happy'), 1500); }
     if (screen) {
       const burst = document.createElement('div');
-      burst.textContent = emoji;
+      burst.appendChild(iconNode(iconName, 'xl'));
       burst.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:32px;z-index:6;animation:toastin .4s;pointer-events:none;';
       screen.appendChild(burst);
       setTimeout(() => burst.remove(), 1200);
     }
   };
-  $('#playFeed').addEventListener('click', () => { playAnim('🍎'); $('#playMsg').textContent = 'Питомец поел и доволен!'; });
-  $('#playPet').addEventListener('click',  () => { playAnim('💚'); $('#playMsg').textContent = 'Питомцу приятно ♥'; });
-  $('#playBall').addEventListener('click', () => { playAnim('🎾'); $('#playMsg').textContent = 'Игра в мячик — весело!'; });
+  async function playWithPet(action, iconName, message) {
+    try {
+      playAnim(iconName);
+      state.pet = await api.post('/pets/me/play', { action });
+      paintPet(state.pet);
+      renderShop();
+      $('#playMsg').innerHTML = `${esc(message)} ${iconLabel('coin', action === 'test_coins' ? '+100' : '+25')}`;
+    } catch (err) { toast(err.message, ''); }
+  }
+
+  $('#playFeed').addEventListener('click', () => playWithPet('feed', 'apple', 'Питомец поел и доволен!'));
+  $('#playPet').addEventListener('click', () => playWithPet('pet', 'heart', 'Питомцу приятно'));
+  $('#playBall').addEventListener('click', () => playWithPet('ball', 'ball', 'Игра в мячик - весело!'));
+  $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
 
   /* ---------------- notifications ---------------- */
   async function refreshNotifBadge() {

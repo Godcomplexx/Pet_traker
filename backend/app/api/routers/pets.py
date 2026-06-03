@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
 from app.models import Pet, User, WorkspaceMember
-from app.schemas import CaseOpenOut, EquipIn, PetCustomize, PetOut, PetUpdate, ShopBuyIn
+from app.schemas import CaseOpenOut, EquipIn, PetCustomize, PetOut, PetPlayIn, PetUpdate, ShopBuyIn
 from app.services.pet import apply_decay, pet_state, state_label
 from app.services.shop import CASE_PRICE, SHOP_ITEMS, get_item, roll_case
 
@@ -62,6 +62,29 @@ async def customize_pet(
     pet.body_color = data.body_color
     pet.accent_color = data.accent_color
     pet.customized = True
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
+
+@router.post("/pets/me/play", response_model=PetOut)
+async def play_with_pet(
+    data: PetPlayIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    reward = 25
+    if data.action == "feed":
+        pet.hunger = min(100, pet.hunger + 12)
+        pet.mood = min(100, pet.mood + 4)
+    elif data.action == "pet":
+        pet.mood = min(100, pet.mood + 12)
+    elif data.action == "ball":
+        pet.mood = min(100, pet.mood + 10)
+        pet.energy = max(0, pet.energy - 4)
+    else:
+        reward = 100
+    pet.coins = (pet.coins or 0) + reward
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)

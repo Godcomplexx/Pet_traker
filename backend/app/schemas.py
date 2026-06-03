@@ -108,8 +108,8 @@ class PetOut(ORMModel):
     hunger: int
     energy: int
     coins: int = 0
-    inventory: list[str] = []
-    equipped: dict = {}
+    inventory: list[str] = Field(default_factory=list)
+    equipped: dict = Field(default_factory=dict)
     # Производное состояние (happy/ok/sad/hungry/sleepy) и подпись для UI.
     state: str = "ok"
     state_label: str = "в порядке"
@@ -117,6 +117,10 @@ class PetOut(ORMModel):
 
 class PetUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=80)
+
+
+class PetPlayIn(BaseModel):
+    action: str = Field(pattern="^(feed|pet|ball|test_coins)$")
 
 
 class PetCustomize(BaseModel):

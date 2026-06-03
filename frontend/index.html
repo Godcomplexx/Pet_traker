@@ -6,7 +6,7 @@
 <title>petpro — lab tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wireframes.css">
 </head>
 <body data-density="comfortable">
@@ -152,31 +152,31 @@
   <!-- mobile top bar (hidden on desktop) -->
   <div class="mobile-topbar" id="mobileTopbar" style="grid-column:1/-1;">
     <div class="brand"><b>lab tracker</b></div>
-    <button id="menuToggle" aria-label="Меню">☰</button>
+    <button id="menuToggle" aria-label="Меню">MENU</button>
   </div>
   <div class="side-overlay" id="sideOverlay"></div>
   <aside class="side" id="sidebar">
     <div class="brand">
       <b>lab tracker</b>
-      <button id="sideCollapse" class="side-collapse" title="Свернуть меню" aria-label="Свернуть меню">«</button>
+      <button id="sideCollapse" class="side-collapse" title="Свернуть меню" aria-label="Свернуть меню">&lt;</button>
     </div>
     <div class="labpick soft">
       <select id="wsPick" class="rolepick" style="flex:1;border:0;background:transparent;font-size:15px;"></select>
-      <span class="mono btn-like" id="newWsBtn" title="Новая лаборатория">＋</span>
+      <span class="mono btn-like" id="newWsBtn" title="Новая лаборатория">+</span>
     </div>
     <nav class="nav" id="nav">
-      <a data-go="dashboard" class="active" title="Дашборд"><span class="ic">▤</span> <span class="lbl">Дашборд</span></a>
-      <a data-go="lab" title="Лаборатория"><span class="ic">🧪</span> <span class="lbl">Лаборатория</span></a>
+      <a data-go="dashboard" class="active" title="Дашборд"><span class="ic asset-icon" data-icon="dashboard" data-label="Дашборд"></span> <span class="lbl">Дашборд</span></a>
+      <a data-go="lab" title="Лаборатория"><span class="ic asset-icon" data-icon="lab" data-label="Лаборатория"></span> <span class="lbl">Лаборатория</span></a>
       <div class="grp">Работа</div>
-      <a data-go="projects" title="Проекты"><span class="ic">◧</span> <span class="lbl">Проекты</span></a>
-      <a data-go="articles" title="Статьи"><span class="ic">▦</span> <span class="lbl">Статьи</span></a>
-      <a data-go="mytasks" title="Мои задачи"><span class="ic">✓</span> <span class="lbl">Мои задачи</span></a>
+      <a data-go="projects" title="Проекты"><span class="ic asset-icon" data-icon="projects" data-label="Проекты"></span> <span class="lbl">Проекты</span></a>
+      <a data-go="articles" title="Статьи"><span class="ic asset-icon" data-icon="articles" data-label="Статьи"></span> <span class="lbl">Статьи</span></a>
+      <a data-go="mytasks" title="Мои задачи"><span class="ic asset-icon" data-icon="tasks" data-label="Мои задачи"></span> <span class="lbl">Мои задачи</span></a>
       <div class="grp">Игра</div>
-      <a data-go="pet" title="Питомец"><span class="ic">❍</span> <span class="lbl">Питомец</span></a>
-      <a data-go="gameroom" title="Комната игр"><span class="ic">🎮</span> <span class="lbl">Комната игр</span></a>
-      <a data-go="team" title="Стена"><span class="ic">▤</span> <span class="lbl">Стена</span></a>
+      <a data-go="pet" title="Питомец"><span class="ic asset-icon" data-icon="pet" data-label="Питомец"></span> <span class="lbl">Питомец</span></a>
+      <a data-go="gameroom" title="Комната игр"><span class="ic asset-icon" data-icon="game" data-label="Комната игр"></span> <span class="lbl">Комната игр</span></a>
+      <a data-go="team" title="Стена"><span class="ic asset-icon" data-icon="wall" data-label="Стена"></span> <span class="lbl">Стена</span></a>
       <div class="grp">Прочее</div>
-      <a data-go="notif" title="Уведомления"><span class="ic">!</span> <span class="lbl">Уведомления</span> <span class="badge hide" id="notifBadge">0</span></a>
+      <a data-go="notif" title="Уведомления"><span class="ic asset-icon" data-icon="notifications" data-label="Уведомления"></span> <span class="lbl">Уведомления</span> <span class="badge hide" id="notifBadge">0</span></a>
     </nav>
     <div class="spacer"></div>
     <div class="petmini sk2" data-go="pet">
@@ -191,7 +191,7 @@
     <div class="userrow">
       <div class="avatar hatch" id="meAvatar">··</div>
       <div style="flex:1;" id="meName">…</div>
-      <span class="mono btn-like" id="logoutBtn" title="Выйти">⏻</span>
+      <span class="mono btn-like asset-icon" id="logoutBtn" title="Выйти" data-icon="logout" data-label="Выйти"></span>
     </div>
   </aside>
 
@@ -206,7 +206,7 @@
         <h3>Код приглашения <span class="mono">для новых участников</span></h3>
         <div class="row" style="gap:12px;align-items:center;">
           <div class="lcd" id="joinCode" style="font-size:30px;letter-spacing:.2em;padding:6px 16px;border:2.5px solid var(--ink);border-radius:var(--radius);background:var(--paper2);">········</div>
-          <button class="btn" id="copyCodeBtn">⧉ Копировать</button>
+          <button class="btn" id="copyCodeBtn"><span class="asset-icon" data-icon="copy" data-label="Копировать"></span> Копировать</button>
         </div>
         <p class="note">Передайте код коллеге — он введёт его при входе и присоединится как MEMBER.</p>
       </div>
@@ -224,7 +224,7 @@
     <!-- ===== DASHBOARD ===== -->
     <section class="screen on" id="screen-dashboard">
       <div class="topbar">
-        <div><h1 id="dashHi">Привет 👋</h1><div class="muted sm" id="dashSub"></div></div>
+        <div><h1 id="dashHi">Привет</h1><div class="muted sm" id="dashSub"></div></div>
         <div class="grow"></div>
         <button class="btn" data-go="mytasks">+ Задача</button>
         <button class="btn primary" data-go="projects">+ Проект</button>
@@ -436,7 +436,7 @@
             <div class="col" style="gap:4px;flex:0 0 auto;">
               <label class="field-label">Тип</label>
               <select class="rolepick" id="taskScope" style="height:40px;">
-                <option value="PERSONAL">🔒 Личная</option>
+                <option value="PERSONAL">Личная</option>
                 <option value="WORKSPACE">Командная</option>
                 <option value="PROJECT">Проектная</option>
               </select>
@@ -476,7 +476,7 @@
           <div id="teamTasks"></div>
         </div>
         <div class="card sk2">
-          <h3 style="color:var(--priv)">Личные <span class="lock" style="margin-left:auto;">🔒 только вы</span></h3>
+          <h3 style="color:var(--priv)">Личные <span class="lock" style="margin-left:auto;">только вы</span></h3>
           <div id="personalTasks"></div>
         </div>
       </div>
@@ -484,8 +484,8 @@
       <!-- архив выполненных -->
       <div class="card sk" id="doneSection" style="margin-top:var(--gap);display:none;">
         <div class="between" style="cursor:pointer;" id="doneToggle">
-          <h3>✓ Выполненные <span class="mono" id="doneCount"></span></h3>
-          <span class="mono" id="doneChevron">▼</span>
+          <h3>OK Выполненные <span class="mono" id="doneCount"></span></h3>
+          <span class="mono" id="doneChevron">v</span>
         </div>
         <div id="doneTasks" style="margin-top:10px;"></div>
       </div>
@@ -541,7 +541,7 @@
       <div class="topbar">
         <div><h1>Комната игр</h1><div class="muted sm">играй с питомцем, открывай кейсы, покупай в магазине</div></div>
         <div class="grow"></div>
-        <span class="chip acc" id="coinBalance">🪙 0</span>
+        <span class="chip acc" id="coinBalance"></span>
       </div>
       <div class="grid g-1-2">
         <!-- играть с питомцем -->
@@ -549,9 +549,9 @@
           <div class="card sk col" style="align-items:center;text-align:center;">
             <div class="petscreen petbig" id="gamePetScreen" style="width:100%;height:200px;"><div class="scan">PLAY</div></div>
             <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
-              <button class="btn sm" id="playFeed">🍎 Покормить</button>
-              <button class="btn sm" id="playPet">💚 Погладить</button>
-              <button class="btn sm" id="playBall">🎾 Мячик</button>
+              <button class="btn sm" id="playFeed"><span class="asset-icon" data-icon="apple" data-label="Покормить"></span> Покормить</button>
+              <button class="btn sm" id="playPet"><span class="asset-icon" data-icon="heart" data-label="Погладить"></span> Погладить</button>
+              <button class="btn sm" id="playBall"><span class="asset-icon" data-icon="ball" data-label="Мячик"></span> Мячик</button>
             </div>
             <div class="note" id="playMsg" style="margin-top:8px;"></div>
           </div>
@@ -559,7 +559,8 @@
           <div class="card sk2 col" style="align-items:center;text-align:center;">
             <h3>Кейс</h3>
             <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>
-            <button class="btn primary" id="openCase" style="margin-top:8px;">Открыть кейс · 🪙 <span id="casePrice">50</span></button>
+            <button class="btn primary" id="openCase" style="margin-top:8px;">Открыть кейс - <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
+            <button class="btn sm" id="testCoins" style="margin-top:8px;">Тест +100 монет</button>
             <div id="caseResult" style="margin-top:10px;"></div>
           </div>
         </div>
@@ -584,12 +585,12 @@
 
   <!-- ===== ЗАКРЕПЛЁННЫЙ ПИТОМЕЦ СПРАВА (виден на всех экранах) ===== -->
   <aside class="petdock" id="petDock">
-    <button class="petdock-toggle" id="petDockToggle" title="Свернуть питомца">›</button>
+    <button class="petdock-toggle" id="petDockToggle" title="Свернуть питомца">&gt;</button>
     <div class="petdock-body">
       <div class="petscreen" id="dockPetScreen" style="width:100%;height:130px;"><div class="scan" data-petstate-mini></div></div>
       <div class="between" style="margin-top:8px;">
         <b data-petname style="font-size:var(--fs-sm);">Питомец</b>
-        <span class="chip acc" data-petcoins>🪙 0</span>
+        <span class="chip acc" data-petcoins></span>
       </div>
       <div class="stat" style="margin-top:6px;"><span class="lbl">LVL</span>
         <div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div>
@@ -597,7 +598,7 @@
       <div class="stat"><span class="lbl">Настр.</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div></div>
       <div class="stat"><span class="lbl">Сыт.</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div></div>
       <div class="stat"><span class="lbl">Энерг.</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div></div>
-      <button class="btn sm" data-go="gameroom" style="width:100%;margin-top:8px;">🎮 Играть</button>
+      <button class="btn sm" data-go="gameroom" style="width:100%;margin-top:8px;"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
     </div>
   </aside>
 </div>
