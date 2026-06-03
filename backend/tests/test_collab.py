@@ -38,7 +38,7 @@ async def test_comment_grants_xp_and_mention_notifies(client):
     assert any(n["type"] == "MENTION" for n in notifs)
 
 
-async def test_wall_post_notifies_workspace_members(client):
+async def test_wall_post_does_not_create_system_notifications(client):
     ws, ho, hb, owner, bob = await _workspace_with_member(client)
     resp = await client.post(
         f"/workspaces/{ws['id']}/wall",
@@ -48,7 +48,7 @@ async def test_wall_post_notifies_workspace_members(client):
     assert resp.status_code == 201, resp.text
 
     bob_notifs = (await client.get("/notifications", headers=hb)).json()
-    assert any(n["type"] == "WALL_POST" and n["entity_id"] == resp.json()["id"] for n in bob_notifs)
+    assert all(n["entity_id"] != resp.json()["id"] for n in bob_notifs)
 
     owner_notifs = (await client.get("/notifications", headers=ho)).json()
     assert all(n["type"] != "WALL_POST" for n in owner_notifs)
@@ -66,6 +66,15 @@ async def test_wall_images_reactions_and_daily_cleanup(client):
     post = post_resp.json()
     assert post["image_data"] == image
 
+    gif_url = "https://example.com/cat.gif"
+    gif_resp = await client.post(
+        f"/workspaces/{ws['id']}/wall",
+        json={"text": "gif", "image_data": gif_url},
+        headers=ho,
+    )
+    assert gif_resp.status_code == 201, gif_resp.text
+    assert gif_resp.json()["image_data"] == gif_url
+
     react = await client.post(f"/wall/{post['id']}/react", json={"emoji": "👍"}, headers=hb)
     assert react.status_code == 200, react.text
     assert react.json()["reactions"]["👍"] == 1
@@ -75,6 +84,22 @@ async def test_wall_images_reactions_and_daily_cleanup(client):
     assert unreact.status_code == 200, unreact.text
     assert unreact.json()["reactions"].get("👍") is None
 
+    dislike = await client.post(f"/wall/{post['id']}/react", json={"emoji": "👎"}, headers=hb)
+    assert dislike.status_code == 200, dislike.text
+    assert dislike.json()["reactions"]["👎"] == 1
+
+    report_post = (
+        await client.post(
+            f"/workspaces/{ws['id']}/wall",
+            json={"text": "Это надо убрать"},
+            headers=ho,
+        )
+    ).json()
+    report = await client.post(f"/wall/{report_post['id']}/report", json={}, headers=hb)
+    assert report.status_code == 204, report.text
+    visible = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
+    assert all(p["id"] != report_post["id"] for p in visible)
+
     async with SessionLocal() as db:
         old = await db.get(WallPost, post["id"])
         old.created_at = datetime.now(timezone.utc) - timedelta(hours=25)
@@ -82,6 +107,26 @@ async def test_wall_images_reactions_and_daily_cleanup(client):
 
     wall = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
     assert all(p["id"] != post["id"] for p in wall)
+
+
+async def test_wall_presence_controls_team_room_pets(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    empty = (await client.get(f"/workspaces/{ws['id']}/team-room", headers=ho)).json()
+    assert empty["pets"] == []
+    assert empty["online_count"] == 0
+
+    heartbeat = await client.post(f"/workspaces/{ws['id']}/wall/presence", headers=hb)
+    assert heartbeat.status_code == 204
+
+    online = (await client.get(f"/workspaces/{ws['id']}/team-room", headers=ho)).json()
+    assert online["online_count"] == 1
+    assert len(online["pets"]) == 1
+
+    leave = await client.delete(f"/workspaces/{ws['id']}/wall/presence", headers=hb)
+    assert leave.status_code == 204
+
+    empty_again = (await client.get(f"/workspaces/{ws['id']}/team-room", headers=ho)).json()
+    assert empty_again["pets"] == []
 
 
 async def test_mention_of_self_or_outsider_does_not_notify(client):

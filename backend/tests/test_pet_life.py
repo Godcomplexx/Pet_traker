@@ -64,13 +64,42 @@ async def test_pet_play_grants_coins(client):
 
     tokens = await register(client, "play@lab.ru")
     headers = auth_headers(tokens)
-    r = await client.post("/pets/me/play", json={"action": "feed"}, headers=headers)
-    assert r.status_code == 200, r.text
-    assert r.json()["coins"] == 25
-
     boost = await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
     assert boost.status_code == 200, boost.text
-    assert boost.json()["coins"] == 125
+    assert boost.json()["coins"] == 100
+
+    r = await client.post("/pets/me/play", json={"action": "pet"}, headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["coins"] == 125
+
+
+async def test_pet_feed_requires_food_and_consumes_it(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "food@lab.ru")
+    headers = auth_headers(tokens)
+
+    no_food = await client.post("/pets/me/play", json={"action": "feed"}, headers=headers)
+    assert no_food.status_code == 400
+
+    await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
+    bought = await client.post("/shop/buy", json={"item_id": "food_banana"}, headers=headers)
+    assert bought.status_code == 200, bought.text
+    assert bought.json()["food_inventory"]["food_banana"] == 1
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="food@lab.ru")))
+        pet.hunger = 40
+        await db.commit()
+
+    fed = await client.post(
+        "/pets/me/play", json={"action": "feed", "item_id": "food_banana"}, headers=headers
+    )
+    assert fed.status_code == 200, fed.text
+    body = fed.json()
+    assert body["hunger"] > 40
+    assert "food_banana" not in body["food_inventory"]
 
 
 async def test_pet_play_respects_stats(client):

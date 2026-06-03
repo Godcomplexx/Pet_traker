@@ -59,6 +59,15 @@ SHOP_ITEMS: list[dict] = [
     {"id": "bg_ocean",    "name": "Океан",      "type": "bg", "rarity": "rare",   "price": 75,  "data": "#244b66"},
     {"id": "bg_candy",    "name": "Конфета",    "type": "bg", "rarity": "epic",   "price": 150, "data": "#6f3d61"},
     {"id": "bg_gold",     "name": "Сокровище",  "type": "bg", "rarity": "legendary", "price": 360, "data": "#6b4b16"},
+    # ── еда (расходуется при кормлении питомца) ──
+    {"id": "food_banana",  "name": "Банан",      "type": "food", "rarity": "common", "price": 12, "data": {"icon": "food_banana", "hunger": 10, "mood": 1, "energy": 0}},
+    {"id": "food_berry",   "name": "Ягоды",      "type": "food", "rarity": "common", "price": 10, "data": {"icon": "food_berry", "hunger": 8, "mood": 3, "energy": 0}},
+    {"id": "food_carrot",  "name": "Морковь",    "type": "food", "rarity": "common", "price": 14, "data": {"icon": "food_carrot", "hunger": 12, "mood": 1, "energy": 0}},
+    {"id": "food_milk",    "name": "Молоко",     "type": "food", "rarity": "rare", "price": 20, "data": {"icon": "food_milk", "hunger": 14, "mood": 1, "energy": 4}},
+    {"id": "food_fish",    "name": "Рыба",       "type": "food", "rarity": "rare", "price": 24, "data": {"icon": "food_fish", "hunger": 20, "mood": 1, "energy": 2}},
+    {"id": "food_rice",    "name": "Рис",        "type": "food", "rarity": "rare", "price": 25, "data": {"icon": "food_rice", "hunger": 18, "mood": 2, "energy": 0}},
+    {"id": "food_cupcake", "name": "Кекс",       "type": "food", "rarity": "epic", "price": 34, "data": {"icon": "food_cupcake", "hunger": 16, "mood": 8, "energy": 0}},
+    {"id": "food_ramen",   "name": "Рамен",      "type": "food", "rarity": "epic", "price": 45, "data": {"icon": "food_ramen", "hunger": 28, "mood": 4, "energy": 2}},
 ]
 
 ITEMS_BY_ID = {it["id"]: it for it in SHOP_ITEMS}
@@ -76,5 +85,7 @@ def roll_case() -> dict:
     # формируем взвешенный пул один раз на вызов (каталог маленький — дёшево)
     pool: list[dict] = []
     for it in SHOP_ITEMS:
+        if it["type"] == "food":
+            continue
         pool.extend([it] * RARITY_WEIGHTS.get(it["rarity"], 1))
     return secrets.choice(pool)

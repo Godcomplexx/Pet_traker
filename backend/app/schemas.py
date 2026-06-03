@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -109,6 +110,7 @@ class PetOut(ORMModel):
     energy: int
     coins: int = 0
     inventory: list[str] = Field(default_factory=list)
+    food_inventory: dict[str, int] = Field(default_factory=dict)
     equipped: dict = Field(default_factory=dict)
     # Производное состояние (happy/ok/sad/hungry/sleepy) и подпись для UI.
     state: str = "ok"
@@ -121,6 +123,7 @@ class PetUpdate(BaseModel):
 
 class PetPlayIn(BaseModel):
     action: str = Field(pattern="^(feed|pet|ball|test_coins)$")
+    item_id: str | None = None
 
 
 class PetCustomize(BaseModel):
@@ -381,9 +384,12 @@ class WallPostCreate(BaseModel):
             "data:image/webp;base64,",
             "data:image/gif;base64,",
         )
-        if not v.startswith(allowed):
-            raise ValueError("Можно прикрепить только png, jpg, webp или gif")
-        return v
+        if v.startswith(allowed):
+            return v
+        parsed = urlparse(v)
+        if parsed.scheme == "https" and re.search(r"\.(png|jpe?g|webp|gif)(\?.*)?$", parsed.path, re.I):
+            return v
+        raise ValueError("Можно прикрепить только png, jpg, webp или gif")
 
 
 class WallReactionIn(BaseModel):
@@ -392,7 +398,7 @@ class WallReactionIn(BaseModel):
     @field_validator("emoji")
     @classmethod
     def check_emoji(cls, v: str) -> str:
-        allowed = {"👍", "❤️", "😂", "🎉", "👀", "🔥"}
+        allowed = {"👍", "👎", "❤️", "😂", "🎉", "👀", "🔥"}
         if v not in allowed:
             raise ValueError("Недоступная реакция")
         return v

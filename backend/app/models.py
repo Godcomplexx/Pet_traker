@@ -94,6 +94,7 @@ class Pet(Base):
     # Игровая экономика: монеты + инвентарь купленных/выпавших предметов (список id).
     coins: Mapped[int] = mapped_column(Integer, default=0)
     inventory: Mapped[list] = mapped_column(JsonType, default=list)
+    food_inventory: Mapped[dict] = mapped_column(JsonType, default=dict)
     # Экипировано: {type: item_id}, напр. {"hat": "hat_crown", "bg": "bg_space"}.
     equipped: Mapped[dict] = mapped_column(JsonType, default=dict)
     # Момент последнего пересчёта тамагочи-показателей (для decay по времени).
@@ -334,3 +335,13 @@ class WallReaction(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     emoji: Mapped[str] = mapped_column(String(16), nullable=False)
     created_at: Mapped[datetime] = TS()
+
+
+class WallPresence(Base):
+    __tablename__ = "wall_presence"
+    __table_args__ = (UniqueConstraint("workspace_id", "user_id", name="uq_wall_presence"),)
+
+    id: Mapped[str] = PK()
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

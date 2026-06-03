@@ -75,10 +75,19 @@ async def play_with_pet(
     apply_decay(pet)
     reward = 25
     if data.action == "feed":
+        reward = 0
         if pet.hunger >= 95:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец уже сыт")
-        pet.hunger = min(100, pet.hunger + 12)
-        pet.mood = min(100, pet.mood + 4)
+        if not data.item_id:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Выбери еду из рюкзака")
+        item = get_item(data.item_id)
+        if item is None or item["type"] != "food":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Это не еда")
+        _consume_food(pet, data.item_id)
+        data_map = item.get("data") or {}
+        pet.hunger = min(100, pet.hunger + int(data_map.get("hunger", 0)))
+        pet.mood = min(100, pet.mood + int(data_map.get("mood", 0)))
+        pet.energy = min(100, pet.energy + int(data_map.get("energy", 0)))
     elif data.action == "pet":
         if pet.hunger <= 5:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец слишком голоден, сначала покорми")
@@ -117,6 +126,24 @@ def _grant_item(pet: Pet, item_id: str) -> bool:
     return True
 
 
+def _grant_food(pet: Pet, item_id: str, amount: int = 1) -> None:
+    food = dict(pet.food_inventory or {})
+    food[item_id] = int(food.get(item_id, 0)) + amount
+    pet.food_inventory = food
+
+
+def _consume_food(pet: Pet, item_id: str) -> None:
+    food = dict(pet.food_inventory or {})
+    current = int(food.get(item_id, 0))
+    if current <= 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Этой еды нет в рюкзаке")
+    if current == 1:
+        food.pop(item_id, None)
+    else:
+        food[item_id] = current - 1
+    pet.food_inventory = food
+
+
 @router.post("/shop/buy", response_model=PetOut)
 async def shop_buy(
     data: ShopBuyIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
@@ -126,12 +153,15 @@ async def shop_buy(
     item = get_item(data.item_id)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Товар не найден")
-    if data.item_id in (pet.inventory or []):
+    if item["type"] != "food" and data.item_id in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Уже куплено")
     if (pet.coins or 0) < item["price"]:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно монет")
     pet.coins -= item["price"]
-    _grant_item(pet, data.item_id)
+    if item["type"] == "food":
+        _grant_food(pet, data.item_id)
+    else:
+        _grant_item(pet, data.item_id)
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)
@@ -168,6 +198,8 @@ async def shop_equip(
     item = get_item(data.item_id)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Товар не найден")
+    if item["type"] == "food":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Еду нельзя надеть")
     if data.item_id not in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет не куплен")
     # toggle: если уже надет этот предмет — снимаем, иначе надеваем

@@ -174,7 +174,7 @@
       <div class="grp">Игра</div>
       <a data-go="pet" title="Питомец"><span class="ic asset-icon" data-icon="pet" data-label="Питомец"></span> <span class="lbl">Питомец</span></a>
       <a data-go="gameroom" title="Комната игр"><span class="ic asset-icon" data-icon="game" data-label="Комната игр"></span> <span class="lbl">Комната игр</span></a>
-      <a data-go="team" title="Стена"><span class="ic asset-icon" data-icon="wall" data-label="Стена"></span> <span class="lbl">Стена</span></a>
+      <a data-go="team" title="Стена"><span class="ic asset-icon" data-icon="wall" data-label="Стена"></span> <span class="lbl">Стена</span> <span class="badge hide" id="wallBadge">0</span></a>
       <div class="grp">Прочее</div>
       <a data-go="notif" title="Уведомления"><span class="ic asset-icon" data-icon="notifications" data-label="Уведомления"></span> <span class="lbl">Уведомления</span> <span class="badge hide" id="notifBadge">0</span></a>
     </nav>
@@ -537,7 +537,7 @@
           </div>
         </div>
         <div class="card sk">
-          <h3>Питомцы команды</h3>
+          <h3>Питомцы на Стене <span class="mono" id="teamOnline">онлайн: 0</span></h3>
           <div class="team-playground" id="teamPlayground"></div>
           <div id="teamPets" class="col" style="margin-top:10px;"></div>
         </div>
@@ -561,6 +561,7 @@
               <button class="btn sm" id="playPet"><span class="asset-icon" data-icon="heart" data-label="Погладить"></span> Погладить</button>
               <button class="btn sm" id="playBall"><span class="asset-icon" data-icon="ball" data-label="Мячик"></span> Мячик</button>
             </div>
+            <div class="food-belt" id="foodBelt" style="width:100%;margin-top:10px;"></div>
             <div class="note" id="playMsg" style="margin-top:8px;"></div>
           </div>
           <!-- кейсы -->
@@ -581,6 +582,7 @@
             <button data-shop-tab="accent">Акцент</button>
             <button data-shop-tab="hat">Шапки</button>
             <button data-shop-tab="bg">Фоны</button>
+            <button data-shop-tab="food">Еда</button>
           </div>
           <div id="shopGrid" class="grid g2" style="margin-top:10px;"></div>
           <h3 style="margin-top:16px;">Рюкзак <span class="mono">клик - надеть/снять</span></h3>
@@ -616,6 +618,7 @@
       <div class="stat"><span class="lbl">Сыт.</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div></div>
       <div class="stat"><span class="lbl">Энерг.</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div></div>
       <div class="dock-bag" id="dockBackpack"></div>
+      <div class="dock-bag food-bag" id="dockFoodBag"></div>
       <button class="btn sm" data-go="gameroom" style="width:100%;margin-top:8px;"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
     </div>
   </aside>

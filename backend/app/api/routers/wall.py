@@ -7,13 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
-from app.enums import NotificationType
-from app.models import User, WallPost, WallReaction, WorkspaceMember
+from app.models import User, WallPost, WallPresence, WallReaction
 from app.schemas import WallPostCreate, WallPostOut, WallReactionIn
-from app.services.notifications import create_notification
 
 router = APIRouter(tags=["wall"])
 WALL_TTL = timedelta(hours=24)
+PRESENCE_TTL = timedelta(seconds=75)
 
 
 async def _cleanup_wall(db: AsyncSession, workspace_id: str) -> None:
@@ -21,6 +20,15 @@ async def _cleanup_wall(db: AsyncSession, workspace_id: str) -> None:
     await db.execute(
         delete(WallPost)
         .where(WallPost.workspace_id == workspace_id, WallPost.created_at < cutoff)
+        .execution_options(synchronize_session=False)
+    )
+
+
+async def _cleanup_presence(db: AsyncSession, workspace_id: str) -> None:
+    cutoff = datetime.now(timezone.utc) - PRESENCE_TTL
+    await db.execute(
+        delete(WallPresence)
+        .where(WallPresence.workspace_id == workspace_id, WallPresence.last_seen_at < cutoff)
         .execution_options(synchronize_session=False)
     )
 
@@ -116,30 +124,47 @@ async def create_wall_post(
     post = WallPost(workspace_id=workspace_id, author_id=user.id, text=text, image_data=data.image_data)
     db.add(post)
     await db.flush()
-    member_ids = (
-        await db.scalars(
-            select(WorkspaceMember.user_id).where(
-                WorkspaceMember.workspace_id == workspace_id,
-                WorkspaceMember.user_id != user.id,
-            )
-        )
-    ).all()
-    preview_src = text or "прикрепил(а) картинку"
-    preview = preview_src if len(preview_src) <= 160 else preview_src[:157] + "..."
-    for member_id in member_ids:
-        await create_notification(
-            db,
-            user_id=member_id,
-            type_=NotificationType.WALL_POST,
-            title=f"{user.display_name or user.email or 'Участник'} написал(а) на стене",
-            body=preview,
-            workspace_id=workspace_id,
-            entity_type="wall_post",
-            entity_id=post.id,
-        )
     await db.commit()
     await db.refresh(post)
     return _wall_out(post, (user.display_name or user.email or user.id[:8]))
+
+
+@router.post("/workspaces/{workspace_id}/wall/presence", status_code=status.HTTP_204_NO_CONTENT)
+async def wall_presence(
+    workspace_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await require_membership(workspace_id, db, user)
+    await _cleanup_presence(db, workspace_id)
+    row = await db.scalar(
+        select(WallPresence).where(
+            WallPresence.workspace_id == workspace_id,
+            WallPresence.user_id == user.id,
+        )
+    )
+    if row is None:
+        db.add(WallPresence(workspace_id=workspace_id, user_id=user.id))
+    else:
+        row.last_seen_at = datetime.now(timezone.utc)
+    await db.commit()
+    return None
+
+
+@router.delete("/workspaces/{workspace_id}/wall/presence", status_code=status.HTTP_204_NO_CONTENT)
+async def leave_wall(
+    workspace_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await require_membership(workspace_id, db, user)
+    await db.execute(
+        delete(WallPresence)
+        .where(WallPresence.workspace_id == workspace_id, WallPresence.user_id == user.id)
+        .execution_options(synchronize_session=False)
+    )
+    await db.commit()
+    return None
 
 
 @router.post("/wall/{post_id}/react", response_model=WallPostOut)
@@ -170,6 +195,19 @@ async def react_wall_post(
     author = await db.get(User, post.author_id)
     counts, mine = await _reaction_maps(db, [post.id], user.id)
     return _wall_out(post, ((author and (author.display_name or author.email)) or post.author_id[:8]), counts, mine)
+
+
+@router.post("/wall/{post_id}/report", status_code=status.HTTP_204_NO_CONTENT)
+async def report_wall_post(
+    post_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    post = await db.get(WallPost, post_id)
+    if post is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Пост не найден")
+    await require_membership(post.workspace_id, db, user)
+    await db.delete(post)
+    await db.commit()
+    return None
 
 
 @router.delete("/wall/{post_id}", status_code=status.HTTP_204_NO_CONTENT)

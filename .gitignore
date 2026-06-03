@@ -24,6 +24,10 @@ docker-data/
 *.log
 logs/
 
+# Local asset dumps / pasted README images
+/assets/
+/frontend/assets/custom-icons/image/
+
 # IDE / OS
 .idea/
 .vscode/*

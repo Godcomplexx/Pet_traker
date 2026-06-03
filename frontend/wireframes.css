@@ -1620,6 +1620,62 @@ textarea.input { resize: vertical; min-height: 70px; }
   opacity: .35;
   cursor: default;
 }
+.food-belt {
+  padding: 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.24);
+}
+.food-bag.need-food,
+.food-belt.need-food {
+  animation: food-pulse .38s steps(2, end) 4;
+  border-color: var(--warn);
+  box-shadow: 0 0 0 2px rgba(184,149,58,0.24) inset;
+}
+.food-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.dock-bag .food-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.food-slot.empty {
+  min-height: 76px;
+  border: 1px dashed var(--border2);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.18);
+}
+.fooditem {
+  position: relative;
+}
+.fooditem .food-prev {
+  background: rgba(255,255,255,0.42);
+}
+.food-count {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 18px;
+  padding: 2px 3px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.78);
+  color: var(--ink);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 7px;
+  line-height: 1;
+}
+.food-count-inline {
+  margin-left: 4px;
+  color: var(--ink2);
+}
+.food-stats {
+  margin-top: 4px;
+  color: var(--ink3);
+}
+@keyframes food-pulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
 
 /* основной контент уступает место доку на широких экранах */
 #app { padding-right: 250px; }

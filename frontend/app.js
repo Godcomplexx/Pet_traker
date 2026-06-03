@@ -30,7 +30,10 @@
     pollTimer: null,
     shopTab: 'all',
     dockBagPage: 0,
+    foodBagPage: 0,
     wallImageData: null,
+    wallUnread: 0,
+    currentScreen: null,
   };
 
   const esc = (s) =>
@@ -53,6 +56,14 @@
     copy: cdnIcon('1f4cb'),
     coin: cdnIcon('1fa99'),
     apple: cdnIcon('1f34e'),
+    food_banana: cdnIcon('1f34c'),
+    food_berry: cdnIcon('1fad0'),
+    food_carrot: cdnIcon('1f955'),
+    food_cupcake: cdnIcon('1f9c1'),
+    food_fish: cdnIcon('1f41f'),
+    food_milk: cdnIcon('1f95b'),
+    food_ramen: cdnIcon('1f35c'),
+    food_rice: cdnIcon('1f35a'),
     heart: cdnIcon('1f49a'),
     ball: cdnIcon('1f3be'),
     party: cdnIcon('1f389'),
@@ -134,6 +145,11 @@
   const NAV_PARENT = { projdetail: 'projects', artdetail: 'articles', taskdetail: 'mytasks' };
 
   function go(name) {
+    const prev = state.currentScreen;
+    if (prev === 'team' && name !== 'team' && state.wsId) {
+      api.del(`/workspaces/${state.wsId}/wall/presence`).catch(() => {});
+    }
+    state.currentScreen = name;
     $$('.screen').forEach((s) => s.classList.toggle('on', s.id === 'screen-' + name));
     const navKey = NAV_PARENT[name] || name;
     $$('#nav a').forEach((a) => a.classList.toggle('active', a.dataset.go === navKey));
@@ -414,6 +430,7 @@
     }).catch(() => {});
     refreshPet();
     refreshNotifBadge();
+    refreshWallBadge();
     initPetDock();
     startPolling();
     go('dashboard');
@@ -444,6 +461,7 @@
       if (!api.isAuthed() || !state.wsId) return;
       try {
         await refreshNotifBadge();
+        await refreshWallBadge();
         const active = $('.screen.on');
         const name = active ? active.id.replace('screen-', '') : '';
         if (name === 'dashboard') await refreshDashboardLive();
@@ -793,6 +811,7 @@
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
 
   function itemIcon(it) {
+    if (it?.type === 'food' && it.data?.icon) return it.data.icon;
     return SHOP_ICON_BY_ID[it.id] || it.id;
   }
 
@@ -914,6 +933,7 @@
     $('#coinBalance') && ($('#coinBalance').innerHTML = iconLabel('coin', String(pet.coins || 0)));
     paintSprites(pet);
     renderBackpack();
+    renderFoodBags();
     updatePlayControls();
   }
   async function refreshPet() {
@@ -1604,7 +1624,7 @@
     if (!scene) return;
     scene.innerHTML = '';
     if (!pets.length) {
-      scene.innerHTML = '<div class="muted sm">Питомцы появятся здесь, когда участники настроят их.</div>';
+      scene.innerHTML = '<div class="muted sm">Питомцы появятся здесь, когда участники откроют Стену.</div>';
       return;
     }
     pets.slice(0, 8).forEach((pet, idx) => {
@@ -1626,25 +1646,65 @@
     });
   }
 
+  function wallSeenKey() {
+    return `petpro_wall_seen_${state.wsId || 'none'}`;
+  }
+
+  function paintWallBadge(count = state.wallUnread || 0) {
+    const badge = $('#wallBadge');
+    if (!badge) return;
+    badge.textContent = count > 99 ? '99+' : String(count);
+    badge.classList.toggle('hide', count <= 0);
+  }
+
+  async function refreshWallBadge(markSeen = false) {
+    if (!state.wsId) return;
+    const posts = await api.get(`/workspaces/${state.wsId}/wall?limit=50`);
+    const latest = posts[0] && posts[0].id;
+    const key = wallSeenKey();
+    let seen = '';
+    try { seen = localStorage.getItem(key) || ''; } catch (e) {}
+    if (markSeen || !seen) {
+      if (latest) {
+        try { localStorage.setItem(key, latest); } catch (e) {}
+      }
+      state.wallUnread = 0;
+      paintWallBadge(0);
+      return;
+    }
+    const idx = posts.findIndex((p) => p.id === seen);
+    state.wallUnread = idx < 0 ? posts.length : idx;
+    paintWallBadge(state.wallUnread);
+  }
+
+  async function heartbeatWallPresence() {
+    if (!state.wsId) return;
+    await api.post(`/workspaces/${state.wsId}/wall/presence`, {});
+  }
+
   /* ---------------- wall (бывш. team room) ---------------- */
   async function renderWall() {
+    await heartbeatWallPresence().catch(() => {});
     // питомцы команды (справа)
     const data = await api.get(`/workspaces/${state.wsId}/team-room`).catch(() => ({ pets: [] }));
     const pets = data.pets || [];
+    const online = $('#teamOnline');
+    if (online) online.textContent = `онлайн: ${data.online_count || pets.length || 0}`;
     renderTeamPlayground(pets);
     $('#teamPets').innerHTML = (data.pets || [])
       .map(
         (p) => `<div class="petmini soft"><div class="av"><div class="hud">${levelOf(p.xp)}</div></div>
           <div class="meta"><b>${esc(p.name)}</b> <span class="mono">ур. ${levelOf(p.xp)} · ${p.xp} XP</span></div></div>`,
       )
-      .join('') || '<div class="muted sm">Нет питомцев.</div>';
+      .join('') || '<div class="muted sm">На Стене сейчас никого нет.</div>';
     state.wallBefore = null;
     await loadWall(false);
+    await refreshWallBadge(true);
   }
 
   function wallRow(p) {
     const mine = p.author_id === (state.me && state.me.id);
-    const reactions = ['👍', '❤️', '😂', '🎉', '👀', '🔥'];
+    const reactions = ['👍', '👎', '❤️', '😂', '🎉', '👀', '🔥'];
     const reactionHtml = reactions.map((emoji) => {
       const count = (p.reactions && p.reactions[emoji]) || 0;
       const active = (p.my_reactions || []).includes(emoji);
@@ -1659,6 +1719,7 @@
         <div class="wall-reactions">${reactionHtml}</div>
         <div class="when">${new Date(p.created_at).toLocaleString('ru')}
           ${mine ? `· <span class="btn-like" data-wall-del="${p.id}" style="color:var(--danger);">удалить</span>` : ''}
+          ${mine ? '' : `· <span class="btn-like" data-wall-report="${p.id}" style="color:var(--danger);">пожаловаться</span>`}
         </div>
       </div></div>`;
   }
@@ -1685,9 +1746,7 @@
     }
   }
 
-  $('#wallImageBtn').addEventListener('click', () => $('#wallImageFile').click());
-  $('#wallImageFile').addEventListener('change', () => {
-    const file = $('#wallImageFile').files && $('#wallImageFile').files[0];
+  function attachWallImageFile(file) {
     if (!file) return clearWallImage();
     if (!file.type.startsWith('image/')) return toast('Можно прикрепить только картинку', '');
     if (file.size > 500 * 1024) {
@@ -1701,6 +1760,48 @@
       $('#wallImagePreview').innerHTML = `<img src="${esc(state.wallImageData)}" alt="Предпросмотр"><button class="btn sm" id="wallImageClear" type="button">Убрать</button>`;
     };
     reader.readAsDataURL(file);
+  }
+
+  function attachWallImageUrl(url) {
+    const clean = String(url || '').trim();
+    if (!/^https:\/\/.+\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(clean)) return false;
+    state.wallImageData = clean;
+    $('#wallImagePreview').style.display = '';
+    $('#wallImagePreview').innerHTML = `<img src="${esc(clean)}" alt="Предпросмотр"><button class="btn sm" id="wallImageClear" type="button">Убрать</button>`;
+    return true;
+  }
+
+  function imageUrlFromHtml(html) {
+    const doc = new DOMParser().parseFromString(html || '', 'text/html');
+    const img = doc.querySelector('img[src]');
+    return img ? img.getAttribute('src') : '';
+  }
+
+  $('#wallImageBtn').addEventListener('click', () => $('#wallImageFile').click());
+  $('#wallImageFile').addEventListener('change', () => {
+    const file = $('#wallImageFile').files && $('#wallImageFile').files[0];
+    attachWallImageFile(file);
+  });
+  document.addEventListener('paste', (e) => {
+    const active = $('.screen.on');
+    if (!active || active.id !== 'screen-team') return;
+    const items = Array.from((e.clipboardData && e.clipboardData.items) || []);
+    const imageItem = items.find((item) => item.type && item.type.startsWith('image/'));
+    if (!imageItem) return;
+    const file = imageItem.getAsFile();
+    if (!file) return;
+    e.preventDefault();
+    attachWallImageFile(file);
+  });
+  document.addEventListener('paste', (e) => {
+    const active = $('.screen.on');
+    if (!active || active.id !== 'screen-team') return;
+    const htmlUrl = imageUrlFromHtml(e.clipboardData?.getData('text/html'));
+    const textUrl = e.clipboardData?.getData('text/plain');
+    if (attachWallImageUrl(htmlUrl || textUrl)) {
+      e.preventDefault();
+      toast('Картинка прикреплена', 'xp');
+    }
   });
   document.addEventListener('click', (e) => {
     if (e.target.closest('#wallImageClear')) clearWallImage();
@@ -1715,6 +1816,7 @@
       clearWallImage();
       state.wallBefore = null;
       await loadWall(false);
+      await refreshWallBadge(true);
     } catch (err) { toast(err.message, ''); }
   });
   $('#wallInput').addEventListener('keydown', (e) => {
@@ -1738,6 +1840,19 @@
       await api.del(`/wall/${del.dataset.wallDel}`);
       state.wallBefore = null;
       await loadWall(false);
+      await refreshWallBadge(true);
+    } catch (err) { toast(err.message, ''); }
+  });
+  document.addEventListener('click', async (e) => {
+    const report = e.target.closest('[data-wall-report]');
+    if (!report) return;
+    if (!confirm('Пожаловаться и удалить сообщение со Стены?')) return;
+    try {
+      await api.post(`/wall/${report.dataset.wallReport}/report`, {});
+      state.wallBefore = null;
+      await loadWall(false);
+      await refreshWallBadge(true);
+      toast('Сообщение удалено со Стены', '');
     } catch (err) { toast(err.message, ''); }
   });
 
@@ -1757,6 +1872,7 @@
   }
 
   function itemPreview(it) {
+    if (it.type === 'food') return `<div class="swatch-prev food-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
     if (it.type === 'hat') return `<div class="swatch-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
     return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
@@ -1772,9 +1888,12 @@
     const items = (state.shopCatalog || []).filter((it) => tab === 'all' || it.type === tab);
     $('#shopGrid').innerHTML = items
       .map((it) => {
-        const owned = inv.includes(it.id);
+        const foodCount = Number(pet.food_inventory?.[it.id] || 0);
+        const owned = it.type !== 'food' && inv.includes(it.id);
         const cls = `shopcard ${owned ? 'owned' : ''}`;
-        const action = owned ? 'в рюкзаке' : iconLabel('coin', String(it.price));
+        const action = owned
+          ? 'в рюкзаке'
+          : `${iconLabel('coin', String(it.price))}${it.type === 'food' && foodCount ? ` <span class="food-count-inline">x${foodCount}</span>` : ''}`;
         return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
           ${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
@@ -1784,6 +1903,7 @@
       })
       .join('') || '<div class="muted sm">В этой вкладке пока пусто.</div>';
     renderBackpack();
+    renderFoodBags();
   }
 
   function inventoryCard(it, compact = false) {
@@ -1825,6 +1945,52 @@
     }
   }
 
+  function foodEntries() {
+    const food = state.pet?.food_inventory || {};
+    return Object.entries(food)
+      .map(([id, count]) => ({ it: SHOP_INDEX[id], count: Number(count || 0) }))
+      .filter((entry) => entry.it && entry.count > 0);
+  }
+
+  function foodCard(entry, compact = false) {
+    const { it, count } = entry;
+    const data = it.data || {};
+    const stats = compact
+      ? ''
+      : `<div class="sm food-stats">+${Number(data.hunger || 0)} сытость</div>`;
+    return `<div class="shopcard bagitem fooditem" data-food="${it.id}" title="Съесть: ${esc(it.name)}">
+      ${itemPreview(it)}
+      <span class="food-count">x${count}</span>
+      ${compact ? '' : `<div class="nm">${esc(it.name)}</div><div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>`}
+      ${stats}
+    </div>`;
+  }
+
+  function renderFoodShelf(el, title, compact = false) {
+    const items = foodEntries();
+    const pageSize = 4;
+    const pages = Math.max(1, Math.ceil(items.length / pageSize));
+    state.foodBagPage = Math.max(0, Math.min(state.foodBagPage || 0, pages - 1));
+    const pageItems = items.slice(state.foodBagPage * pageSize, state.foodBagPage * pageSize + pageSize);
+    const slots = Array.from({ length: pageSize }, (_, idx) =>
+      pageItems[idx] ? foodCard(pageItems[idx], compact) : '<div class="food-slot empty"></div>',
+    ).join('');
+    el.innerHTML = `<div class="dock-bag-title">${title}</div>
+      <div class="dock-bag-grid food-grid">${slots}</div>
+      <div class="dock-bag-pager">
+        <button class="dock-page-btn" data-food-page="-1" ${pages <= 1 ? 'disabled' : ''} aria-label="Назад">&lt;</button>
+        <span>${state.foodBagPage + 1}/${pages}</span>
+        <button class="dock-page-btn" data-food-page="1" ${pages <= 1 ? 'disabled' : ''} aria-label="Вперед">&gt;</button>
+      </div>`;
+  }
+
+  function renderFoodBags() {
+    const belt = $('#foodBelt');
+    if (belt) renderFoodShelf(belt, 'Еда для питомца');
+    const dock = $('#dockFoodBag');
+    if (dock) renderFoodShelf(dock, 'Еда', true);
+  }
+
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-dock-bag-page]');
     if (!btn) return;
@@ -1834,6 +2000,15 @@
     const pages = Math.max(1, Math.ceil(total / 4));
     state.dockBagPage = (state.dockBagPage + Number(btn.dataset.dockBagPage) + pages) % pages;
     renderBackpack();
+  });
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-food-page]');
+    if (!btn) return;
+    e.preventDefault();
+    const pages = Math.max(1, Math.ceil(foodEntries().length / 4));
+    state.foodBagPage = (state.foodBagPage + Number(btn.dataset.foodPage) + pages) % pages;
+    renderFoodBags();
   });
 
   $('#shopTabs')?.addEventListener('click', (e) => {
@@ -1857,7 +2032,7 @@
       state.pet = await api.post('/shop/buy', { item_id: id });
       paintPet(state.pet);
       renderShop();
-      toast('Куплено!', 'xp');
+      toast(SHOP_INDEX[id]?.type === 'food' ? 'Еда добавлена!' : 'Куплено!', 'xp');
     } catch (err) { toast(err.message, ''); }
   });
 
@@ -1880,7 +2055,8 @@
   }
 
   function runCaseRoll(resultItem) {
-    const pool = state.shopCatalog && state.shopCatalog.length ? state.shopCatalog : [resultItem];
+    const casePool = (state.shopCatalog || []).filter((it) => it.type !== 'food');
+    const pool = casePool.length ? casePool : [resultItem];
     const winnerIndex = 24;
     const roll = Array.from({ length: 34 }, (_, idx) =>
       idx === winnerIndex ? resultItem : pool[Math.floor(Math.random() * pool.length)],
@@ -1889,9 +2065,18 @@
       <div class="case-marker"></div>
       <div class="case-strip">${roll.map((it, idx) => caseTile(it, idx === winnerIndex)).join('')}</div>
     </div>`;
+    const roulette = $('#caseResult .case-roulette');
     const strip = $('#caseResult .case-strip');
+    const winner = $('#caseResult .case-tile.winner');
+    strip.style.transition = 'none';
+    strip.style.transform = `translateX(${roulette.clientWidth + 24}px)`;
+    const winnerCenter = winner.offsetLeft + winner.offsetWidth / 2;
+    const markerCenter = roulette.clientWidth / 2;
+    const targetX = markerCenter - winnerCenter;
     requestAnimationFrame(() => {
-      strip.style.transform = `translateX(calc(50% - ${winnerIndex * 94 + 43}px))`;
+      strip.getBoundingClientRect();
+      strip.style.transition = '';
+      strip.style.transform = `translateX(${targetX}px)`;
     });
     return new Promise((resolve) => setTimeout(resolve, 2600));
   }
@@ -1956,13 +2141,22 @@
     });
   }
 
-  async function playWithPet(action, iconName, message) {
+  function highlightFoodBags() {
+    $$('#foodBelt, #dockFoodBag').forEach((el) => {
+      el.classList.add('need-food');
+      setTimeout(() => el.classList.remove('need-food'), 1600);
+    });
+  }
+
+  async function playWithPet(action, iconName, message, itemId = null) {
     try {
-      state.pet = await api.post('/pets/me/play', { action });
+      const payload = itemId ? { action, item_id: itemId } : { action };
+      state.pet = await api.post('/pets/me/play', payload);
       playAnim(iconName);
       paintPet(state.pet);
       renderShop();
-      $('#playMsg').innerHTML = `${esc(message)} ${iconLabel('coin', action === 'test_coins' ? '+100' : '+25')}`;
+      const coins = action === 'test_coins' ? iconLabel('coin', '+100') : (action === 'feed' ? '' : iconLabel('coin', '+25'));
+      $('#playMsg').innerHTML = `${esc(message)} ${coins}`;
     } catch (err) {
       $('#playMsg').textContent = err.message;
       toast(err.message, '');
@@ -1970,22 +2164,47 @@
     }
   }
 
-  $('#playFeed').addEventListener('click', () => playWithPet('feed', 'apple', 'Питомец поел и доволен!'));
+  async function feedWithFood(itemId) {
+    const it = SHOP_INDEX[itemId];
+    if (!it) return;
+    await playWithPet('feed', itemIcon(it), `Питомец съел: ${it.name}`, itemId);
+  }
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-food]');
+    if (!card) return;
+    e.preventDefault();
+    feedWithFood(card.dataset.food);
+  });
+
+  $('#playFeed').addEventListener('click', () => {
+    if (Number(state.pet?.hunger || 0) >= 95) {
+      $('#playMsg').textContent = 'Питомец уже сыт.';
+      return;
+    }
+    const items = foodEntries();
+    highlightFoodBags();
+    $('#playMsg').textContent = items.length
+      ? 'Выбери еду на полке ниже или справа.'
+      : 'Еды нет. Купи её во вкладке "Еда" в магазине.';
+  });
   $('#playPet').addEventListener('click', () => playWithPet('pet', 'heart', 'Питомцу приятно'));
   $('#playBall').addEventListener('click', () => playWithPet('ball', 'ball', 'Игра в мячик - весело!'));
   $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
 
   /* ---------------- notifications ---------------- */
+  const UI_NOTIFICATION_TYPES = new Set(['TASK_ASSIGNED', 'DEADLINE']);
+
   async function refreshNotifBadge() {
     const list = await api.get('/notifications');
-    const unread = list.filter((n) => !n.is_read).length;
+    const unread = list.filter((n) => UI_NOTIFICATION_TYPES.has(n.type) && !n.is_read).length;
     const badge = $('#notifBadge');
     badge.textContent = unread;
     badge.classList.toggle('hide', unread === 0);
   }
 
   async function renderNotifications() {
-    const list = await api.get('/notifications');
+    const list = (await api.get('/notifications')).filter((n) => UI_NOTIFICATION_TYPES.has(n.type));
     $('#notifList').innerHTML = list.length
       ? list
           .map(
