@@ -81,6 +81,25 @@
 }
 .ui-icon.lg { width: 1.45em; height: 1.45em; }
 .ui-icon.xl { width: 2.3em; height: 2.3em; }
+.pickup-sprite.ui-icon {
+  width: var(--pickup-w);
+  height: var(--pickup-h);
+  background-image: var(--pickup-url);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: var(--pickup-sheet) var(--pickup-h);
+  image-rendering: pixelated;
+  object-fit: unset;
+  vertical-align: -0.25em;
+}
+.pickup-sprite.pickup-4 { animation: pickup4 .72s steps(4) infinite; }
+.pickup-sprite.pickup-3 { animation: pickup3 .84s steps(3) infinite; }
+@keyframes pickup4 {
+  to { background-position-x: calc(0px - var(--pickup-sheet)); }
+}
+@keyframes pickup3 {
+  to { background-position-x: calc(0px - var(--pickup-sheet)); }
+}
 .icon-label {
   display: inline-flex;
   align-items: center;
@@ -961,6 +980,12 @@ small, .sm { font-size: var(--fs-xs); }
   height: 58px;
   margin: 0 auto;
 }
+.team-pet .pet-emote {
+  top: -14px;
+  left: 54px;
+  width: 28px;
+  height: 28px;
+}
 .team-action,
 .team-name {
   display: inline-block;
@@ -1377,6 +1402,46 @@ textarea.input { resize: vertical; min-height: 70px; }
   opacity: .7;
   letter-spacing: .05em;
   z-index: 2;
+}
+
+.pet-emote {
+  position: absolute;
+  top: 12%;
+  left: 64%;
+  width: 42px;
+  height: 42px;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 5px 8px rgba(80,90,70,0.18));
+}
+.pet-emote.state-emote {
+  animation: emoteFloat 2.6s ease-in-out infinite;
+}
+.pet-emote.burst {
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 52px;
+  animation: emotePop 1.2s ease forwards;
+}
+.pet-emote-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+@keyframes emoteFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.04); }
+}
+@keyframes emotePop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(.7); }
+  18% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.08); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-22px) scale(1); }
 }
 
 .pixelpet {

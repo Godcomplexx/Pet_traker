@@ -101,6 +101,14 @@ async def play_with_pet(
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно энергии для мячика")
         pet.mood = min(100, pet.mood + 10)
         pet.energy = max(0, pet.energy - 12)
+    elif data.action == "sleep":
+        # Уложить спать: быстро восстановить энергию. Доступно, когда питомец устал.
+        reward = 0
+        if pet.energy >= 80:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец бодрый — спать пока не хочет")
+        pet.energy = 100
+        # Небольшой бонус к настроению за отдых.
+        pet.mood = min(100, pet.mood + 5)
     else:
         reward = 100
     pet.coins = (pet.coins or 0) + reward

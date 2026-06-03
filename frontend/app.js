@@ -88,6 +88,15 @@
     axolotl: cdnIcon('1f98e'),
     capybara: cdnIcon('1f9ab'),
   };
+  const PICKUP_SPRITES = {
+    coin: { file: 'coin.png', frames: 4, w: 16, h: 16, label: 'монеты' },
+    small_coin: { file: 'small_coin.png', frames: 4, w: 16, h: 16, label: 'монеты' },
+    heart: { file: 'heart_spin.png', frames: 4, w: 16, h: 16, label: 'сердце' },
+    pickup_heart: { file: 'heart_spin.png', frames: 4, w: 16, h: 16, label: 'сердце' },
+    chest: { file: 'chest.png', frames: 3, w: 32, h: 16, label: 'кейс' },
+    present: { file: 'present.png', frames: 3, w: 16, h: 16, label: 'подарок' },
+    health_kit: { file: 'health_kit.png', frames: 1, w: 16, h: 16, label: 'аптечка' },
+  };
 
   window.petproIconFallback = (img) => {
     const step = Number(img.dataset.fallbackStep || 0);
@@ -107,7 +116,19 @@
   };
 
   function iconImg(name, alt = '', size = '') {
+    if (PICKUP_SPRITES[name]) return pickupSprite(name, alt, size);
     return `<img class="ui-icon ${size}" src="assets/custom-icons/${name}.svg" data-icon-name="${esc(name)}" data-fallback="${esc(ICON_FALLBACKS[name] || '')}" alt="${esc(alt)}" onerror="window.petproIconFallback&&window.petproIconFallback(this)">`;
+  }
+
+  function pickupSprite(name, alt = '', size = '') {
+    const s = PICKUP_SPRITES[name];
+    const framesClass = s.frames === 4 ? 'pickup-4' : (s.frames === 3 ? 'pickup-3' : 'pickup-static');
+    const label = alt || s.label || name;
+    const scale = size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25);
+    const w = Math.round(s.w * scale);
+    const h = Math.round(s.h * scale);
+    const sheet = Math.round(s.w * s.frames * scale);
+    return `<span class="ui-icon pickup-sprite ${framesClass} ${size}" role="img" aria-label="${esc(label)}" style="--pickup-url:url('assets/pickups/${s.file}');--pickup-w:${w}px;--pickup-h:${h}px;--pickup-sheet:${sheet}px;"></span>`;
   }
 
   function iconLabel(name, text, size = '') {
@@ -826,10 +847,54 @@
     hat_gem: 'gem',
   };
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
+  const PET_EMOTES = {
+    alert: 'alert',
+    angry: 'angry',
+    annoyed: 'annoyed',
+    dizzy: 'dizzy',
+    happy: 'happy',
+    heart: 'heart',
+    heart2: 'heart2',
+    idea: 'idea',
+    music: 'music',
+    ok: 'smile2',
+    sad: 'tear',
+    skull: 'skull',
+    sleepy: 'sleep',
+    sleep: 'sleep',
+    sleepy_face: 'sleepy_face',
+    smile2: 'smile2',
+    sparkle: 'sparkle',
+    star: 'star',
+    tear: 'tear',
+  };
 
   function itemIcon(it) {
     if (it?.type === 'food' && it.data?.icon) return it.data.icon;
     return SHOP_ICON_BY_ID[it.id] || it.id;
+  }
+
+  function emoteImg(name, alt = '') {
+    const file = PET_EMOTES[name];
+    return file ? `<img class="pet-emote-img" src="assets/emotes/${file}.png" alt="${esc(alt || name)}">` : '';
+  }
+
+  function stateEmote(pet) {
+    if (!pet) return 'ok';
+    if (pet.state === 'hungry') return 'alert';
+    if (pet.state === 'sleepy') return 'sleep';
+    if (pet.state === 'sad') return 'tear';
+    if (pet.state === 'happy') return 'happy';
+    return 'smile2';
+  }
+
+  function showPetEmote(container, name, mode = 'state') {
+    if (!container || !PET_EMOTES[name]) return;
+    const bubble = document.createElement('div');
+    bubble.className = `pet-emote ${mode === 'burst' ? 'burst' : 'state-emote'}`;
+    bubble.innerHTML = emoteImg(name, name);
+    container.appendChild(bubble);
+    if (mode === 'burst') setTimeout(() => bubble.remove(), 1300);
   }
 
   // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
@@ -840,11 +905,13 @@
     $$('.petscreen').forEach((screen) => {
       screen.querySelector('.pixelpet')?.remove();
       screen.querySelector('.pet-hat')?.remove();
+      screen.querySelectorAll('.pet-emote.state-emote').forEach((el) => el.remove());
       // фон из экипировки (если есть) — иначе сбрасываем к стилю по умолчанию
       screen.style.background = bgItem ? bgItem.data : '';
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
+      showPetEmote(screen, stateEmote(pet), 'state');
       // шапка-эмодзи поверх питомца
       if (hatItem) {
         const hat = document.createElement('div');
@@ -937,6 +1004,12 @@
     set('[data-petmood]', pet.mood); num('[data-petmoodnum]', pet.mood);
     set('[data-pethunger]', pet.hunger); num('[data-pethungernum]', pet.hunger);
     set('[data-petenergy]', pet.energy); num('[data-petenergynum]', pet.energy);
+    $$('[data-petenergyhint]').forEach((e) => {
+      const energy = Number(pet.energy || 0);
+      e.textContent = energy < 80
+        ? 'Энергия от времени не растёт сама: работа даёт +6, а сон быстро восстановит её до 100.'
+        : 'Энергия тратится на игры и падает примерно на 3 в час. Сон станет доступен, когда питомец устанет ниже 80.';
+    });
     // Подпись состояния (тамагочи).
     const stateIcon = STATE_ICON[pet.state];
     $$('[data-petstate]').forEach((e) => {
@@ -1741,13 +1814,16 @@
       spot.style.setProperty('--team-delay', `${(idx % 5) * -0.45}s`);
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
+      const emote = document.createElement('div');
+      emote.className = 'pet-emote state-emote';
+      emote.innerHTML = emoteImg(stateEmote(pet), pet.state_label || pet.state || '');
       const action = document.createElement('div');
       action.className = 'team-action';
       action.textContent = TEAM_ACTIONS[idx % TEAM_ACTIONS.length];
       const name = document.createElement('div');
       name.className = 'team-name';
       name.textContent = pet.name || 'Питомец';
-      spot.append(sprite, action, name);
+      spot.append(sprite, emote, action, name);
       scene.appendChild(spot);
     });
   }
@@ -2153,7 +2229,7 @@
   });
 
   function caseTile(it, winner = false) {
-    return `<div class="case-tile rar-${it.rarity} ${winner ? 'winner' : ''}">
+    return `<div class="case-tile rar-${it.rarity}" ${winner ? 'data-case-winner="1"' : ''}>
       ${itemPreview(it)}
       <div class="nm">${esc(it.name)}</div>
       <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
@@ -2173,7 +2249,7 @@
     </div>`;
     const roulette = $('#caseResult .case-roulette');
     const strip = $('#caseResult .case-strip');
-    const winner = $('#caseResult .case-tile.winner');
+    const winner = $('#caseResult .case-tile[data-case-winner="1"]');
     strip.style.transition = 'none';
     strip.style.transform = `translateX(${roulette.clientWidth + 24}px)`;
     const winnerCenter = winner.offsetLeft + winner.offsetWidth / 2;
@@ -2184,7 +2260,10 @@
       strip.style.transition = '';
       strip.style.transform = `translateX(${targetX}px)`;
     });
-    return new Promise((resolve) => setTimeout(resolve, 2600));
+    return new Promise((resolve) => setTimeout(() => {
+      winner.classList.add('winner');
+      resolve();
+    }, 2600));
   }
 
   $('#openCase').addEventListener('click', async () => {
@@ -2199,7 +2278,7 @@
         `<div class="case-final shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
           <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
-          <div class="sm">${res.is_new ? iconLabel('party', 'Новый предмет!') : 'Дубликат - вернули монеты'}</div>
+          <div class="sm">${res.is_new ? iconLabel('present', 'Новый предмет!') : iconLabel('small_coin', 'Дубликат - вернули монеты')}</div>
         </div>`,
       );
       await refreshPet();
@@ -2215,6 +2294,10 @@
     const sprite = screen && screen.querySelector('.pixelpet');
     if (sprite) { sprite.classList.add('state-happy'); setTimeout(() => sprite.classList.remove('state-happy'), 1500); }
     if (screen) {
+      if (PET_EMOTES[iconName]) {
+        showPetEmote(screen, iconName, 'burst');
+        return;
+      }
       const burst = document.createElement('div');
       burst.appendChild(iconNode(iconName, 'xl'));
       burst.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:32px;z-index:6;animation:toastin .4s;pointer-events:none;';
@@ -2237,6 +2320,14 @@
         disabled: Number(pet.hunger || 0) <= 10 || Number(pet.energy || 0) < 12,
         title: Number(pet.hunger || 0) <= 10 ? 'Питомец голоден' : 'Нужно минимум 12 энергии',
       },
+      playSleep: {
+        disabled: Number(pet.energy || 0) >= 80,
+        title: 'Сон доступен, когда энергия ниже 80',
+      },
+      petSleep: {
+        disabled: Number(pet.energy || 0) >= 80,
+        title: 'Сон доступен, когда энергия ниже 80',
+      },
     };
     Object.entries(rules).forEach(([id, rule]) => {
       const btn = $('#' + id);
@@ -2258,10 +2349,12 @@
     try {
       const payload = itemId ? { action, item_id: itemId } : { action };
       state.pet = await api.post('/pets/me/play', payload);
-      playAnim(iconName);
       paintPet(state.pet);
+      playAnim(iconName);
       renderShop();
-      const coins = action === 'test_coins' ? iconLabel('coin', '+100') : (action === 'feed' ? '' : iconLabel('coin', '+25'));
+      const coins = action === 'test_coins'
+        ? iconLabel('coin', '+100')
+        : (action === 'feed' || action === 'sleep' ? '' : iconLabel('coin', '+25'));
       $('#playMsg').innerHTML = `${esc(message)} ${coins}`;
     } catch (err) {
       $('#playMsg').textContent = err.message;
@@ -2294,8 +2387,13 @@
       ? 'Выбери еду на полке ниже или справа.'
       : 'Еды нет. Купи её во вкладке "Еда" в магазине.';
   });
-  $('#playPet').addEventListener('click', () => playWithPet('pet', 'heart', 'Питомцу приятно'));
-  $('#playBall').addEventListener('click', () => playWithPet('ball', 'ball', 'Игра в мячик - весело!'));
+  $('#playPet').addEventListener('click', () => playWithPet('pet', 'pickup_heart', 'Питомцу приятно'));
+  $('#playBall').addEventListener('click', () => playWithPet('ball', 'music', 'Игра в мячик - весело!'));
+  $('#playSleep')?.addEventListener('click', () => playWithPet('sleep', 'sleep', 'Питомец выспался и восстановил энергию.'));
+  $('#petSleep')?.addEventListener('click', () => {
+    go('gameroom');
+    playWithPet('sleep', 'sleep', 'Питомец выспался и восстановил энергию.');
+  });
   $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
 
   /* ---------------- notifications ---------------- */

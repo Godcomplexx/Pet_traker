@@ -253,6 +253,10 @@
             <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
             <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
             <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
+            <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap;">
+              <button class="btn sm" data-go="gameroom"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
+              <span class="note grow" data-petenergyhint style="margin:0;"></span>
+            </div>
             <div class="note" style="margin-top:4px;">Каждые 100 XP — новый уровень. Закрывай задачи, чтобы питомец рос!</div>
           </div>
         </div>
@@ -529,6 +533,11 @@
         <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
         <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
         <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
+        <div class="note" data-petenergyhint style="margin-top:8px;"></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn sm" id="petSleep"><span class="asset-icon" data-icon="moon" data-label="Спать"></span> Уложить спать</button>
+          <button class="btn primary sm" data-go="gameroom"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
+        </div>
       </div>
     </section>
 
@@ -578,7 +587,9 @@
               <button class="btn sm" id="playFeed"><span class="asset-icon" data-icon="apple" data-label="Покормить"></span> Покормить</button>
               <button class="btn sm" id="playPet"><span class="asset-icon" data-icon="heart" data-label="Погладить"></span> Погладить</button>
               <button class="btn sm" id="playBall"><span class="asset-icon" data-icon="ball" data-label="Мячик"></span> Мячик</button>
+              <button class="btn sm" id="playSleep"><span class="asset-icon" data-icon="moon" data-label="Спать"></span> Спать</button>
             </div>
+            <div class="note" data-petenergyhint style="width:100%;margin-top:8px;"></div>
             <div class="food-belt" id="foodBelt" style="width:100%;margin-top:10px;"></div>
             <div class="note" id="playMsg" style="margin-top:8px;"></div>
           </div>
@@ -586,7 +597,7 @@
           <div class="card sk2 col" style="align-items:center;text-align:center;">
             <h3>Кейс</h3>
             <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>
-            <button class="btn primary" id="openCase" style="margin-top:8px;">Открыть кейс - <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
+            <button class="btn primary" id="openCase" style="margin-top:8px;">Открыть кейс <span class="asset-icon" data-icon="chest" data-label="кейс"></span> <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
             <button class="btn sm" id="testCoins" style="margin-top:8px;">Тест +100 монет</button>
             <div id="caseResult" style="margin-top:10px;"></div>
           </div>
