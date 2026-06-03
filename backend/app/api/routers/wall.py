@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
-from app.models import User, WallPost
+from app.enums import NotificationType
+from app.models import User, WallPost, WorkspaceMember
 from app.schemas import WallPostCreate, WallPostOut
+from app.services.notifications import create_notification
 
 router = APIRouter(tags=["wall"])
 
@@ -54,6 +56,27 @@ async def create_wall_post(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Пустое сообщение")
     post = WallPost(workspace_id=workspace_id, author_id=user.id, text=text)
     db.add(post)
+    await db.flush()
+    member_ids = (
+        await db.scalars(
+            select(WorkspaceMember.user_id).where(
+                WorkspaceMember.workspace_id == workspace_id,
+                WorkspaceMember.user_id != user.id,
+            )
+        )
+    ).all()
+    preview = text if len(text) <= 160 else text[:157] + "..."
+    for member_id in member_ids:
+        await create_notification(
+            db,
+            user_id=member_id,
+            type_=NotificationType.WALL_POST,
+            title=f"{user.display_name or user.email or 'Участник'} написал(а) на стене",
+            body=preview,
+            workspace_id=workspace_id,
+            entity_type="wall_post",
+            entity_id=post.id,
+        )
     await db.commit()
     await db.refresh(post)
     return WallPostOut(

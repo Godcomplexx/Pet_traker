@@ -532,7 +532,11 @@
             </div>
           </div>
         </div>
-        <div class="card sk"><h3>Питомцы команды</h3><div id="teamPets" class="col"></div></div>
+        <div class="card sk">
+          <h3>Питомцы команды</h3>
+          <div class="team-playground" id="teamPlayground"></div>
+          <div id="teamPets" class="col" style="margin-top:10px;"></div>
+        </div>
       </div>
     </section>
 
@@ -566,8 +570,16 @@
         </div>
         <!-- магазин -->
         <div class="card sk">
-          <h3>Магазин <span class="mono" id="shopHint">экипируй купленное кликом</span></h3>
+          <h3>Каталог <span class="mono" id="shopHint">покупай предметы по категориям</span></h3>
+          <div class="seg shop-tabs" id="shopTabs" style="margin-top:8px;">
+            <button class="on" data-shop-tab="all">Все</button>
+            <button data-shop-tab="body">Цвет</button>
+            <button data-shop-tab="hat">Шапки</button>
+            <button data-shop-tab="bg">Фоны</button>
+          </div>
           <div id="shopGrid" class="grid g2" style="margin-top:10px;"></div>
+          <h3 style="margin-top:16px;">Рюкзак <span class="mono">клик - надеть/снять</span></h3>
+          <div id="inventoryGrid" class="grid g2" style="margin-top:10px;"></div>
         </div>
       </div>
     </section>
@@ -598,6 +610,7 @@
       <div class="stat"><span class="lbl">Настр.</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div></div>
       <div class="stat"><span class="lbl">Сыт.</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div></div>
       <div class="stat"><span class="lbl">Энерг.</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div></div>
+      <div class="dock-bag" id="dockBackpack"></div>
       <button class="btn sm" data-go="gameroom" style="width:100%;margin-top:8px;"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
     </div>
   </aside>

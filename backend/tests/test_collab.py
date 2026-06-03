@@ -35,6 +35,22 @@ async def test_comment_grants_xp_and_mention_notifies(client):
     assert any(n["type"] == "MENTION" for n in notifs)
 
 
+async def test_wall_post_notifies_workspace_members(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    resp = await client.post(
+        f"/workspaces/{ws['id']}/wall",
+        json={"text": "Новый результат в лаборатории"},
+        headers=ho,
+    )
+    assert resp.status_code == 201, resp.text
+
+    bob_notifs = (await client.get("/notifications", headers=hb)).json()
+    assert any(n["type"] == "WALL_POST" and n["entity_id"] == resp.json()["id"] for n in bob_notifs)
+
+    owner_notifs = (await client.get("/notifications", headers=ho)).json()
+    assert all(n["type"] != "WALL_POST" for n in owner_notifs)
+
+
 async def test_mention_of_self_or_outsider_does_not_notify(client):
     ws, ho, hb, owner, bob = await _workspace_with_member(client)
     project = (

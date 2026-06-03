@@ -136,3 +136,4 @@ class NotificationType(str, enum.Enum):
     TASK_ASSIGNED = "TASK_ASSIGNED"
     MENTION = "MENTION"
     DEADLINE = "DEADLINE"
+    WALL_POST = "WALL_POST"

@@ -612,7 +612,21 @@ a:hover{ color: var(--xp2); }
   backdrop-filter: blur(8px);
 }
 .petmini .meta { flex: 1; min-width: 0; }
-.petmini .meta b { font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace; font-size: var(--fs-xs); color: var(--ink); }
+.petmini .meta b {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  color: var(--ink);
+}
+.petmini .meta .mono {
+  display: block;
+  max-width: 100%;
+  line-height: 1.55;
+}
 
 /* ── USER ROW ── */
 .userrow {
@@ -627,6 +641,29 @@ a:hover{ color: var(--xp2); }
   transition: background .12s;
 }
 .userrow:hover { background: rgba(255,255,255,0.40); color: var(--ink); }
+.userrow #meName {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.45;
+}
+.userrow #meName > .mono {
+  display: block;
+  max-width: 100%;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.55;
+  font-size: 8px;
+}
+.userrow #logoutBtn {
+  flex: 0 0 20px;
+  width: 20px;
+  min-width: 20px;
+  display: inline-flex;
+  justify-content: center;
+}
 
 /* ============================================================
    MAIN CONTENT
@@ -828,6 +865,70 @@ small, .sm { font-size: var(--fs-xs); }
 @keyframes pop {
   from { opacity:0; transform:translateX(-6px); }
   to   { opacity:1; }
+}
+
+.team-playground {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.52), rgba(255,255,255,0.18)),
+    radial-gradient(circle at 25% 85%, rgba(122,158,120,0.18), transparent 34%),
+    radial-gradient(circle at 78% 78%, rgba(176,138,158,0.14), transparent 28%);
+}
+.team-playground::after {
+  content: '';
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 22px;
+  border-top: 1px dashed rgba(110,125,105,0.25);
+}
+.team-pet {
+  position: absolute;
+  left: var(--team-x);
+  top: var(--team-y);
+  width: 74px;
+  transform: translate(-50%, -50%);
+  animation: teamwander 4.5s steps(3) infinite;
+  animation-delay: var(--team-delay);
+  text-align: center;
+}
+.team-pet .pixelpet {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 64px;
+  height: 58px;
+  margin: 0 auto;
+}
+.team-action,
+.team-name {
+  display: inline-block;
+  max-width: 86px;
+  margin-top: 3px;
+  padding: 3px 5px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.58);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+}
+.team-action { color: var(--ink2); }
+.team-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink3);
+}
+@keyframes teamwander {
+  0%, 100% { transform: translate(-50%, -50%) translateX(-4px); }
+  50% { transform: translate(-50%, -50%) translateX(6px) translateY(-4px); }
 }
 
 /* ============================================================
@@ -1364,6 +1465,39 @@ textarea.input { resize: vertical; min-height: 70px; }
 .petdock.collapsed .petdock-toggle { transform: translateX(-100%) rotate(180deg); }
 .petdock.collapsed .petdock-body { opacity: 0; pointer-events: none; }
 .petdock-body { transition: opacity .2s; }
+.dock-bag {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border2);
+}
+.dock-bag-title {
+  margin-bottom: 6px;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  color: var(--ink3);
+}
+.dock-bag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.dock-bag .shopcard {
+  padding: 6px 4px;
+  min-height: 62px;
+}
+.dock-bag .shopcard .swatch-prev {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 3px;
+}
+.dock-bag .shopcard .swatch-prev .ui-icon {
+  width: 20px;
+  height: 20px;
+}
+.dock-bag .shopcard .sm {
+  font-size: 8px;
+  line-height: 1.2;
+}
 
 /* основной контент уступает место доку на широких экранах */
 #app { padding-right: 230px; }
@@ -1390,6 +1524,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 .shopcard:hover { background: rgba(255,255,255,0.55); transform: translateY(-2px); }
 .shopcard.owned { border-color: var(--xp); }
 .shopcard.equipped { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.shopcard.bagitem { background: rgba(255,255,255,0.42); }
 .shopcard .swatch-prev {
   width: 36px; height: 36px; margin: 0 auto 6px;
   border-radius: 50%;

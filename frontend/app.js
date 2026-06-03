@@ -28,6 +28,7 @@
     articles: [],
     members: [],
     pollTimer: null,
+    shopTab: 'all',
   };
 
   const esc = (s) =>
@@ -438,7 +439,7 @@
         const active = $('.screen.on');
         const name = active ? active.id.replace('screen-', '') : '';
         if (name === 'dashboard') await refreshDashboardLive();
-        if (name === 'team') await renderTeam();
+        if (name === 'team') await renderWall();
         if (name === 'notif') await renderNotifications();
       } catch {
         // Polling is best-effort; explicit actions still surface errors via toasts.
@@ -898,6 +899,7 @@
     $$('[data-petcoins]').forEach((e) => (e.innerHTML = iconLabel('coin', String(pet.coins || 0))));
     $('#coinBalance') && ($('#coinBalance').innerHTML = iconLabel('coin', String(pet.coins || 0)));
     paintSprites(pet);
+    renderBackpack();
   }
   async function refreshPet() {
     const pet = await api.get('/pets/me');
@@ -1580,10 +1582,41 @@
     await refreshPet();
   }
 
+  const TEAM_ACTIONS = ['думает', 'прыгает', 'ищет идею', 'пьет чай', 'читает', 'смотрит стену'];
+
+  function renderTeamPlayground(pets) {
+    const scene = $('#teamPlayground');
+    if (!scene) return;
+    scene.innerHTML = '';
+    if (!pets.length) {
+      scene.innerHTML = '<div class="muted sm">Питомцы появятся здесь, когда участники настроят их.</div>';
+      return;
+    }
+    pets.slice(0, 8).forEach((pet, idx) => {
+      const spot = document.createElement('div');
+      spot.className = `team-pet lane-${idx % 4}`;
+      spot.style.setProperty('--team-x', `${12 + ((idx * 23) % 72)}%`);
+      spot.style.setProperty('--team-y', `${22 + ((idx * 31) % 54)}%`);
+      spot.style.setProperty('--team-delay', `${(idx % 5) * -0.45}s`);
+      const sprite = buildPixelPet(pet);
+      if (pet.state) sprite.classList.add('state-' + pet.state);
+      const action = document.createElement('div');
+      action.className = 'team-action';
+      action.textContent = TEAM_ACTIONS[idx % TEAM_ACTIONS.length];
+      const name = document.createElement('div');
+      name.className = 'team-name';
+      name.textContent = pet.name || 'Питомец';
+      spot.append(sprite, action, name);
+      scene.appendChild(spot);
+    });
+  }
+
   /* ---------------- wall (бывш. team room) ---------------- */
   async function renderWall() {
     // питомцы команды (справа)
     const data = await api.get(`/workspaces/${state.wsId}/team-room`).catch(() => ({ pets: [] }));
+    const pets = data.pets || [];
+    renderTeamPlayground(pets);
     $('#teamPets').innerHTML = (data.pets || [])
       .map(
         (p) => `<div class="petmini soft"><div class="av"><div class="hud">${levelOf(p.xp)}</div></div>
@@ -1667,15 +1700,16 @@
   function renderShop() {
     const pet = state.pet || {};
     const inv = pet.inventory || [];
-    const eq = pet.equipped || {};
-    $('#shopGrid').innerHTML = (state.shopCatalog || [])
+    const tab = state.shopTab || 'all';
+    $('#shopTabs')?.querySelectorAll('[data-shop-tab]').forEach((b) => {
+      b.classList.toggle('on', b.dataset.shopTab === tab);
+    });
+    const items = (state.shopCatalog || []).filter((it) => tab === 'all' || it.type === tab);
+    $('#shopGrid').innerHTML = items
       .map((it) => {
         const owned = inv.includes(it.id);
-        const equipped = eq[it.type] === it.id;
-        const cls = `shopcard ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}`;
-        const action = owned
-          ? (equipped ? 'надето' : 'надеть')
-          : iconLabel('coin', String(it.price));
+        const cls = `shopcard ${owned ? 'owned' : ''}`;
+        const action = owned ? 'в рюкзаке' : iconLabel('coin', String(it.price));
         return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
           ${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
@@ -1683,26 +1717,72 @@
           <div class="sm" style="margin-top:4px;">${action}</div>
         </div>`;
       })
-      .join('');
+      .join('') || '<div class="muted sm">В этой вкладке пока пусто.</div>';
+    renderBackpack();
   }
 
-  // клик по товару: купить (если не куплен) или надеть/снять (если куплен)
+  function inventoryCard(it, compact = false) {
+    const pet = state.pet || {};
+    const eq = pet.equipped || {};
+    const equipped = eq[it.type] === it.id;
+    return `<div class="shopcard bagitem ${equipped ? 'equipped' : ''}" data-inventory="${it.id}" title="${equipped ? 'Снять' : 'Надеть'}">
+      ${itemPreview(it)}
+      ${compact ? '' : `<div class="nm">${esc(it.name)}</div><div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>`}
+      <div class="sm" style="margin-top:4px;">${equipped ? 'надето' : 'надеть'}</div>
+    </div>`;
+  }
+
+  function renderBackpack() {
+    const pet = state.pet || {};
+    const items = (pet.inventory || []).map((id) => SHOP_INDEX[id]).filter(Boolean);
+    const full = $('#inventoryGrid');
+    if (full) {
+      full.innerHTML = items.length
+        ? items.map((it) => inventoryCard(it)).join('')
+        : '<div class="muted sm">Рюкзак пуст. Открой кейс или купи предмет.</div>';
+    }
+    const dock = $('#dockBackpack');
+    if (dock) {
+      dock.innerHTML = `<div class="dock-bag-title">Рюкзак</div>${
+        items.length
+          ? `<div class="dock-bag-grid">${items.slice(0, 6).map((it) => inventoryCard(it, true)).join('')}</div>`
+          : '<div class="muted sm">Пусто</div>'
+      }`;
+    }
+  }
+
+  $('#shopTabs')?.addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-shop-tab]');
+    if (!tab) return;
+    state.shopTab = tab.dataset.shopTab;
+    renderShop();
+  });
+
+  // клик по товару: в каталоге покупаем, экипировка живет в рюкзаке
   $('#shopGrid').addEventListener('click', async (e) => {
     const card = e.target.closest('[data-shop]');
     if (!card) return;
     const id = card.dataset.shop;
     const owned = card.dataset.owned === '1';
+    if (owned) {
+      toast('Уже в рюкзаке. Надеть можно ниже в рюкзаке.', 'xp');
+      return;
+    }
     try {
-      if (owned) {
-        state.pet = await api.post('/shop/equip', { item_id: id });
-        paintPet(state.pet);
-        renderShop();
-      } else {
-        state.pet = await api.post('/shop/buy', { item_id: id });
-        paintPet(state.pet);
-        renderShop();
-        toast('Куплено!', 'xp');
-      }
+      state.pet = await api.post('/shop/buy', { item_id: id });
+      paintPet(state.pet);
+      renderShop();
+      toast('Куплено!', 'xp');
+    } catch (err) { toast(err.message, ''); }
+  });
+
+  document.addEventListener('click', async (e) => {
+    const card = e.target.closest('[data-inventory]');
+    if (!card) return;
+    try {
+      state.pet = await api.post('/shop/equip', { item_id: card.dataset.inventory });
+      paintPet(state.pet);
+      renderShop();
     } catch (err) { toast(err.message, ''); }
   });
 
