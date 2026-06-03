@@ -107,6 +107,9 @@ class PetOut(ORMModel):
     mood: int
     hunger: int
     energy: int
+    coins: int = 0
+    inventory: list[str] = []
+    equipped: dict = {}
     # Производное состояние (happy/ok/sad/hungry/sleepy) и подпись для UI.
     state: str = "ok"
     state_label: str = "в порядке"
@@ -129,6 +132,22 @@ class PetCustomize(BaseModel):
         if v not in SPECIES:
             raise ValueError(f"Неизвестный вид питомца. Доступно: {', '.join(sorted(SPECIES))}")
         return v
+
+
+class ShopBuyIn(BaseModel):
+    item_id: str
+
+
+class EquipIn(BaseModel):
+    # item_id или null чтобы снять предмет данного типа
+    item_id: str | None = None
+
+
+class CaseOpenOut(BaseModel):
+    """Результат открытия кейса."""
+    item: dict
+    is_new: bool
+    coins: int
 
 
 # ── Workspace ──
@@ -341,4 +360,16 @@ class NotificationOut(ORMModel):
     entity_type: str | None = None
     entity_id: str | None = None
     is_read: bool
+
+
+class WallPostCreate(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class WallPostOut(BaseModel):
+    id: str
+    author_id: str
+    author_name: str
+    text: str
+    created_at: datetime
     created_at: datetime

@@ -518,6 +518,21 @@ try{
       if(window.innerWidth <= 900) closeSide();
     })
   );
+
+  /* десктоп: сворачивание сайдбара в узкую полоску (состояние запоминается) */
+  const collapseBtn = document.getElementById('sideCollapse');
+  const app = document.getElementById('app');
+  if(collapseBtn && app){
+    try{
+      if(localStorage.getItem('petpro_side_collapsed') === '1'){
+        app.classList.add('side-collapsed');
+      }
+    }catch(e){}
+    collapseBtn.addEventListener('click', () => {
+      const collapsed = app.classList.toggle('side-collapsed');
+      try{ localStorage.setItem('petpro_side_collapsed', collapsed ? '1' : '0'); }catch(e){}
+    });
+  }
 })();
 
 })();

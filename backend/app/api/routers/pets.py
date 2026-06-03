@@ -5,8 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
 from app.models import Pet, User, WorkspaceMember
-from app.schemas import PetCustomize, PetOut, PetUpdate
+from app.schemas import CaseOpenOut, EquipIn, PetCustomize, PetOut, PetUpdate, ShopBuyIn
 from app.services.pet import apply_decay, pet_state, state_label
+from app.services.shop import CASE_PRICE, SHOP_ITEMS, get_item, roll_case
 
 router = APIRouter(tags=["pets"])
 
@@ -61,6 +62,90 @@ async def customize_pet(
     pet.body_color = data.body_color
     pet.accent_color = data.accent_color
     pet.customized = True
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
+
+# ──────────────────────────── магазин / кейсы ────────────────────────────
+@router.get("/shop/items")
+async def shop_items(user: User = Depends(get_current_user)):
+    """Каталог магазина (статичный, из кода)."""
+    return {"items": SHOP_ITEMS, "case_price": CASE_PRICE}
+
+
+def _grant_item(pet: Pet, item_id: str) -> bool:
+    """Добавить предмет в инвентарь. True, если он новый."""
+    inv = list(pet.inventory or [])
+    if item_id in inv:
+        return False
+    inv.append(item_id)
+    pet.inventory = inv  # переприсваиваем — иначе SQLAlchemy не заметит мутацию JSON
+    return True
+
+
+@router.post("/shop/buy", response_model=PetOut)
+async def shop_buy(
+    data: ShopBuyIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    item = get_item(data.item_id)
+    if item is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Товар не найден")
+    if data.item_id in (pet.inventory or []):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Уже куплено")
+    if (pet.coins or 0) < item["price"]:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно монет")
+    pet.coins -= item["price"]
+    _grant_item(pet, data.item_id)
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
+
+@router.post("/shop/open-case", response_model=CaseOpenOut)
+async def shop_open_case(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    if (pet.coins or 0) < CASE_PRICE:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно монет для кейса")
+    pet.coins -= CASE_PRICE
+    item = roll_case()
+    is_new = _grant_item(pet, item["id"])
+    # дубликат компенсируем монетами (1/4 цены), чтобы кейсы не были «пустыми»
+    if not is_new:
+        pet.coins += max(5, item["price"] // 4)
+    await db.commit()
+    await db.refresh(pet)
+    return CaseOpenOut(item=item, is_new=is_new, coins=pet.coins)
+
+
+@router.post("/shop/equip", response_model=PetOut)
+async def shop_equip(
+    data: EquipIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """Надеть/снять купленный предмет. item_id=null снимает предмет своего типа."""
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    equipped = dict(pet.equipped or {})
+    if data.item_id is None:
+        # снять — но не знаем тип, поэтому ничего; фронт шлёт конкретный item_id
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Не указан предмет")
+    item = get_item(data.item_id)
+    if item is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Товар не найден")
+    if data.item_id not in (pet.inventory or []):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет не куплен")
+    # toggle: если уже надет этот предмет — снимаем, иначе надеваем
+    if equipped.get(item["type"]) == data.item_id:
+        equipped.pop(item["type"], None)
+    else:
+        equipped[item["type"]] = data.item_id
+    pet.equipped = equipped
+    # цвет тела применяем сразу (это не «шапка», а основной вид)
+    if item["type"] == "body":
+        pet.body_color = item["data"] if equipped.get("body") else pet.body_color
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)

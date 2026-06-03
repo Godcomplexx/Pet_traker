@@ -99,8 +99,12 @@ async def process_domain_event(db: AsyncSession, event_id: str) -> None:
                 )
                 pet = await db.scalar(select(Pet).where(Pet.user_id == beneficiary_id))
                 if pet is not None:
+                    level_before = pet.level
                     pet.xp += xp
                     pet.level = level_of(pet.xp)
+                    # Монеты за каждый новый уровень (10 монет/уровень) — для магазина/кейсов.
+                    if pet.level > level_before:
+                        pet.coins = (pet.coins or 0) + (pet.level - level_before) * 10
                     # Тамагочи: работа кормит и радует питомца.
                     milestone = event.event_type in (
                         DomainEventType.PROJECT_STATUS_CHANGED,

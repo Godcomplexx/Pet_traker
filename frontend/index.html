@@ -158,23 +158,25 @@
   <aside class="side" id="sidebar">
     <div class="brand">
       <b>lab tracker</b>
+      <button id="sideCollapse" class="side-collapse" title="Свернуть меню" aria-label="Свернуть меню">«</button>
     </div>
     <div class="labpick soft">
       <select id="wsPick" class="rolepick" style="flex:1;border:0;background:transparent;font-size:15px;"></select>
       <span class="mono btn-like" id="newWsBtn" title="Новая лаборатория">＋</span>
     </div>
     <nav class="nav" id="nav">
-      <a data-go="dashboard" class="active"><span class="ic">▤</span> Дашборд</a>
-      <a data-go="lab"><span class="ic">🧪</span> Лаборатория</a>
+      <a data-go="dashboard" class="active" title="Дашборд"><span class="ic">▤</span> <span class="lbl">Дашборд</span></a>
+      <a data-go="lab" title="Лаборатория"><span class="ic">🧪</span> <span class="lbl">Лаборатория</span></a>
       <div class="grp">Работа</div>
-      <a data-go="projects"><span class="ic">◧</span> Проекты</a>
-      <a data-go="articles"><span class="ic">▦</span> Статьи</a>
-      <a data-go="mytasks"><span class="ic">✓</span> Мои задачи</a>
+      <a data-go="projects" title="Проекты"><span class="ic">◧</span> <span class="lbl">Проекты</span></a>
+      <a data-go="articles" title="Статьи"><span class="ic">▦</span> <span class="lbl">Статьи</span></a>
+      <a data-go="mytasks" title="Мои задачи"><span class="ic">✓</span> <span class="lbl">Мои задачи</span></a>
       <div class="grp">Игра</div>
-      <a data-go="pet"><span class="ic">❍</span> Питомец</a>
-      <a data-go="team"><span class="ic">◑</span> Team Room</a>
+      <a data-go="pet" title="Питомец"><span class="ic">❍</span> <span class="lbl">Питомец</span></a>
+      <a data-go="gameroom" title="Комната игр"><span class="ic">🎮</span> <span class="lbl">Комната игр</span></a>
+      <a data-go="team" title="Стена"><span class="ic">▤</span> <span class="lbl">Стена</span></a>
       <div class="grp">Прочее</div>
-      <a data-go="notif"><span class="ic">!</span> Уведомления <span class="badge hide" id="notifBadge">0</span></a>
+      <a data-go="notif" title="Уведомления"><span class="ic">!</span> <span class="lbl">Уведомления</span> <span class="badge hide" id="notifBadge">0</span></a>
     </nav>
     <div class="spacer"></div>
     <div class="petmini sk2" data-go="pet">
@@ -513,11 +515,59 @@
     </section>
 
     <!-- ===== TEAM ROOM ===== -->
+    <!-- ===== WALL (бывш. Team Room) ===== -->
     <section class="screen" id="screen-team">
-      <div class="topbar"><div><h1>Team Room</h1><div class="muted sm">питомцы команды + публичная активность</div></div></div>
-      <div class="grid g-1-2">
+      <div class="topbar"><div><h1>Стена</h1><div class="muted sm">сообщения для всех участников лаборатории</div></div></div>
+      <div class="grid g-2-1">
+        <div class="col">
+          <div class="card sk">
+            <div class="row" style="gap:8px;">
+              <input class="input" id="wallInput" placeholder="Написать на стене…" style="flex:1;" maxlength="2000">
+              <button class="btn primary" id="wallSend">Отправить</button>
+            </div>
+          </div>
+          <div class="card sk2 feed"><div class="feedbody" id="wallFeed"></div>
+            <div style="text-align:center;margin-top:10px;">
+              <button class="btn sm" id="wallMore" style="display:none;">Загрузить ещё</button>
+            </div>
+          </div>
+        </div>
         <div class="card sk"><h3>Питомцы команды</h3><div id="teamPets" class="col"></div></div>
-        <div class="card sk2 feed"><h3>Активность</h3><div class="feedbody" id="teamFeed"></div></div>
+      </div>
+    </section>
+
+    <!-- ===== GAME ROOM ===== -->
+    <section class="screen" id="screen-gameroom">
+      <div class="topbar">
+        <div><h1>Комната игр</h1><div class="muted sm">играй с питомцем, открывай кейсы, покупай в магазине</div></div>
+        <div class="grow"></div>
+        <span class="chip acc" id="coinBalance">🪙 0</span>
+      </div>
+      <div class="grid g-1-2">
+        <!-- играть с питомцем -->
+        <div class="col">
+          <div class="card sk col" style="align-items:center;text-align:center;">
+            <div class="petscreen petbig" id="gamePetScreen" style="width:100%;height:200px;"><div class="scan">PLAY</div></div>
+            <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
+              <button class="btn sm" id="playFeed">🍎 Покормить</button>
+              <button class="btn sm" id="playPet">💚 Погладить</button>
+              <button class="btn sm" id="playBall">🎾 Мячик</button>
+            </div>
+            <div class="note" id="playMsg" style="margin-top:8px;"></div>
+          </div>
+          <!-- кейсы -->
+          <div class="card sk2 col" style="align-items:center;text-align:center;">
+            <h3>Кейс</h3>
+            <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>
+            <button class="btn primary" id="openCase" style="margin-top:8px;">Открыть кейс · 🪙 <span id="casePrice">50</span></button>
+            <div id="caseResult" style="margin-top:10px;"></div>
+          </div>
+        </div>
+        <!-- магазин -->
+        <div class="card sk">
+          <h3>Магазин <span class="mono" id="shopHint">экипируй купленное кликом</span></h3>
+          <div id="shopGrid" class="grid g2" style="margin-top:10px;"></div>
+        </div>
       </div>
     </section>
 
@@ -531,6 +581,25 @@
       <div class="card sk2"><div id="notifList"></div></div>
     </section>
   </main>
+
+  <!-- ===== ЗАКРЕПЛЁННЫЙ ПИТОМЕЦ СПРАВА (виден на всех экранах) ===== -->
+  <aside class="petdock" id="petDock">
+    <button class="petdock-toggle" id="petDockToggle" title="Свернуть питомца">›</button>
+    <div class="petdock-body">
+      <div class="petscreen" id="dockPetScreen" style="width:100%;height:130px;"><div class="scan" data-petstate-mini></div></div>
+      <div class="between" style="margin-top:8px;">
+        <b data-petname style="font-size:var(--fs-sm);">Питомец</b>
+        <span class="chip acc" data-petcoins>🪙 0</span>
+      </div>
+      <div class="stat" style="margin-top:6px;"><span class="lbl">LVL</span>
+        <div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div>
+        <span class="num" data-petnum>0/100</span></div>
+      <div class="stat"><span class="lbl">Настр.</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div></div>
+      <div class="stat"><span class="lbl">Сыт.</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div></div>
+      <div class="stat"><span class="lbl">Энерг.</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div></div>
+      <button class="btn sm" data-go="gameroom" style="width:100%;margin-top:8px;">🎮 Играть</button>
+    </div>
+  </aside>
 </div>
 
 <div class="toastwrap" id="toasts"></div>

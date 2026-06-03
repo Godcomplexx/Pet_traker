@@ -64,7 +64,8 @@
       articles: renderArticles,
       mytasks: renderMyTasks,
       pet: renderPet,
-      team: renderTeam,
+      team: renderWall,
+      gameroom: renderGameRoom,
       notif: renderNotifications,
     };
     if (loaders[name]) loaders[name]();
@@ -320,10 +321,37 @@
     $('#meAvatar').textContent = initials(state.me.display_name);
 
     renderWorkspacePicker();
+    // заранее грузим каталог магазина — чтобы шапки/фоны рисовались и в доке
+    api.get('/shop/items').then((cat) => {
+      state.shopCatalog = cat.items;
+      cat.items.forEach((it) => (SHOP_INDEX[it.id] = it));
+      const cp = $('#casePrice'); if (cp) cp.textContent = cat.case_price;
+      if (state.pet) paintPet(state.pet);
+    }).catch(() => {});
     refreshPet();
     refreshNotifBadge();
+    initPetDock();
     startPolling();
     go('dashboard');
+  }
+
+  // закреплённый питомец справа: сворачивание с запоминанием
+  function initPetDock() {
+    const dock = $('#petDock');
+    const toggle = $('#petDockToggle');
+    const app = $('#app');
+    if (!dock || !toggle) return;
+    try {
+      if (localStorage.getItem('petpro_dock_collapsed') === '1') {
+        dock.classList.add('collapsed');
+        app && app.classList.add('dock-hidden');
+      }
+    } catch (e) {}
+    toggle.addEventListener('click', () => {
+      const collapsed = dock.classList.toggle('collapsed');
+      app && app.classList.toggle('dock-hidden', collapsed);
+      try { localStorage.setItem('petpro_dock_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+    });
   }
 
   function startPolling() {
@@ -663,14 +691,31 @@
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
-  // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния.
+  // id предмета -> объект из каталога (заполняется при загрузке магазина).
+  const SHOP_INDEX = {};
+
+  // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
   function paintSprites(pet) {
+    const eq = pet.equipped || {};
+    const hatItem = eq.hat && SHOP_INDEX[eq.hat];
+    const bgItem = eq.bg && SHOP_INDEX[eq.bg];
     $$('.petscreen').forEach((screen) => {
-      const old = screen.querySelector('.pixelpet');
-      if (old) old.remove();
+      screen.querySelector('.pixelpet')?.remove();
+      screen.querySelector('.pet-hat')?.remove();
+      // фон из экипировки (если есть) — иначе сбрасываем к стилю по умолчанию
+      screen.style.background = bgItem ? bgItem.data : '';
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
+      // шапка-эмодзи поверх питомца
+      if (hatItem) {
+        const hat = document.createElement('div');
+        hat.className = 'pet-hat';
+        hat.textContent = hatItem.data;
+        hat.style.cssText =
+          'position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;pointer-events:none;';
+        screen.appendChild(hat);
+      }
     });
   }
 
@@ -696,6 +741,10 @@
     // Подпись состояния (тамагочи).
     const emoji = STATE_EMOJI[pet.state] || '';
     $$('[data-petstate]').forEach((e) => (e.textContent = `${emoji} ${pet.state_label || ''}`.trim()));
+    $$('[data-petstate-mini]').forEach((e) => (e.textContent = emoji));
+    // Монеты (для дока и комнаты игр).
+    $$('[data-petcoins]').forEach((e) => (e.textContent = `🪙 ${pet.coins || 0}`));
+    $('#coinBalance') && ($('#coinBalance').textContent = `🪙 ${pet.coins || 0}`);
     paintSprites(pet);
   }
   async function refreshPet() {
@@ -1379,19 +1428,164 @@
     await refreshPet();
   }
 
-  /* ---------------- team room ---------------- */
-  async function renderTeam() {
-    const data = await api.get(`/workspaces/${state.wsId}/team-room`);
-    $('#teamPets').innerHTML = data.pets
+  /* ---------------- wall (бывш. team room) ---------------- */
+  async function renderWall() {
+    // питомцы команды (справа)
+    const data = await api.get(`/workspaces/${state.wsId}/team-room`).catch(() => ({ pets: [] }));
+    $('#teamPets').innerHTML = (data.pets || [])
       .map(
         (p) => `<div class="petmini soft"><div class="av"><div class="hud">${levelOf(p.xp)}</div></div>
           <div class="meta"><b>${esc(p.name)}</b> <span class="mono">ур. ${levelOf(p.xp)} · ${p.xp} XP</span></div></div>`,
       )
       .join('') || '<div class="muted sm">Нет питомцев.</div>';
-    $('#teamFeed').innerHTML = data.activity.length
-      ? data.activity.map(feedRow).join('')
-      : '<div class="muted sm">Пока тихо.</div>';
+    state.wallBefore = null;
+    await loadWall(false);
   }
+
+  function wallRow(p) {
+    const mine = p.author_id === (state.me && state.me.id);
+    return `<div class="it" data-wall="${p.id}">
+      <div class="av">${initials((p.author_name || '??').slice(0, 2))}</div>
+      <div style="flex:1;">
+        <b>${esc(p.author_name)}</b>
+        <div>${esc(p.text)}</div>
+        <div class="when">${new Date(p.created_at).toLocaleString('ru')}
+          ${mine ? `· <span class="btn-like" data-wall-del="${p.id}" style="color:var(--danger);">удалить</span>` : ''}
+        </div>
+      </div></div>`;
+  }
+
+  async function loadWall(append) {
+    const q = state.wallBefore ? `?before=${state.wallBefore}` : '';
+    const posts = await api.get(`/workspaces/${state.wsId}/wall${q}`);
+    const html = posts.map(wallRow).join('');
+    const feed = $('#wallFeed');
+    if (append) feed.insertAdjacentHTML('beforeend', html);
+    else feed.innerHTML = html || '<div class="muted sm">Пока пусто. Напиши первым!</div>';
+    if (posts.length) state.wallBefore = posts[posts.length - 1].id;
+    $('#wallMore').style.display = posts.length >= 50 ? '' : 'none';
+  }
+
+  $('#wallSend').addEventListener('click', async () => {
+    const text = $('#wallInput').value.trim();
+    if (!text) return;
+    try {
+      await api.post(`/workspaces/${state.wsId}/wall`, { text });
+      $('#wallInput').value = '';
+      state.wallBefore = null;
+      await loadWall(false);
+    } catch (err) { toast(err.message, ''); }
+  });
+  $('#wallInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') $('#wallSend').click();
+  });
+  $('#wallMore').addEventListener('click', () => loadWall(true));
+  document.addEventListener('click', async (e) => {
+    const del = e.target.closest('[data-wall-del]');
+    if (!del) return;
+    if (!confirm('Удалить сообщение?')) return;
+    try {
+      await api.del(`/wall/${del.dataset.wallDel}`);
+      state.wallBefore = null;
+      await loadWall(false);
+    } catch (err) { toast(err.message, ''); }
+  });
+
+  /* ---------------- game room ---------------- */
+  const RARITY_LABEL = { common: 'обычный', rare: 'редкий', epic: 'эпик', legendary: 'легендарный' };
+
+  async function renderGameRoom() {
+    await refreshPet();
+    // каталог магазина (один раз кэшируем)
+    if (!state.shopCatalog) {
+      const cat = await api.get('/shop/items');
+      state.shopCatalog = cat.items;
+      cat.items.forEach((it) => (SHOP_INDEX[it.id] = it));
+      $('#casePrice').textContent = cat.case_price;
+    }
+    renderShop();
+  }
+
+  function itemPreview(it) {
+    if (it.type === 'hat') return `<div class="swatch-prev">${it.data}</div>`;
+    if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
+    return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
+  }
+
+  function renderShop() {
+    const pet = state.pet || {};
+    const inv = pet.inventory || [];
+    const eq = pet.equipped || {};
+    $('#shopGrid').innerHTML = (state.shopCatalog || [])
+      .map((it) => {
+        const owned = inv.includes(it.id);
+        const equipped = eq[it.type] === it.id;
+        const cls = `shopcard ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}`;
+        const action = owned
+          ? (equipped ? 'надето' : 'надеть')
+          : `🪙 ${it.price}`;
+        return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
+          ${itemPreview(it)}
+          <div class="nm">${esc(it.name)}</div>
+          <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
+          <div class="sm" style="margin-top:4px;">${action}</div>
+        </div>`;
+      })
+      .join('');
+  }
+
+  // клик по товару: купить (если не куплен) или надеть/снять (если куплен)
+  $('#shopGrid').addEventListener('click', async (e) => {
+    const card = e.target.closest('[data-shop]');
+    if (!card) return;
+    const id = card.dataset.shop;
+    const owned = card.dataset.owned === '1';
+    try {
+      if (owned) {
+        state.pet = await api.post('/shop/equip', { item_id: id });
+        paintPet(state.pet);
+        renderShop();
+      } else {
+        state.pet = await api.post('/shop/buy', { item_id: id });
+        paintPet(state.pet);
+        renderShop();
+        toast('Куплено!', 'xp');
+      }
+    } catch (err) { toast(err.message, ''); }
+  });
+
+  $('#openCase').addEventListener('click', async () => {
+    try {
+      const res = await api.post('/shop/open-case', {});
+      const it = res.item;
+      $('#caseResult').innerHTML =
+        `<div class="shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
+          <div class="nm">${esc(it.name)}</div>
+          <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
+          <div class="sm">${res.is_new ? '🎉 Новый предмет!' : 'Дубликат — вернули монеты'}</div>
+        </div>`;
+      await refreshPet();
+      renderShop();
+      toast(res.is_new ? `Выпал: ${it.name}!` : 'Дубликат', res.is_new ? 'lvl' : 'xp');
+    } catch (err) { toast(err.message, ''); }
+  });
+
+  // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
+  const playAnim = (emoji) => {
+    const screen = $('#gamePetScreen');
+    const sprite = screen && screen.querySelector('.pixelpet');
+    if (sprite) { sprite.classList.add('state-happy'); setTimeout(() => sprite.classList.remove('state-happy'), 1500); }
+    if (screen) {
+      const burst = document.createElement('div');
+      burst.textContent = emoji;
+      burst.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:32px;z-index:6;animation:toastin .4s;pointer-events:none;';
+      screen.appendChild(burst);
+      setTimeout(() => burst.remove(), 1200);
+    }
+  };
+  $('#playFeed').addEventListener('click', () => { playAnim('🍎'); $('#playMsg').textContent = 'Питомец поел и доволен!'; });
+  $('#playPet').addEventListener('click',  () => { playAnim('💚'); $('#playMsg').textContent = 'Питомцу приятно ♥'; });
+  $('#playBall').addEventListener('click', () => { playAnim('🎾'); $('#playMsg').textContent = 'Игра в мячик — весело!'; });
 
   /* ---------------- notifications ---------------- */
   async function refreshNotifBadge() {

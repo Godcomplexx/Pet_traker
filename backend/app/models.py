@@ -92,6 +92,11 @@ class Pet(Base):
     mood: Mapped[int] = mapped_column(Integer, default=80)
     hunger: Mapped[int] = mapped_column(Integer, default=70)
     energy: Mapped[int] = mapped_column(Integer, default=80)
+    # Игровая экономика: монеты + инвентарь купленных/выпавших предметов (список id).
+    coins: Mapped[int] = mapped_column(Integer, default=0)
+    inventory: Mapped[list] = mapped_column(JsonType, default=list)
+    # Экипировано: {type: item_id}, напр. {"hat": "hat_crown", "bg": "bg_space"}.
+    equipped: Mapped[dict] = mapped_column(JsonType, default=dict)
     # Момент последнего пересчёта тамагочи-показателей (для decay по времени).
     stats_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     created_at: Mapped[datetime] = TS()
@@ -307,3 +312,14 @@ class DomainEvent(Base):
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = TS()
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class WallPost(Base):
+    """Сообщение на «Стене» рабочего пространства (лёгкая лента для участников)."""
+    __tablename__ = "wall_posts"
+
+    id: Mapped[str] = PK()
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    author_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = TS()
