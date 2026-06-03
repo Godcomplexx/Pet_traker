@@ -1566,20 +1566,39 @@ textarea.input { resize: vertical; min-height: 70px; }
   aspect-ratio: 1/1;
   width: 34%;
   min-width: 58px;
+  --sprite-ui-scale: 2.35;
 }
-.petbig .pixelpet.asset-pet { width: 40%; }
+.petbig .pixelpet.asset-pet {
+  width: 40%;
+  --sprite-ui-scale: 2.8;
+}
 .teampet .pixelpet.asset-pet {
   width: 92%;
   min-width: 0;
+  --sprite-ui-scale: 1.55;
 }
-.asset-pet-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.asset-pet-sprite {
+  display: block;
+  width: calc(var(--sprite-frame-w) * 1px);
+  height: calc(var(--sprite-frame-h) * 1px);
+  background-image: var(--sprite-url);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: auto 100%;
   image-rendering: pixelated;
+  transform: scale(calc(var(--sprite-base-scale, 1) * var(--sprite-ui-scale, 1.7)));
+  transform-origin: center;
   filter: drop-shadow(0 7px 5px rgba(42,50,38,0.16));
+  animation: sprite-play 1.05s steps(var(--sprite-frames)) infinite;
 }
-#dockPetScreen .pixelpet.asset-pet { width: 42%; }
+#dockPetScreen .pixelpet.asset-pet {
+  width: 42%;
+  --sprite-ui-scale: 1.8;
+}
+@keyframes sprite-play {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(-1px * var(--sprite-frame-w) * var(--sprite-frames)); }
+}
 
 /* ============================================================
    PET CREATOR
@@ -1645,11 +1664,10 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: 58px;
   height: 58px;
   margin: 0 auto;
+  --sprite-ui-scale: 1.65;
 }
-.character-choice-preview .asset-pet-img,
-.character-item-preview .asset-pet-img {
-  width: 54px;
-  height: 54px;
+.character-choice-preview .asset-pet-sprite,
+.character-item-preview .asset-pet-sprite {
   filter: drop-shadow(0 4px 4px rgba(42,50,38,0.12));
 }
 

@@ -75,6 +75,19 @@ async def test_character_purchase_requires_level_five_and_equips(client):
     assert "char_penguin" in pet["inventory"]
 
 
+async def test_character_shop_items_include_sprite_metadata(client):
+    tokens = await register(client, "sprite-meta@lab.ru")
+    h = auth_headers(tokens)
+
+    resp = await client.get("/shop/items", headers=h)
+    assert resp.status_code == 200, resp.text
+    penguin = next(it for it in resp.json()["items"] if it["id"] == "char_penguin")
+    assert penguin["type"] == "character"
+    assert penguin["data"]["frame_width"] == 16
+    assert penguin["data"]["frame_height"] == 16
+    assert penguin["data"]["frames"] == 5
+
+
 async def test_team_task_completion_grants_xp_and_activity(client):
     tokens = await register(client, "owner@lab.ru")
     h = auth_headers(tokens)

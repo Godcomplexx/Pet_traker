@@ -19,18 +19,18 @@
   ];
   const TASK_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   const CHARACTER_CATALOG = [
-    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png' },
-    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png' },
-    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png' },
-    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png' },
-    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png' },
-    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png' },
-    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png' },
-    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png' },
-    { id: 'char_fairy', name: 'Fairy', file: 'fairy.png' },
-    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png' },
-    { id: 'char_orange', name: 'Orange', file: 'orange.png' },
-    { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png' },
+    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5 },
+    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png', frameWidth: 32, frameHeight: 32, frames: 2 },
+    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5 },
+    { id: 'char_fairy', name: 'Fairy', file: 'fairy.png', frameWidth: 32, frameHeight: 32, frames: 4 },
+    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9 },
+    { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4 },
+    { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png', frameWidth: 16, frameHeight: 16, frames: 2 },
   ];
   const CHARACTER_INDEX = Object.fromEntries(CHARACTER_CATALOG.map((c) => [c.id, c]));
   const LEGACY_SPECIES = new Set(['capybara', 'cat', 'dog', 'frog', 'axolotl']);
@@ -595,8 +595,15 @@
   }
 
   function characterImage(id, alt = '') {
+    const c = CHARACTER_INDEX[id];
     const src = characterSrc(id);
-    return src ? `<img class="asset-pet-img" src="${src}" alt="${esc(alt || CHARACTER_INDEX[id]?.name || id)}">` : '';
+    if (!c || !src) return '';
+    const label = esc(alt || c.name || id);
+    const frameWidth = Number(c.frameWidth || 32);
+    const frameHeight = Number(c.frameHeight || 32);
+    const frames = Math.max(1, Number(c.frames || 1));
+    const baseScale = 32 / frameHeight;
+    return `<span class="asset-pet-sprite" role="img" aria-label="${label}" style="--sprite-url:url('${src}');--sprite-frames:${frames};--sprite-frame-w:${frameWidth};--sprite-frame-h:${frameHeight};--sprite-base-scale:${baseScale};"></span>`;
   }
 
   function randomStarterCharacters(currentId = '') {
