@@ -95,7 +95,7 @@ class Pet(Base):
     coins: Mapped[int] = mapped_column(Integer, default=0)
     inventory: Mapped[list] = mapped_column(JsonType, default=list)
     food_inventory: Mapped[dict] = mapped_column(JsonType, default=dict)
-    # Экипировано: {type: item_id}, напр. {"hat": "hat_crown", "bg": "bg_space"}.
+    # Экипировано: {type: item_id}, напр. {"hat": "hat_01", "bg": "bg_space"}.
     equipped: Mapped[dict] = mapped_column(JsonType, default=dict)
     # Момент последнего пересчёта тамагочи-показателей (для decay по времени).
     stats_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

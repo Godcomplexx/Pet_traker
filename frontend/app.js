@@ -834,19 +834,6 @@
 
   // id предмета -> объект из каталога (заполняется при загрузке магазина).
   const SHOP_INDEX = {};
-  const SHOP_ICON_BY_ID = {
-    hat_crown: 'crown',
-    hat_party: 'party',
-    hat_grad: 'grad',
-    hat_flower: 'flower',
-    hat_star: 'star',
-    hat_goggles: 'sunglasses',
-    hat_lab: 'microscope',
-    hat_moon: 'moon',
-    hat_ribbon: 'ribbon',
-    hat_fire: 'fire',
-    hat_gem: 'gem',
-  };
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
   const PET_EMOTES = {
     alert: 'alert',
@@ -872,7 +859,19 @@
 
   function itemIcon(it) {
     if (it?.type === 'food' && it.data?.icon) return it.data.icon;
-    return SHOP_ICON_BY_ID[it.id] || it.id;
+    return it?.id || '';
+  }
+
+  function hatAssetSrc(it) {
+    if (it?.type !== 'hat' || typeof it.data !== 'string' || !/\.png$/i.test(it.data)) return '';
+    return `assets/hats/${it.data}`;
+  }
+
+  function hatImg(it, className = 'hat-icon') {
+    const src = hatAssetSrc(it);
+    return src
+      ? `<img class="${className}" src="${esc(src)}" alt="${esc(it.name || '')}">`
+      : iconImg(itemIcon(it), it.name, 'lg');
   }
 
   function emoteImg(name, alt = '') {
@@ -913,13 +912,20 @@
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
       showPetEmote(screen, stateEmote(pet), 'state');
-      // шапка-эмодзи поверх питомца
+      // PNG-шапка поверх питомца
       if (hatItem) {
         const hat = document.createElement('div');
         hat.className = 'pet-hat';
-        hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
-        hat.style.cssText =
-          'position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;pointer-events:none;';
+        const src = hatAssetSrc(hatItem);
+        if (src) {
+          const img = document.createElement('img');
+          img.className = 'pet-hat-img';
+          img.src = src;
+          img.alt = hatItem.name || '';
+          hat.appendChild(img);
+        } else {
+          hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
+        }
         screen.appendChild(hat);
       }
     });
@@ -2060,7 +2066,7 @@
 
   function itemPreview(it) {
     if (it.type === 'food') return `<div class="swatch-prev food-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
-    if (it.type === 'hat') return `<div class="swatch-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
+    if (it.type === 'hat') return `<div class="swatch-prev hat-prev">${hatImg(it)}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
     return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
   }
