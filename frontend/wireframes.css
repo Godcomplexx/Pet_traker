@@ -2055,46 +2055,116 @@ textarea.input { resize: vertical; min-height: 70px; }
   margin: 0 auto;
 }
 /* ── судоку дня ── */
+.sudoku-card {
+  --sudoku-paper: #fffaf0;
+  --sudoku-paper-given: #dce8d3;
+  --sudoku-line: #6f8269;
+  --sudoku-strong: #17251c;
+  --sudoku-entry: #7d1748;
+  --sudoku-selected: #ffe68a;
+  --sudoku-ring: #005f73;
+  background: rgba(255, 250, 240, 0.72);
+  border-color: rgba(23, 37, 28, 0.32);
+  padding: 18px;
+}
+.sudoku-card .between {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.sudoku-card h3 {
+  font-size: 15px;
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+.sudoku-card .muted.sm,
+.sudoku-card .note {
+  font-size: 10px;
+  line-height: 1.55;
+}
+#sudokuStatus {
+  padding: 5px 10px;
+  font-size: 9px;
+}
 .sudoku-board {
   display: grid;
   grid-template-columns: repeat(var(--sg, 6), 1fr);
   gap: 0;
-  max-width: 360px;
-  margin: 14px auto;
-  border: 2.5px solid var(--ink);
+  width: min(100%, 432px);
+  max-width: 432px;
+  margin: 10px auto 8px;
+  border: 3px solid var(--sudoku-strong);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--ink);
+  background: var(--sudoku-strong);
+  box-shadow:
+    0 10px 22px rgba(23, 37, 28, 0.18),
+    0 0 0 1px rgba(255,255,255,0.75) inset;
 }
 .sudoku-cell {
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-lg);
-  background: var(--paper);
-  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 650;
+  background: var(--sudoku-paper);
+  color: var(--sudoku-strong);
   cursor: pointer;
   user-select: none;
-  border-right: 1px solid var(--line, #d8cfc4);
-  border-bottom: 1px solid var(--line, #d8cfc4);
+  border-right: 1px solid var(--sudoku-line);
+  border-bottom: 1px solid var(--sudoku-line);
 }
-.sudoku-cell.given { font-weight: 700; cursor: default; background: var(--paper2, #f3ede4); }
-.sudoku-cell.editable { color: var(--accent); }
-.sudoku-cell.sel { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; }
+.sudoku-cell.given {
+  font-weight: 800;
+  cursor: default;
+  background: var(--sudoku-paper-given);
+  color: #0f1d15;
+}
+.sudoku-cell.editable {
+  color: var(--sudoku-entry);
+  font-weight: 800;
+}
+.sudoku-cell.sel {
+  background: var(--sudoku-selected);
+  outline: 3px solid var(--sudoku-ring);
+  outline-offset: -3px;
+}
+.sudoku-cell.editable.sel { color: #641038; }
 /* толстые границы блоков 2×3 */
-.sudoku-cell.br { border-right: 2.5px solid var(--ink); }
-.sudoku-cell.bb { border-bottom: 2.5px solid var(--ink); }
+.sudoku-cell.br { border-right: 3px solid var(--sudoku-strong); }
+.sudoku-cell.bb { border-bottom: 3px solid var(--sudoku-strong); }
 
 .sudoku-pad {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  max-width: 360px;
-  margin: 0 auto;
+  gap: 7px;
+  width: min(100%, 432px);
+  max-width: 432px;
+  margin: 0 auto 8px;
 }
-.sudoku-key { font-size: var(--fs-md); padding: 10px 0; }
-.sudoku-key.erase { color: var(--accent); }
+.sudoku-key {
+  min-height: 48px;
+  padding: 0;
+  font-size: 14px;
+  background: var(--sudoku-paper);
+  border-color: var(--sudoku-line);
+  color: var(--sudoku-strong);
+}
+.sudoku-key:hover {
+  background: #fff0bd;
+  border-color: var(--sudoku-strong);
+}
+.sudoku-key.erase { color: var(--sudoku-entry); }
+.sudoku-card .row {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sudoku-card .row .btn {
+  min-height: 40px;
+  padding: 9px 16px;
+}
 
 .case-card {
   text-align: center;
