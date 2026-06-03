@@ -122,7 +122,7 @@ class PetUpdate(BaseModel):
 
 
 class PetPlayIn(BaseModel):
-    action: str = Field(pattern="^(feed|pet|ball|test_coins)$")
+    action: str = Field(pattern="^(feed|pet|ball|sleep|test_coins)$")
     item_id: str | None = None
 
 

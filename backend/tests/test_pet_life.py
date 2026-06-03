@@ -129,3 +129,26 @@ async def test_pet_play_respects_stats(client):
     body = ok.json()
     assert body["energy"] == 8
     assert body["coins"] == 25
+
+
+async def test_pet_sleep_restores_energy_without_coins(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "sleep@lab.ru")
+    headers = auth_headers(tokens)
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="sleep@lab.ru")))
+        pet.energy = 35
+        pet.mood = 50
+        await db.commit()
+
+    slept = await client.post("/pets/me/play", json={"action": "sleep"}, headers=headers)
+    assert slept.status_code == 200, slept.text
+    body = slept.json()
+    assert body["energy"] == 100
+    assert body["mood"] == 55
+    assert body["coins"] == 0
+
+    awake = await client.post("/pets/me/play", json={"action": "sleep"}, headers=headers)
+    assert awake.status_code == 400
