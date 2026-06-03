@@ -743,6 +743,38 @@ small, .sm { font-size: var(--fs-xs); }
   border-bottom: 1px solid rgba(255,255,255,0.50);
 }
 .task:last-child { border-bottom: 0; }
+.task-edit-assignees {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+.task-edit-assignee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.36);
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  cursor: pointer;
+}
+.task-edit-assignee:hover {
+  background: rgba(255,255,255,0.62);
+  color: var(--ink);
+}
+.task-edit-assignee input {
+  flex: 0 0 auto;
+}
+.task-edit-assignee span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .chk {
   width: 18px; height: 18px;
@@ -920,26 +952,38 @@ small, .sm { font-size: var(--fs-xs); }
 .wall-reactions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 6px;
 }
 .wall-react {
-  min-width: 34px;
-  height: 26px;
-  border: 1px solid var(--border-out);
-  border-radius: var(--r2);
-  background: rgba(255,255,255,0.36);
-  color: var(--ink2);
+  min-width: 24px;
+  height: 20px;
+  padding: 2px 6px;
+  border: 1px solid rgba(150,170,145,0.20);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.16);
+  color: rgba(78,98,73,0.68);
   cursor: pointer;
   font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
-  font-size: 10px;
+  font-size: 8px;
   line-height: 1;
+  opacity: .62;
+  filter: grayscale(.35) saturate(.8);
+  transition: opacity .12s, background .12s, border-color .12s, filter .12s;
 }
-.wall-react.on,
 .wall-react:hover {
-  background: var(--xp-soft);
-  border-color: rgba(90,138,88,0.55);
+  opacity: .9;
+  background: rgba(255,255,255,0.36);
+  border-color: rgba(150,170,145,0.34);
   color: var(--ink);
+  filter: grayscale(.18) saturate(.9);
+}
+.wall-react.on {
+  opacity: 1;
+  background: rgba(255,255,255,0.48);
+  border-color: rgba(90,138,88,0.38);
+  color: var(--ink2);
+  filter: grayscale(.1) saturate(.95);
 }
 
 .team-playground {
@@ -1515,10 +1559,32 @@ textarea.input { resize: vertical; min-height: 70px; }
 .petbig .pixelpet { width: 30%; }
 .teampet { width: 54px; height: 50px; }
 .teampet .pixelpet { width: 84%; }
+.pixelpet.asset-pet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  width: 34%;
+  min-width: 58px;
+}
+.petbig .pixelpet.asset-pet { width: 40%; }
+.teampet .pixelpet.asset-pet {
+  width: 92%;
+  min-width: 0;
+}
+.asset-pet-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 7px 5px rgba(42,50,38,0.16));
+}
+#dockPetScreen .pixelpet.asset-pet { width: 42%; }
 
 /* ============================================================
    PET CREATOR
    ============================================================ */
+.pet-choice-card { width: min(720px, calc(100vw - 28px)); }
 .pet-preview {
   display: flex;
   align-items: center;
@@ -1563,6 +1629,29 @@ textarea.input { resize: vertical; min-height: 70px; }
   color: var(--ink);
   box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset;
 }
+.character-choice {
+  width: calc(20% - 5px);
+  min-width: 106px;
+  padding: 8px 6px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.character-choice-preview,
+.character-item-preview {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+}
+.character-choice-preview .asset-pet-img,
+.character-item-preview .asset-pet-img {
+  width: 54px;
+  height: 54px;
+  filter: drop-shadow(0 4px 4px rgba(42,50,38,0.12));
+}
 
 /* ============================================================
    COMMENTS
@@ -1576,6 +1665,22 @@ textarea.input { resize: vertical; min-height: 70px; }
   overflow: auto;
 }
 .cmtbox .cmt-list .feed .it { padding: 7px 0; }
+.comment-row {
+  align-items: flex-start;
+}
+.comment-body {
+  min-width: 0;
+  flex: 1;
+}
+.comment-text {
+  color: var(--ink);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.comment-meta {
+  margin-top: 3px;
+  line-height: 1.4;
+}
 
 /* ============================================================
    HUD
@@ -1701,6 +1806,22 @@ textarea.input { resize: vertical; min-height: 70px; }
   font-size: 8px;
   line-height: 1.45;
 }
+.food-shop-link {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.42);
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 8px;
+  line-height: 1.25;
+}
+.food-shop-link:hover {
+  background: rgba(255,255,255,0.72);
+  color: var(--ink);
+}
 .dock-bag {
   margin-top: 10px;
   padding-top: 10px;
@@ -1777,6 +1898,15 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-radius: var(--r2);
   background: rgba(255,255,255,0.24);
 }
+.food-belt.is-empty,
+.dock-bag.food-bag.is-empty {
+  cursor: pointer;
+}
+.food-belt.is-empty .food-slot.empty,
+.dock-bag.food-bag.is-empty .food-slot.empty {
+  border-color: rgba(184,149,58,0.48);
+  background: rgba(255,255,255,0.28);
+}
 .food-bag.need-food,
 .food-belt.need-food {
   animation: food-pulse .38s steps(2, end) 4;
@@ -1786,6 +1916,9 @@ textarea.input { resize: vertical; min-height: 70px; }
 .food-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+.food-grid .food-shop-cta {
+  grid-column: 1 / -1;
+}
 .dock-bag .food-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1794,6 +1927,24 @@ textarea.input { resize: vertical; min-height: 70px; }
   border: 1px dashed var(--border2);
   border-radius: var(--r2);
   background: rgba(255,255,255,0.18);
+}
+.food-shop-cta {
+  min-height: 76px;
+  border: 1px dashed rgba(184,149,58,0.55);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.30);
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+.food-shop-cta.compact {
+  min-height: 64px;
+  font-size: 7px;
+}
+.food-shop-cta:hover {
+  background: rgba(255,255,255,0.68);
+  color: var(--ink);
 }
 .fooditem {
   position: relative;
@@ -1841,10 +1992,17 @@ textarea.input { resize: vertical; min-height: 70px; }
 /* ============================================================
    GAME ROOM / SHOP
    ============================================================ */
+#screen-gameroom > .topbar {
+  width: min(100%, 760px);
+  margin-left: auto;
+  margin-right: auto;
+}
 .game-room {
   display: grid;
   gap: var(--gap);
   max-width: 760px;
+  width: min(100%, 760px);
+  margin: 0 auto;
 }
 .case-card {
   text-align: center;

@@ -40,6 +40,27 @@ async def _load_task_with_access(db: AsyncSession, task_id: str, user: User) -> 
     return task
 
 
+async def _validate_workspace_assignees(
+    db: AsyncSession, workspace_id: str, assignee_ids: list[str]
+) -> list[str]:
+    ids = list(dict.fromkeys(assignee_ids))
+    if not ids:
+        return []
+    member_ids = set(
+        (
+            await db.scalars(
+                select(WorkspaceMember.user_id).where(
+                    WorkspaceMember.workspace_id == workspace_id
+                )
+            )
+        ).all()
+    )
+    bad = [a for a in ids if a not in member_ids]
+    if bad:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Исполнитель не состоит в лаборатории")
+    return ids
+
+
 @router.post("/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 async def create_task(
     data: TaskCreate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
@@ -95,16 +116,11 @@ async def create_task(
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
 
     # Собираем итоговый список исполнителей: assignee_ids (новый) ∪ assignee_id (старый).
-    assignee_ids = list(dict.fromkeys([*(data.assignee_ids or []), *([data.assignee_id] if data.assignee_id else [])]))
-    if assignee_ids:  # FR-TASK-7: каждый исполнитель должен быть участником лаборатории
-        member_ids = set(
-            (await db.scalars(
-                select(WorkspaceMember.user_id).where(WorkspaceMember.workspace_id == workspace_id)
-            )).all()
-        )
-        bad = [a for a in assignee_ids if a not in member_ids]
-        if bad:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Исполнитель не состоит в лаборатории")
+    assignee_ids = await _validate_workspace_assignees(
+        db,
+        workspace_id,
+        [*(data.assignee_ids or []), *([data.assignee_id] if data.assignee_id else [])],
+    )
 
     task = Task(
         workspace_id=workspace_id,
@@ -154,10 +170,20 @@ async def update_task(
 ):
     task = await _load_task_with_access(db, task_id, user)
     changes = data.model_dump(exclude_unset=True)
-    prev_assignee = task.assignee_id
+    prev_assignees = set(task.assignees or ([task.assignee_id] if task.assignee_id else []))
     # assignee_ids → синхронизируем основной assignee_id + список assignees
+    assignment_changed = "assignee_ids" in changes or "assignee_id" in changes
+    if task.scope == TaskScope.PERSONAL and assignment_changed:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Личную задачу нельзя назначить другому")
     if "assignee_ids" in changes:
-        ids = changes.pop("assignee_ids") or []
+        ids = await _validate_workspace_assignees(db, task.workspace_id, changes.pop("assignee_ids") or [])
+        task.assignees = ids
+        task.assignee_id = ids[0] if ids else None
+    elif "assignee_id" in changes:
+        assignee_id = changes.pop("assignee_id")
+        ids = await _validate_workspace_assignees(
+            db, task.workspace_id, [assignee_id] if assignee_id else []
+        )
         task.assignees = ids
         task.assignee_id = ids[0] if ids else None
     for field, value in changes.items():
@@ -169,18 +195,19 @@ async def update_task(
     # Notify on a (re)assignment to a different team member (FR-NOTIF-1).
     if (
         task.scope != TaskScope.PERSONAL
-        and "assignee_id" in changes
+        and assignment_changed
         and task.assignee_id
-        and task.assignee_id != prev_assignee
     ):
-        await notify_assignment(
-            db,
-            assignee_id=task.assignee_id,
-            actor_id=user.id,
-            workspace_id=task.workspace_id,
-            task_id=task.id,
-            title=task.title,
-        )
+        new_assignees = set(task.assignees or ([task.assignee_id] if task.assignee_id else []))
+        for assignee_id in new_assignees - prev_assignees:
+            await notify_assignment(
+                db,
+                assignee_id=assignee_id,
+                actor_id=user.id,
+                workspace_id=task.workspace_id,
+                task_id=task.id,
+                title=task.title,
+            )
     await db.commit()
     await db.refresh(task)
     return task

@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app import enums
+from app.services.characters import CHARACTERS_BY_ID
 
 
 class ORMModel(BaseModel):
@@ -93,7 +94,6 @@ class UserUpdate(BaseModel):
 
 # ── Pet ──
 _HEX_RE = r"^#[0-9A-Fa-f]{6}$"
-SPECIES = {"capybara", "cat", "dog", "frog", "axolotl"}
 
 
 class PetOut(ORMModel):
@@ -136,8 +136,8 @@ class PetCustomize(BaseModel):
     @field_validator("species")
     @classmethod
     def check_species(cls, v: str) -> str:
-        if v not in SPECIES:
-            raise ValueError(f"Неизвестный вид питомца. Доступно: {', '.join(sorted(SPECIES))}")
+        if v not in CHARACTERS_BY_ID:
+            raise ValueError("Неизвестный персонаж")
         return v
 
 

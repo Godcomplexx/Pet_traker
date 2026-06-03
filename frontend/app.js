@@ -13,6 +13,27 @@
   ];
   const PROJECT_ROLES = ['PROJECT_OWNER', 'LEAD', 'CONTRIBUTOR', 'REVIEWER', 'OBSERVER'];
   const ARTICLE_ROLES = ['AUTHOR', 'CO_AUTHOR', 'REVIEWER', 'EDITOR', 'OBSERVER'];
+  const TASK_TYPES = [
+    'RESEARCH', 'WRITING', 'REVIEW', 'FORMATTING', 'DEVELOPMENT', 'DESIGN', 'TESTING',
+    'DEPLOYMENT', 'EXPERIMENT', 'SUBMISSION', 'RESPONSE_TO_REVIEWER', 'ADMIN', 'PERSONAL', 'OTHER',
+  ];
+  const TASK_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  const CHARACTER_CATALOG = [
+    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png' },
+    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png' },
+    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png' },
+    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png' },
+    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png' },
+    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png' },
+    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png' },
+    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png' },
+    { id: 'char_fairy', name: 'Fairy', file: 'fairy.png' },
+    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png' },
+    { id: 'char_orange', name: 'Orange', file: 'orange.png' },
+    { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png' },
+  ];
+  const CHARACTER_INDEX = Object.fromEntries(CHARACTER_CATALOG.map((c) => [c.id, c]));
+  const LEGACY_SPECIES = new Set(['capybara', 'cat', 'dog', 'frog', 'axolotl']);
   const ACTIVE_PROJECT_STATUSES = new Set(['IDEA', 'PLANNING', 'ACTIVE', 'PAUSED', 'IN_REVIEW']);
   const ACTIVE_ARTICLE_STATUSES = new Set([
     'IDEA', 'PLANNING', 'WRITING', 'INTERNAL_REVIEW', 'REVISION', 'SUBMITTED', 'UNDER_REVIEW',
@@ -188,7 +209,8 @@
       gameroom: renderGameRoom,
       notif: renderNotifications,
     };
-    if (loaders[name]) loaders[name]();
+    if (loaders[name]) return loaders[name]();
+    return undefined;
   }
 
   document.addEventListener('click', (e) => {
@@ -426,7 +448,7 @@
     const pet = await api.get('/pets/me');
     state.pet = pet;
     state.prevXp = pet.xp;
-    if (!pet.customized) {
+    if (!pet.customized || LEGACY_SPECIES.has(pet.species) || !CHARACTER_INDEX[pet.species]) {
       showPetCreator(pet);
       return;
     }
@@ -565,21 +587,32 @@
   });
 
   /* ---------------- pet creator ---------------- */
-  const SPECIES_LIST = [
-    { id: 'capybara', label: 'Капибара' },
-    { id: 'cat', label: 'Кот' },
-    { id: 'dog', label: 'Пёс' },
-    { id: 'frog', label: 'Лягушка' },
-    { id: 'axolotl', label: 'Аксолотль' },
-  ];
-  const BODY_COLORS = ['#9dbf9b', '#b5acce', '#c9a5ba', '#a8c4d4', '#d4c4a8', '#c4b5a0', '#a8b8c8', '#b8c8a8'];
-  const ACCENT_COLORS = ['#7a9e78', '#9b8fbd', '#b08a9e', '#7a9eb0', '#b09a7a', '#9a8a78', '#8a9ab0', '#9aaa8a'];
+  const pcDraft = { name: 'Кодзи', species: 'char_agent_mike', body_color: '#9dbf9b', accent_color: '#b08a9e' };
 
-  const pcDraft = { name: 'Кодзи', species: 'capybara', body_color: '#9dbf9b', accent_color: '#b08a9e' };
+  function characterSrc(id) {
+    const c = CHARACTER_INDEX[id];
+    return c ? `assets/characters/${c.file}` : '';
+  }
+
+  function characterImage(id, alt = '') {
+    const src = characterSrc(id);
+    return src ? `<img class="asset-pet-img" src="${src}" alt="${esc(alt || CHARACTER_INDEX[id]?.name || id)}">` : '';
+  }
+
+  function randomStarterCharacters(currentId = '') {
+    const pool = CHARACTER_CATALOG.slice().sort(() => Math.random() - 0.5);
+    const selected = [];
+    if (CHARACTER_INDEX[currentId]) selected.push(CHARACTER_INDEX[currentId]);
+    for (const c of pool) {
+      if (selected.length >= 5) break;
+      if (!selected.some((x) => x.id === c.id)) selected.push(c);
+    }
+    return selected;
+  }
 
   function pcPreview() {
     const screen = $('#petcreate .petscreen');
-    const old = screen.querySelector('.pixelpet');
+    const old = screen.querySelector('.pixelpet, .asset-pet');
     if (old) old.remove();
     screen.appendChild(buildPixelPet(pcDraft));
   }
@@ -587,19 +620,17 @@
   function showPetCreator(pet) {
     // Префилл из существующего питомца (на случай повторной настройки).
     pcDraft.name = pet.name && pet.name !== 'Питомец' ? pet.name : 'Кодзи';
-    pcDraft.species = pet.species || 'capybara';
+    const choices = randomStarterCharacters(pet.species);
+    pcDraft.species = CHARACTER_INDEX[pet.species] ? pet.species : choices[0].id;
     pcDraft.body_color = pet.body_color || '#9dbf9b';
     pcDraft.accent_color = pet.accent_color || '#b08a9e';
     $('#pcName').value = pcDraft.name;
 
-    $('#pcSpecies').innerHTML = SPECIES_LIST.map(
-      (s) => `<div class="species-opt ${s.id === pcDraft.species ? 'on' : ''}" data-species="${s.id}">${iconLabel(s.id, s.label)}</div>`,
-    ).join('');
-    $('#pcBody').innerHTML = BODY_COLORS.map(
-      (c) => `<div class="swatch ${c === pcDraft.body_color ? 'on' : ''}" data-body="${c}" style="background:${c}"></div>`,
-    ).join('');
-    $('#pcAccent').innerHTML = ACCENT_COLORS.map(
-      (c) => `<div class="swatch ${c === pcDraft.accent_color ? 'on' : ''}" data-accent="${c}" style="background:${c}"></div>`,
+    $('#pcSpecies').innerHTML = choices.map(
+      (c) => `<div class="species-opt character-choice ${c.id === pcDraft.species ? 'on' : ''}" data-species="${c.id}">
+        <div class="character-choice-preview">${characterImage(c.id, c.name)}</div>
+        <div>${esc(c.name)}</div>
+      </div>`,
     ).join('');
 
     $('#app').style.display = 'none';
@@ -620,19 +651,6 @@
       $$('#pcSpecies .species-opt').forEach((x) => x.classList.toggle('on', x === sp));
       pcPreview();
       return;
-    }
-    const body = e.target.closest('[data-body]');
-    if (body) {
-      pcDraft.body_color = body.dataset.body;
-      $$('#pcBody .swatch').forEach((x) => x.classList.toggle('on', x === body));
-      pcPreview();
-      return;
-    }
-    const acc = e.target.closest('[data-accent]');
-    if (acc) {
-      pcDraft.accent_color = acc.dataset.accent;
-      $$('#pcAccent .swatch').forEach((x) => x.classList.toggle('on', x === acc));
-      pcPreview();
     }
   });
 
@@ -802,6 +820,12 @@
   };
 
   function buildPixelPet(pet) {
+    if (CHARACTER_INDEX[pet.species]) {
+      const el = document.createElement('div');
+      el.className = 'pixelpet asset-pet idle';
+      el.innerHTML = characterImage(pet.species, CHARACTER_INDEX[pet.species].name);
+      return el;
+    }
     const rows = PET_SHAPES[pet.species] || PET_SHAPES.capybara;
     const el = document.createElement('div');
     el.className = 'pixelpet idle';
@@ -1480,10 +1504,89 @@
     $('#tdMeta').textContent = parts.join(' · ');
     $('#tdDesc').textContent = t.description || 'Без описания';
     $('#tdToggle').textContent = t.status === 'DONE' ? 'Переоткрыть' : 'Закрыть задачу';
+    $('#tdEditCard').hidden = true;
+    renderTaskEditForm(t);
     mountComments('task', id);
   }
 
+  function optionList(values, current) {
+    return values
+      .map((v) => `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`)
+      .join('');
+  }
+
+  function renderTaskEditForm(t) {
+    $('#tdEditTitle').value = t.title || '';
+    $('#tdEditDesc').value = t.description || '';
+    $('#tdEditDue').value = t.due_date || '';
+    $('#tdEditType').innerHTML = optionList(TASK_TYPES, t.type || 'OTHER');
+    $('#tdEditPriority').innerHTML = optionList(TASK_PRIORITIES, t.priority || 'MEDIUM');
+
+    const wrap = $('#tdEditAssigneesWrap');
+    const list = $('#tdEditAssignees');
+    if (t.scope === 'PERSONAL') {
+      wrap.hidden = true;
+      list.innerHTML = '';
+      return;
+    }
+
+    wrap.hidden = false;
+    const selected = new Set(t.assignees && t.assignees.length ? t.assignees : (t.assignee_id ? [t.assignee_id] : []));
+    list.innerHTML = (state.members || [])
+      .map((m) => {
+        const label = esc(m.display_name || m.email || m.user_id.slice(0, 6));
+        return `<label class="task-edit-assignee">
+          <input type="checkbox" value="${m.user_id}" ${selected.has(m.user_id) ? 'checked' : ''}>
+          <span>${label}</span>
+        </label>`;
+      })
+      .join('') || '<div class="muted sm">Нет участников для назначения.</div>';
+  }
+
   $('#tdBack').addEventListener('click', () => go(NAV_PARENT.taskdetail));
+
+  $('#tdEdit').addEventListener('click', () => {
+    const card = $('#tdEditCard');
+    card.hidden = !card.hidden;
+    if (!card.hidden) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  $('#tdCancel').addEventListener('click', () => {
+    $('#tdEditCard').hidden = true;
+    if (state.openTaskObj) renderTaskEditForm(state.openTaskObj);
+  });
+
+  $('#tdSave').addEventListener('click', async () => {
+    const t = state.openTaskObj;
+    if (!t) return;
+    const title = $('#tdEditTitle').value.trim();
+    if (!title) return toast('Название задачи не может быть пустым', '');
+
+    const desc = $('#tdEditDesc').value.trim();
+    const body = {
+      title,
+      description: desc || null,
+      due_date: $('#tdEditDue').value || null,
+      type: $('#tdEditType').value,
+      priority: $('#tdEditPriority').value,
+    };
+    if (t.scope !== 'PERSONAL') {
+      body.assignee_ids = $$('#tdEditAssignees input[type="checkbox"]:checked').map((x) => x.value);
+    }
+
+    const btn = $('#tdSave');
+    btn.disabled = true;
+    try {
+      const updated = await api.patch(`/tasks/${t.id}`, body);
+      state.openTaskObj = updated;
+      toast('Задача обновлена', 'xp');
+      await openTask(t.id);
+    } catch (err) {
+      toast(err.message || 'Не удалось сохранить', '');
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   $('#tdToggle').addEventListener('click', async () => {
     const t = state.openTaskObj;
@@ -1579,9 +1682,12 @@
       list.innerHTML = items.length
         ? items.map((c) => {
             const nm = memberName(c.author_id);
-            return `<div class="feed"><div class="it">
-            <div class="av">${initials(nm)}</div>
-            <div><b>${esc(nm)}</b> <span>${esc(c.text)}</span><div class="when">${new Date(c.created_at).toLocaleString('ru')}</div></div>
+            return `<div class="feed comment-feed"><div class="it comment-row">
+            <div class="av" title="${esc(nm)}">${initials(nm)}</div>
+            <div class="comment-body">
+              <div class="comment-text">${esc(c.text)}</div>
+              <div class="when comment-meta">${esc(nm)} · ${new Date(c.created_at).toLocaleString('ru')}</div>
+            </div>
           </div></div>`;
           }).join('')
         : '<div class="muted sm">Пока нет комментариев.</div>';
@@ -2065,6 +2171,7 @@
   }
 
   function itemPreview(it) {
+    if (it.type === 'character') return `<div class="character-item-preview">${characterImage(it.id, it.name)}</div>`;
     if (it.type === 'food') return `<div class="swatch-prev food-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
     if (it.type === 'hat') return `<div class="swatch-prev hat-prev">${hatImg(it)}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
@@ -2083,10 +2190,16 @@
       .map((it) => {
         const foodCount = Number(pet.food_inventory?.[it.id] || 0);
         const owned = it.type !== 'food' && inv.includes(it.id);
+        const selectedCharacter = it.type === 'character' && pet.species === it.id;
+        const lockedCharacter = it.type === 'character' && Number(pet.level || 1) < Number(it.min_level || 1);
         const cls = `shopcard ${owned ? 'owned' : ''}`;
-        const action = owned
-          ? 'в рюкзаке'
-          : `${iconLabel('coin', String(it.price))}${it.type === 'food' && foodCount ? ` <span class="food-count-inline">x${foodCount}</span>` : ''}`;
+        const action = selectedCharacter
+          ? 'выбран'
+          : owned
+            ? 'в коллекции'
+            : lockedCharacter
+              ? `с ${it.min_level} уровня`
+              : `${iconLabel('coin', String(it.price))}${it.type === 'food' && foodCount ? ` <span class="food-count-inline">x${foodCount}</span>` : ''}`;
         return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
           ${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
@@ -2102,11 +2215,11 @@
   function inventoryCard(it, compact = false) {
     const pet = state.pet || {};
     const eq = pet.equipped || {};
-    const equipped = eq[it.type] === it.id;
+    const equipped = it.type === 'character' ? pet.species === it.id : eq[it.type] === it.id;
     return `<div class="shopcard bagitem ${equipped ? 'equipped' : ''}" data-inventory="${it.id}" title="${equipped ? 'Снять' : 'Надеть'}">
       ${itemPreview(it)}
       ${compact ? '' : `<div class="nm">${esc(it.name)}</div><div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>`}
-      <div class="sm" style="margin-top:4px;">${equipped ? 'надето' : 'надеть'}</div>
+      <div class="sm" style="margin-top:4px;">${it.type === 'character' ? (equipped ? 'выбран' : 'выбрать') : (equipped ? 'надето' : 'надеть')}</div>
     </div>`;
   }
 
@@ -2161,13 +2274,19 @@
 
   function renderFoodShelf(el, title, compact = false) {
     const items = foodEntries();
+    el.classList.toggle('is-empty', items.length === 0);
+    el.title = items.length === 0 ? 'Купить еду в магазине' : '';
     const pageSize = 4;
     const pages = Math.max(1, Math.ceil(items.length / pageSize));
     state.foodBagPage = Math.max(0, Math.min(state.foodBagPage || 0, pages - 1));
     const pageItems = items.slice(state.foodBagPage * pageSize, state.foodBagPage * pageSize + pageSize);
-    const slots = Array.from({ length: pageSize }, (_, idx) =>
-      pageItems[idx] ? foodCard(pageItems[idx], compact) : '<div class="food-slot empty"></div>',
-    ).join('');
+    const slots = items.length
+      ? Array.from({ length: pageSize }, (_, idx) =>
+          pageItems[idx] ? foodCard(pageItems[idx], compact) : '<div class="food-slot empty"></div>',
+        ).join('')
+      : `<button class="food-shop-cta ${compact ? 'compact' : ''}" type="button" data-open-food-shop>
+          ${iconLabel('apple', 'Купить еду')}
+        </button>`;
     el.innerHTML = `<div class="dock-bag-title">${title}</div>
       <div class="dock-bag-grid food-grid">${slots}</div>
       <div class="dock-bag-pager">
@@ -2182,6 +2301,14 @@
     if (belt) renderFoodShelf(belt, 'Еда для питомца');
     const dock = $('#dockFoodBag');
     if (dock) renderFoodShelf(dock, 'Еда', true);
+  }
+
+  async function openFoodShop() {
+    state.shopOpen = true;
+    state.shopTab = 'food';
+    await go('gameroom');
+    const panel = $('#shopPanel');
+    if (panel && !panel.hidden) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   document.addEventListener('click', (e) => {
@@ -2248,7 +2375,7 @@
   }
 
   function runCaseRoll(resultItem) {
-    const casePool = (state.shopCatalog || []).filter((it) => it.type !== 'food');
+    const casePool = (state.shopCatalog || []).filter((it) => it.type !== 'food' && it.type !== 'character');
     const pool = casePool.length ? casePool : [resultItem];
     const winnerIndex = 24;
     const roll = Array.from({ length: 34 }, (_, idx) =>
@@ -2392,6 +2519,13 @@
     feedWithFood(card.dataset.food);
   });
 
+  document.addEventListener('click', (e) => {
+    const foodLink = e.target.closest('[data-open-food-shop], #foodBelt.is-empty, #dockFoodBag.is-empty');
+    if (!foodLink) return;
+    e.preventDefault();
+    openFoodShop();
+  });
+
   $('#playFeed')?.addEventListener('click', () => {
     if (Number(state.pet?.hunger || 0) >= 95) {
       $('#playMsg').textContent = 'Питомец уже сыт.';
@@ -2399,9 +2533,12 @@
     }
     const items = foodEntries();
     highlightFoodBags();
-    $('#playMsg').textContent = items.length
-      ? 'Выбери еду на полке ниже или справа.'
-      : 'Еды нет. Купи её во вкладке "Еда" в магазине.';
+    if (items.length) {
+      $('#playMsg').textContent = 'Выбери еду на полке ниже или справа.';
+      return;
+    }
+    $('#playMsg').textContent = 'Еды нет. Открываю магазин еды.';
+    openFoodShop();
   });
   $('#playPet').addEventListener('click', () => playWithPet('pet', 'pickup_heart', 'Питомцу приятно'));
   $('#playBall').addEventListener('click', () => playWithPet('ball', 'music', 'Игра в мячик - весело!'));

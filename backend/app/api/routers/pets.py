@@ -6,6 +6,7 @@ from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
 from app.models import Pet, User, WorkspaceMember
 from app.schemas import CaseOpenOut, EquipIn, PetCustomize, PetOut, PetPlayIn, PetUpdate, ShopBuyIn
+from app.services.characters import CHARACTER_UNLOCK_LEVEL
 from app.services.pet import apply_decay, pet_state, state_label
 from app.services.shop import CASE_PRICE, SHOP_ITEMS, get_item, roll_case
 
@@ -62,6 +63,7 @@ async def customize_pet(
     pet.body_color = data.body_color
     pet.accent_color = data.accent_color
     pet.customized = True
+    _grant_item(pet, data.species)
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)
@@ -163,11 +165,17 @@ async def shop_buy(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Товар не найден")
     if item["type"] != "food" and data.item_id in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Уже куплено")
+    if item["type"] == "character" and pet.level < CHARACTER_UNLOCK_LEVEL:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Новые персонажи доступны с 5 уровня")
     if (pet.coins or 0) < item["price"]:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно монет")
     pet.coins -= item["price"]
     if item["type"] == "food":
         _grant_food(pet, data.item_id)
+    elif item["type"] == "character":
+        _grant_item(pet, data.item_id)
+        pet.species = data.item_id
+        pet.customized = True
     else:
         _grant_item(pet, data.item_id)
     await db.commit()
@@ -210,6 +218,12 @@ async def shop_equip(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Еду нельзя надеть")
     if data.item_id not in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет не куплен")
+    if item["type"] == "character":
+        pet.species = data.item_id
+        pet.customized = True
+        await db.commit()
+        await db.refresh(pet)
+        return _to_out(pet)
     # toggle: если уже надет этот предмет — снимаем, иначе надеваем
     if equipped.get(item["type"]) == data.item_id:
         equipped.pop(item["type"], None)

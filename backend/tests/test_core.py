@@ -23,15 +23,16 @@ async def test_customize_pet(client):
     h = auth_headers(tokens)
     resp = await client.put(
         "/pets/me",
-        json={"name": "Кодзи", "species": "frog", "body_color": "#7bA86b", "accent_color": "#33603f"},
+        json={"name": "Кодзи", "species": "char_agent_mike", "body_color": "#7bA86b", "accent_color": "#33603f"},
         headers=h,
     )
     assert resp.status_code == 200, resp.text
     pet = resp.json()
     assert pet["name"] == "Кодзи"
-    assert pet["species"] == "frog"
+    assert pet["species"] == "char_agent_mike"
     assert pet["body_color"] == "#7bA86b"
     assert pet["customized"] is True
+    assert "char_agent_mike" in pet["inventory"]
 
     # Неизвестный вид — 422.
     bad = await client.put(
@@ -40,6 +41,38 @@ async def test_customize_pet(client):
         headers=h,
     )
     assert bad.status_code == 422
+
+
+async def test_character_purchase_requires_level_five_and_equips(client):
+    from sqlalchemy import select
+
+    from app.core.database import SessionLocal
+    from app.models import Pet
+
+    tokens = await register(client, "chars@lab.ru")
+    h = auth_headers(tokens)
+    chosen = await client.put(
+        "/pets/me",
+        json={"name": "Кодзи", "species": "char_agent_mike", "body_color": "#7bA86b", "accent_color": "#33603f"},
+        headers=h,
+    )
+    assert chosen.status_code == 200, chosen.text
+
+    locked = await client.post("/shop/buy", json={"item_id": "char_penguin"}, headers=h)
+    assert locked.status_code == 400
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="chars@lab.ru")))
+        pet.level = 5
+        pet.coins = 120
+        await db.commit()
+
+    bought = await client.post("/shop/buy", json={"item_id": "char_penguin"}, headers=h)
+    assert bought.status_code == 200, bought.text
+    pet = bought.json()
+    assert pet["coins"] == 0
+    assert pet["species"] == "char_penguin"
+    assert "char_penguin" in pet["inventory"]
 
 
 async def test_team_task_completion_grants_xp_and_activity(client):
@@ -103,6 +136,75 @@ async def test_personal_task_is_private(client):
     assert (await client.get(f"/tasks/{task['id']}", headers=hb)).status_code == 404
     # Alice can.
     assert (await client.get(f"/tasks/{task['id']}", headers=ha)).status_code == 200
+
+
+async def test_task_can_be_edited_after_creation(client):
+    tokens = await register(client, "edit@lab.ru")
+    h = auth_headers(tokens)
+    task = (
+        await client.post("/tasks", json={"scope": "PERSONAL", "title": "Draft"}, headers=h)
+    ).json()
+
+    resp = await client.patch(
+        f"/tasks/{task['id']}",
+        json={
+            "title": "Updated",
+            "description": "New details",
+            "type": "RESEARCH",
+            "priority": "HIGH",
+            "due_date": "2026-06-10",
+        },
+        headers=h,
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["title"] == "Updated"
+    assert body["description"] == "New details"
+    assert body["type"] == "RESEARCH"
+    assert body["priority"] == "HIGH"
+    assert body["due_date"] == "2026-06-10"
+
+
+async def test_team_task_edit_validates_assignees(client):
+    owner = await register(client, "task-owner@lab.ru")
+    bob = await register(client, "task-bob@lab.ru", "Bob")
+    outsider = await register(client, "task-outsider@lab.ru")
+    ho, hb, hx = auth_headers(owner), auth_headers(bob), auth_headers(outsider)
+    ws = await _make_workspace(client, ho)
+    await client.post(f"/workspaces/{ws['id']}/invite", json={"email": "task-bob@lab.ru"}, headers=ho)
+    bob_id = (await client.get("/auth/me", headers=hb)).json()["id"]
+    outsider_id = (await client.get("/auth/me", headers=hx)).json()["id"]
+    task = (
+        await client.post(
+            "/tasks",
+            json={"scope": "WORKSPACE", "workspace_id": ws["id"], "title": "Team"},
+            headers=ho,
+        )
+    ).json()
+
+    ok = await client.patch(f"/tasks/{task['id']}", json={"assignee_ids": [bob_id]}, headers=ho)
+    assert ok.status_code == 200, ok.text
+    assert ok.json()["assignees"] == [bob_id]
+
+    bad = await client.patch(
+        f"/tasks/{task['id']}", json={"assignee_ids": [outsider_id]}, headers=ho
+    )
+    assert bad.status_code == 400
+
+
+async def test_personal_task_cannot_be_assigned_to_another_user(client):
+    alice = await register(client, "personal-owner@lab.ru")
+    bob = await register(client, "personal-bob@lab.ru")
+    ha, hb = auth_headers(alice), auth_headers(bob)
+    bob_id = (await client.get("/auth/me", headers=hb)).json()["id"]
+    task = (
+        await client.post("/tasks", json={"scope": "PERSONAL", "title": "Private"}, headers=ha)
+    ).json()
+
+    resp = await client.patch(
+        f"/tasks/{task['id']}", json={"assignee_ids": [bob_id]}, headers=ha
+    )
+    assert resp.status_code == 400
 
 
 async def test_personal_task_reward_is_smaller_and_no_activity(client):
