@@ -1619,6 +1619,49 @@ textarea.input { resize: vertical; min-height: 70px; }
 .petdock .track {
   min-width: 0;
 }
+.pet-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border2);
+}
+.pet-action-btn {
+  min-width: 0;
+  min-height: 54px;
+  padding: 6px 3px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.38);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 7px;
+  line-height: 1.25;
+}
+.pet-action-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.66);
+  transform: translateY(-1px);
+}
+.pet-action-btn:disabled {
+  opacity: .42;
+  cursor: default;
+}
+.pet-action-btn .ui-icon:not(.pickup-sprite) {
+  width: 22px;
+  height: 22px;
+}
+.dock-food-hint {
+  margin-top: 7px;
+  font-size: 8px;
+  line-height: 1.45;
+}
 .dock-bag {
   margin-top: 10px;
   padding-top: 10px;
@@ -1755,6 +1798,37 @@ textarea.input { resize: vertical; min-height: 70px; }
 /* ============================================================
    GAME ROOM / SHOP
    ============================================================ */
+.game-room {
+  display: grid;
+  gap: var(--gap);
+  max-width: 760px;
+}
+.case-card {
+  text-align: center;
+  align-items: center;
+}
+.case-chest-preview {
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 4px;
+  filter: drop-shadow(0 10px 14px rgba(92,58,69,0.16));
+}
+.case-chest-preview .pickup-sprite {
+  animation-duration: .66s;
+}
+.case-open-btn {
+  min-width: min(320px, 100%);
+  justify-content: center;
+}
+.shop-toggle-row {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.shop-panel[hidden] {
+  display: none;
+}
 .shopcard {
   border: 1px solid var(--border-out);
   border-radius: var(--r2);

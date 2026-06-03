@@ -29,6 +29,7 @@
     members: [],
     pollTimer: null,
     shopTab: 'all',
+    shopOpen: false,
     dockBagPage: 0,
     foodBagPage: 0,
     wallImageData: null,
@@ -124,7 +125,7 @@
     const s = PICKUP_SPRITES[name];
     const framesClass = s.frames === 4 ? 'pickup-4' : (s.frames === 3 ? 'pickup-3' : 'pickup-static');
     const label = alt || s.label || name;
-    const scale = size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25);
+    const scale = size.includes('case-xl') ? 3.05 : (size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25));
     const w = Math.round(s.w * scale);
     const h = Math.round(s.h * scale);
     const sheet = Math.round(s.w * s.frames * scale);
@@ -145,7 +146,7 @@
     $$('.asset-icon[data-icon]', root).forEach((el) => {
       if (el.dataset.hydrated === '1') return;
       el.dataset.hydrated = '1';
-      el.innerHTML = iconImg(el.dataset.icon, el.dataset.label || '');
+      el.innerHTML = iconImg(el.dataset.icon, el.dataset.label || '', el.dataset.size || '');
     });
   }
 
@@ -2050,6 +2051,10 @@
       cat.items.forEach((it) => (SHOP_INDEX[it.id] = it));
       $('#casePrice').textContent = cat.case_price;
     }
+    const panel = $('#shopPanel');
+    if (panel) panel.hidden = !state.shopOpen;
+    const toggle = $('#shopToggle');
+    if (toggle) toggle.classList.toggle('primary', state.shopOpen);
     renderShop();
   }
 
@@ -2290,10 +2295,15 @@
 
   // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
   const playAnim = (iconName) => {
-    const screen = $('#gamePetScreen');
-    const sprite = screen && screen.querySelector('.pixelpet');
-    if (sprite) { sprite.classList.add('state-happy'); setTimeout(() => sprite.classList.remove('state-happy'), 1500); }
-    if (screen) {
+    const screens = ['#dockPetScreen', '#screen-pet .petscreen']
+      .map((sel) => $(sel))
+      .filter(Boolean);
+    screens.forEach((screen) => {
+      const sprite = screen.querySelector('.pixelpet');
+      if (sprite) {
+        sprite.classList.add('state-happy');
+        setTimeout(() => sprite.classList.remove('state-happy'), 1500);
+      }
       if (PET_EMOTES[iconName]) {
         showPetEmote(screen, iconName, 'burst');
         return;
@@ -2303,7 +2313,7 @@
       burst.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:32px;z-index:6;animation:toastin .4s;pointer-events:none;';
       screen.appendChild(burst);
       setTimeout(() => burst.remove(), 1200);
-    }
+    });
   };
   function updatePlayControls() {
     const pet = state.pet || {};
@@ -2376,7 +2386,7 @@
     feedWithFood(card.dataset.food);
   });
 
-  $('#playFeed').addEventListener('click', () => {
+  $('#playFeed')?.addEventListener('click', () => {
     if (Number(state.pet?.hunger || 0) >= 95) {
       $('#playMsg').textContent = 'Питомец уже сыт.';
       return;
@@ -2393,6 +2403,10 @@
   $('#petSleep')?.addEventListener('click', () => {
     go('gameroom');
     playWithPet('sleep', 'sleep', 'Питомец выспался и восстановил энергию.');
+  });
+  $('#shopToggle')?.addEventListener('click', () => {
+    state.shopOpen = !state.shopOpen;
+    renderGameRoom();
   });
   $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
 
