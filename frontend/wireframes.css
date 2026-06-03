@@ -1480,11 +1480,12 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .pet-hat {
   position: absolute;
-  top: 13%;
-  left: 50%;
+  top: var(--pet-hat-top, 13%);
+  left: var(--pet-hat-left, 50%);
   width: 58px;
   height: 42px;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(var(--pet-hat-scale, 1));
+  transform-origin: center bottom;
   z-index: 5;
   display: grid;
   place-items: end center;
@@ -1500,7 +1501,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   image-rendering: pixelated;
 }
 .petbig .pet-hat {
-  top: 10%;
+  top: var(--pet-hat-top, 10%);
   width: 72px;
   height: 48px;
 }
@@ -1509,7 +1510,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   height: 78px;
 }
 #dockPetScreen .pet-hat {
-  top: 10%;
+  top: var(--pet-hat-top, 10%);
   width: 46px;
   height: 32px;
 }
@@ -1567,6 +1568,14 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: 34%;
   min-width: 58px;
   --sprite-ui-scale: 2.35;
+}
+.pixelpet.asset-pet.idle,
+.pixelpet.asset-pet.state-happy,
+.pixelpet.asset-pet.state-hungry,
+.pixelpet.asset-pet.state-sleepy,
+.pixelpet.asset-pet.state-sad {
+  animation: none;
+  transform: none;
 }
 .petbig .pixelpet.asset-pet {
   width: 40%;

@@ -19,18 +19,18 @@
   ];
   const TASK_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   const CHARACTER_CATALOG = [
-    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5 },
-    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png', frameWidth: 32, frameHeight: 32, frames: 2 },
-    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5 },
-    { id: 'char_fairy', name: 'Fairy', file: 'fairy.png', frameWidth: 32, frameHeight: 32, frames: 4 },
-    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9 },
-    { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4 },
-    { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png', frameWidth: 16, frameHeight: 16, frames: 2 },
+    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 17, opaqueCenter: 19, hatScale: 0.88 },
+    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 12, opaqueCenter: 15.5, hatScale: 0.92 },
+    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 0.88 },
+    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.82 },
+    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 15, hatScale: 0.9 },
+    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5, opaqueTop: 1, opaqueCenter: 7.5, hatScale: 0.76 },
+    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.88 },
+    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 7, opaqueCenter: 15, hatScale: 0.92 },
+    { id: 'char_fairy', name: 'Fairy', file: 'fairy.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 8, opaqueCenter: 15.5, hatScale: 0.76 },
+    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 5, opaqueCenter: 16, hatScale: 0.92 },
+    { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.9 },
+    { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.7 },
   ];
   const CHARACTER_INDEX = Object.fromEntries(CHARACTER_CATALOG.map((c) => [c.id, c]));
   const LEGACY_SPECIES = new Set(['capybara', 'cat', 'dog', 'frog', 'axolotl']);
@@ -928,6 +928,30 @@
     if (mode === 'burst') setTimeout(() => bubble.remove(), 1300);
   }
 
+  function fitHatToPet(screen, pet, hat) {
+    const c = CHARACTER_INDEX[pet.species];
+    if (!screen || !hat || !c) return;
+    const isDock = screen.id === 'dockPetScreen';
+    const isBig = !isDock && !!screen.closest('.petbig');
+    const uiScale = isDock ? 1.8 : (isBig ? 2.8 : 2.35);
+    const hatSize = isDock ? 52 : (isBig ? 78 : 64);
+    const scale = Number(c.hatScale || 1);
+    const frameWidth = Number(c.frameWidth || 32);
+    const frameHeight = Number(c.frameHeight || 32);
+    const spriteScale = (32 / frameHeight) * uiScale;
+    const spriteHeight = frameHeight * spriteScale;
+    const spriteTop = screen.clientHeight / 2 - spriteHeight / 2;
+    const headTop = spriteTop + Number(c.opaqueTop || 0) * spriteScale;
+    const headX = screen.clientWidth / 2
+      + (Number(c.opaqueCenter || frameWidth / 2) - frameWidth / 2) * spriteScale;
+    const hatOpaqueBottom = hatSize * 0.68 * scale;
+    const top = headTop - hatOpaqueBottom + 5 * spriteScale;
+
+    hat.style.setProperty('--pet-hat-left', `${Math.round(headX)}px`);
+    hat.style.setProperty('--pet-hat-top', `${Math.round(top)}px`);
+    hat.style.setProperty('--pet-hat-scale', String(scale));
+  }
+
   // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
   function paintSprites(pet) {
     const eq = pet.equipped || {};
@@ -957,6 +981,7 @@
         } else {
           hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
         }
+        fitHatToPet(screen, pet, hat);
         screen.appendChild(hat);
       }
     });
@@ -1014,14 +1039,17 @@
     }
 
     window.addEventListener('resize', () => {
+      const repaintPet = () => state.pet && requestAnimationFrame(() => paintSprites(state.pet));
       if (isMobile()) {
         app && app.classList.remove('side-collapsed');
+        repaintPet();
         return;
       }
       closeSide();
       try {
         app && app.classList.toggle('side-collapsed', localStorage.getItem('petpro_side_collapsed') === '1');
       } catch (e) {}
+      repaintPet();
     });
   }
 
