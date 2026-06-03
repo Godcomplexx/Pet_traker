@@ -20,17 +20,58 @@
   const TASK_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   const CHARACTER_CATALOG = [
     { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 17, opaqueCenter: 19, hatScale: 0.88 },
-    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 12, opaqueCenter: 15.5, hatScale: 0.92 },
-    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 0.88 },
-    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.82 },
-    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 15, hatScale: 0.9 },
-    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5, opaqueTop: 1, opaqueCenter: 7.5, hatScale: 0.76 },
-    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.88 },
-    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 7, opaqueCenter: 15, hatScale: 0.92 },
+    { id: 'char_angie', name: 'Angie', file: 'angie.png', frameWidth: 32, frameHeight: 32, frames: 6, opaqueTop: 10, opaqueCenter: 15.5, hatScale: 0.89 },
+    { id: 'char_armand', name: 'Armand', file: 'armand.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 1, opaqueCenter: 15, hatScale: 1.25 },
+    { id: 'char_ballooney', name: 'Ballooney', file: 'ballooney.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 3, opaqueCenter: 15.5, hatScale: 0.78 },
+    { id: 'char_barry_cherry', name: 'Barry Cherry', file: 'barry_cherry.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 16, opaqueCenter: 16, hatScale: 0.94 },
+    { id: 'char_big_red', name: 'Big Red', file: 'big_red.png', frameWidth: 32, frameHeight: 32, frames: 6, opaqueTop: 12, opaqueCenter: 15, hatScale: 1.06 },
+    { id: 'char_blankey', name: 'Blankey', file: 'blankey.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 9, opaqueCenter: 15.5, hatScale: 1 },
+    { id: 'char_blocky_bub', name: 'Blocky Bub', file: 'blocky_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 4, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_bub', name: 'Bub', file: 'bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 5, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_bumpy_the_robot', name: 'Bumpy the Robot', file: 'bumpy_the_robot.png', frameWidth: 16, frameHeight: 16, frames: 4, opaqueTop: 3, opaqueCenter: 7.5, hatScale: 0.78 },
+    { id: 'char_bushly', name: 'Bushly', file: 'bushly.png', frameWidth: 16, frameHeight: 16, frames: 3, opaqueTop: 3, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_chi_chi_the_bird', name: 'Chi Chi the Bird', file: 'chi_chi_the_bird.png', frameWidth: 16, frameHeight: 16, frames: 1, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.89 },
+    { id: 'char_daikon', name: 'Daikon', file: 'daikon.png', frameWidth: 16, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_devo_the_devil', name: 'Devo the Devil', file: 'devo_the_devil.png', frameWidth: 16, frameHeight: 16, frames: 1, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.89 },
+    { id: 'char_diver_the_fish', name: 'Diver the Fish', file: 'diver_the_fish.png', frameWidth: 16, frameHeight: 16, frames: 4, opaqueTop: 1, opaqueCenter: 7, hatScale: 0.83 },
     { id: 'char_fairy', name: 'Fairy', file: 'fairy.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 8, opaqueCenter: 15.5, hatScale: 0.76 },
-    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 5, opaqueCenter: 16, hatScale: 0.92 },
-    { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.9 },
+    { id: 'char_geralt', name: 'Geralt', file: 'geralt.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 16, opaqueCenter: 16, hatScale: 0.72 },
     { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.7 },
+    { id: 'char_grizzly', name: 'Grizzly', file: 'grizzly.png', frameWidth: 48, frameHeight: 32, frames: 1, opaqueTop: 10, opaqueCenter: 23, hatScale: 1.25 },
+    { id: 'char_gum_bot', name: 'Gum Bot', file: 'gum_bot.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.89 },
+    { id: 'char_hermie', name: 'Hermie', file: 'hermie.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 19, opaqueCenter: 16, hatScale: 1.06 },
+    { id: 'char_jumpy_lumpy', name: 'Jumpy Lumpy', file: 'jumpy_lumpy.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 21, opaqueCenter: 15.5, hatScale: 0.78 },
+    { id: 'char_lil_wiz', name: 'Lil Wiz', file: 'lil_wiz.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 6, opaqueCenter: 15.5, hatScale: 1.11 },
+    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 12, opaqueCenter: 15.5, hatScale: 0.92 },
+    { id: 'char_moe_scotty', name: 'Moe Scotty', file: 'moe_scotty.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 4, opaqueCenter: 16, hatScale: 1.25 },
+    { id: 'char_mr_chomps', name: 'Mr. Chomps', file: 'mr_chomps.png', frameWidth: 32, frameHeight: 32, frames: 12, opaqueTop: 18, opaqueCenter: 15, hatScale: 1.25 },
+    { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 15, hatScale: 0.9 },
+    { id: 'char_mr_man', name: 'Mr. Man', file: 'mr_man.png', frameWidth: 16, frameHeight: 16, frames: 4, opaqueTop: 1, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_mr_mochi', name: 'Mr. Mochi', file: 'mr_mochi.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.88 },
+    { id: 'char_octi', name: 'Octi', file: 'octi.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 4, opaqueCenter: 7.5, hatScale: 0.78 },
+    { id: 'char_onion_lad', name: 'Onion Lad', file: 'onion_lad.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 3, opaqueCenter: 6.5, hatScale: 0.78 },
+    { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.9 },
+    { id: 'char_orc', name: 'Orc', file: 'orc.png', frameWidth: 64, frameHeight: 32, frames: 7, opaqueTop: 3, opaqueCenter: 27.5, hatScale: 1.25 },
+    { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.82 },
+    { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5, opaqueTop: 1, opaqueCenter: 7.5, hatScale: 0.76 },
+    { id: 'char_percy', name: 'Percy', file: 'percy.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 10, opaqueCenter: 15, hatScale: 1.25 },
+    { id: 'char_pokey_bub', name: 'Pokey Bub', file: 'pokey_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 3, opaqueCenter: 7.5, hatScale: 0.89 },
+    { id: 'char_roach', name: 'Roach', file: 'roach.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 13, opaqueCenter: 17, hatScale: 0.94 },
+    { id: 'char_robo_pumpkin', name: 'Robo Pumpkin', file: 'robo_pumpkin.png', frameWidth: 16, frameHeight: 16, frames: 1, opaqueTop: 0, opaqueCenter: 7.5, hatScale: 0.78 },
+    { id: 'char_robo_retro', name: 'Robo Retro', file: 'robo_retro.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 1.22 },
+    { id: 'char_robo_totem', name: 'Robo Totem', file: 'robo_totem.png', frameWidth: 16, frameHeight: 32, frames: 1, opaqueTop: 10, opaqueCenter: 7.5, hatScale: 0.78 },
+    { id: 'char_robot_j5', name: 'Robot J5', file: 'robot_j5.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 16, opaqueCenter: 15.5, hatScale: 1 },
+    { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 0.88 },
+    { id: 'char_rocket_cherry', name: 'Rocket Cherry', file: 'rocket_cherry.png', frameWidth: 16, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 8.5, hatScale: 0.78 },
+    { id: 'char_rolling_nero', name: 'Rolling Nero', file: 'rolling_nero.png', frameWidth: 16, frameHeight: 16, frames: 6, opaqueTop: 0, opaqueCenter: 7.5, hatScale: 0.89 },
+    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 5, opaqueCenter: 16, hatScale: 0.92 },
+    { id: 'char_snip_snap_crab', name: 'Snip Snap Crab', file: 'snip_snap_crab.png', frameWidth: 32, frameHeight: 32, frames: 1, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 1.25 },
+    { id: 'char_spikey_bub', name: 'Spikey Bub', file: 'spikey_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.68 },
+    { id: 'char_squirmy_wormy', name: 'Squirmy Wormy', file: 'squirmy_wormy.png', frameWidth: 32, frameHeight: 32, frames: 3, opaqueTop: 21, opaqueCenter: 15, hatScale: 1.25 },
+    { id: 'char_toggle', name: 'Toggle', file: 'toggle.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 11, opaqueCenter: 15.5, hatScale: 0.78 },
+    { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 7, opaqueCenter: 15, hatScale: 0.92 },
+    { id: 'char_vessa', name: 'Vessa', file: 'vessa.png', frameWidth: 32, frameHeight: 32, frames: 10, opaqueTop: 8, opaqueCenter: 15, hatScale: 0.83 },
+    { id: 'char_wispy_fire', name: 'Wispy Fire', file: 'wispy_fire.png', frameWidth: 32, frameHeight: 32, frames: 21, opaqueTop: 4, opaqueCenter: 15.5, hatScale: 0.89 },
   ];
   const CHARACTER_INDEX = Object.fromEntries(CHARACTER_CATALOG.map((c) => [c.id, c]));
   const LEGACY_SPECIES = new Set(['capybara', 'cat', 'dog', 'frog', 'axolotl']);
@@ -603,7 +644,8 @@
     const frameHeight = Number(c.frameHeight || 32);
     const frames = Math.max(1, Number(c.frames || 1));
     const baseScale = 32 / frameHeight;
-    return `<span class="asset-pet-sprite" role="img" aria-label="${label}" style="--sprite-url:url('${src}');--sprite-frames:${frames};--sprite-frame-w:${frameWidth};--sprite-frame-h:${frameHeight};--sprite-base-scale:${baseScale};"></span>`;
+    const staticFrame = frames <= 1 ? ' data-static="1"' : '';
+    return `<span class="asset-pet-sprite" role="img" aria-label="${label}"${staticFrame} style="--sprite-url:url('${src}');--sprite-frames:${frames};--sprite-frame-w:${frameWidth};--sprite-frame-h:${frameHeight};--sprite-base-scale:${baseScale};"></span>`;
   }
 
   function randomStarterCharacters(currentId = '') {
@@ -2203,7 +2245,139 @@
     const toggle = $('#shopToggle');
     if (toggle) toggle.classList.toggle('primary', state.shopOpen);
     renderShop();
+    loadSudoku();
   }
+
+  /* ──────────────── ежедневная судоку 6×6 ──────────────── */
+  const sudoku = { size: 6, br: 2, bc: 3, puzzle: null, cells: null, sel: null, solved: false };
+
+  async function loadSudoku() {
+    try {
+      const d = await api.get('/games/sudoku/daily');
+      sudoku.size = d.size;
+      sudoku.br = d.block_rows;
+      sudoku.bc = d.block_cols;
+      sudoku.puzzle = d.puzzle;
+      // cells: текущее состояние поля (копия задачи, 0 = пусто)
+      sudoku.cells = d.puzzle.map((row) => row.slice());
+      sudoku.solved = d.solved_today;
+      $('#sudokuReward').textContent = d.reward;
+      $('#sudokuStatus').textContent = d.solved_today ? '✓ решена сегодня' : 'не решена';
+      $('#sudokuStatus').classList.toggle('xp', d.solved_today);
+      $('#sudokuMsg').textContent = d.solved_today
+        ? 'Сегодня уже пройдена. Возвращайся завтра за новой 🎉'
+        : '';
+      renderSudokuBoard();
+      renderSudokuPad();
+    } catch (err) {
+      $('#sudokuMsg').textContent = err.message || 'Не удалось загрузить судоку';
+    }
+  }
+
+  function renderSudokuBoard() {
+    const board = $('#sudokuBoard');
+    if (!board || !sudoku.cells) return;
+    const { size, br, bc } = sudoku;
+    board.style.setProperty('--sg', size);
+    let html = '';
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const given = sudoku.puzzle[r][c] !== 0;
+        const v = sudoku.cells[r][c];
+        const cls = [
+          'sudoku-cell',
+          given ? 'given' : 'editable',
+          sudoku.sel && sudoku.sel[0] === r && sudoku.sel[1] === c ? 'sel' : '',
+          c % bc === bc - 1 && c !== size - 1 ? 'br' : '',
+          r % br === br - 1 && r !== size - 1 ? 'bb' : '',
+        ].join(' ');
+        html += `<div class="${cls}" data-sr="${r}" data-sc="${c}">${v || ''}</div>`;
+      }
+    }
+    board.innerHTML = html;
+  }
+
+  function renderSudokuPad() {
+    const pad = $('#sudokuPad');
+    if (!pad) return;
+    let html = '';
+    for (let n = 1; n <= sudoku.size; n++) {
+      html += `<button class="btn sudoku-key" data-sk="${n}">${n}</button>`;
+    }
+    html += '<button class="btn sudoku-key erase" data-sk="0">⌫</button>';
+    pad.innerHTML = html;
+  }
+
+  // выбор клетки
+  document.addEventListener('click', (e) => {
+    const cell = e.target.closest('.sudoku-cell');
+    if (cell && !cell.classList.contains('given')) {
+      sudoku.sel = [Number(cell.dataset.sr), Number(cell.dataset.sc)];
+      renderSudokuBoard();
+    }
+  });
+
+  // ввод цифры с пэда
+  document.addEventListener('click', (e) => {
+    const key = e.target.closest('[data-sk]');
+    if (!key || !sudoku.sel) return;
+    const [r, c] = sudoku.sel;
+    if (sudoku.puzzle[r][c] !== 0) return; // нельзя менять данные
+    sudoku.cells[r][c] = Number(key.dataset.sk);
+    renderSudokuBoard();
+  });
+
+  // ввод с клавиатуры (1-6, Backspace/Delete)
+  document.addEventListener('keydown', (e) => {
+    if (!$('#screen-gameroom')?.classList.contains('on')) return;
+    if (!sudoku.sel) return;
+    const [r, c] = sudoku.sel;
+    if (sudoku.puzzle[r][c] !== 0) return;
+    if (/^[1-9]$/.test(e.key) && Number(e.key) <= sudoku.size) {
+      sudoku.cells[r][c] = Number(e.key);
+      renderSudokuBoard();
+    } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+      sudoku.cells[r][c] = 0;
+      renderSudokuBoard();
+    }
+  });
+
+  $('#sudokuReset')?.addEventListener('click', () => {
+    if (!sudoku.puzzle) return;
+    sudoku.cells = sudoku.puzzle.map((row) => row.slice());
+    sudoku.sel = null;
+    $('#sudokuMsg').textContent = '';
+    renderSudokuBoard();
+  });
+
+  $('#sudokuCheck')?.addEventListener('click', async () => {
+    if (!sudoku.cells) return;
+    // не отправляем, если есть пустые клетки
+    const hasBlank = sudoku.cells.some((row) => row.some((v) => !v));
+    if (hasBlank) {
+      $('#sudokuMsg').textContent = 'Заполни все клетки перед проверкой.';
+      return;
+    }
+    const btn = $('#sudokuCheck');
+    btn.disabled = true;
+    try {
+      const res = await api.post('/games/sudoku/solve', { solution: sudoku.cells });
+      $('#sudokuMsg').textContent = res.message;
+      if (res.correct) {
+        sudoku.solved = true;
+        $('#sudokuStatus').textContent = '✓ решена сегодня';
+        $('#sudokuStatus').classList.add('xp');
+        if (res.coins_awarded > 0) {
+          toast(`+${res.coins_awarded} монет за судоку 🪙`, 'xp');
+          await refreshPet();
+        }
+      }
+    } catch (err) {
+      $('#sudokuMsg').textContent = err.message || 'Ошибка проверки';
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   function itemPreview(it) {
     if (it.type === 'character') return `<div class="character-item-preview">${characterImage(it.id, it.name)}</div>`;

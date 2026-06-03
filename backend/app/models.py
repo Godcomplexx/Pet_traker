@@ -349,3 +349,22 @@ class WallPresence(Base):
     workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class DailyGameCompletion(Base):
+    """Отметка, что пользователь прошёл ежедневную игру в конкретный день.
+
+    Уникальность (user_id, game, day) гарантирует, что награда за день
+    начисляется один раз — даже при гонке параллельных запросов.
+    """
+    __tablename__ = "daily_game_completions"
+    __table_args__ = (
+        UniqueConstraint("user_id", "game", "day", name="uq_daily_game"),
+    )
+
+    id: Mapped[str] = PK()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    game: Mapped[str] = mapped_column(String(40), nullable=False)
+    day: Mapped[date] = mapped_column(Date, nullable=False)
+    coins_awarded: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = TS()

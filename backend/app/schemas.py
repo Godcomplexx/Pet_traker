@@ -157,6 +157,30 @@ class CaseOpenOut(BaseModel):
     coins: int
 
 
+# ── Ежедневные игры (судоку) ──
+class DailySudokuOut(BaseModel):
+    """Головоломка дня + статус прохождения текущим пользователем."""
+    date: str
+    size: int
+    block_rows: int
+    block_cols: int
+    puzzle: list[list[int]]   # 0 = пустая клетка
+    reward: int               # сколько монет даётся за прохождение
+    solved_today: bool        # уже пройдена сегодня этим пользователем
+
+
+class SudokuSolveIn(BaseModel):
+    solution: list[list[int]]
+
+
+class SudokuSolveOut(BaseModel):
+    correct: bool
+    coins_awarded: int        # 0, если неверно или уже была награда сегодня
+    coins: int                # текущий баланс монет
+    already_solved: bool      # награда за сегодня уже выдана ранее
+    message: str
+
+
 # ── Workspace ──
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)

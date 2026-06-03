@@ -600,6 +600,20 @@
         <span class="chip acc" id="coinBalance"></span>
       </div>
       <div class="game-room">
+        <div class="card sk2 sudoku-card">
+          <div class="between">
+            <h3>Судоку дня <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="sudokuReward">50</span></h3>
+            <span class="chip" id="sudokuStatus"></span>
+          </div>
+          <div class="muted sm">Новая головоломка каждый день. Реши — получи монеты (раз в день).</div>
+          <div id="sudokuBoard" class="sudoku-board"></div>
+          <div class="sudoku-pad" id="sudokuPad"></div>
+          <div class="row" style="gap:8px;margin-top:10px;">
+            <button class="btn primary" id="sudokuCheck">Проверить</button>
+            <button class="btn sm" id="sudokuReset">Очистить</button>
+          </div>
+          <div class="note" id="sudokuMsg" style="margin-top:8px;"></div>
+        </div>
         <div class="card sk2 case-card">
           <h3>Кейс</h3>
           <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>

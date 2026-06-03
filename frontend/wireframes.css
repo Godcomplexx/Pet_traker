@@ -1600,6 +1600,9 @@ textarea.input { resize: vertical; min-height: 70px; }
   filter: drop-shadow(0 7px 5px rgba(42,50,38,0.16));
   animation: sprite-play 1.05s steps(var(--sprite-frames)) infinite;
 }
+.asset-pet-sprite[data-static="1"] {
+  animation: none;
+}
 #dockPetScreen .pixelpet.asset-pet {
   width: 42%;
   --sprite-ui-scale: 1.8;
@@ -2031,6 +2034,48 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: min(100%, 760px);
   margin: 0 auto;
 }
+/* ── судоку дня ── */
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(var(--sg, 6), 1fr);
+  gap: 0;
+  max-width: 360px;
+  margin: 14px auto;
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ink);
+}
+.sudoku-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-lg);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
+  border-right: 1px solid var(--line, #d8cfc4);
+  border-bottom: 1px solid var(--line, #d8cfc4);
+}
+.sudoku-cell.given { font-weight: 700; cursor: default; background: var(--paper2, #f3ede4); }
+.sudoku-cell.editable { color: var(--accent); }
+.sudoku-cell.sel { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; }
+/* толстые границы блоков 2×3 */
+.sudoku-cell.br { border-right: 2.5px solid var(--ink); }
+.sudoku-cell.bb { border-bottom: 2.5px solid var(--ink); }
+
+.sudoku-pad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.sudoku-key { font-size: var(--fs-md); padding: 10px 0; }
+.sudoku-key.erase { color: var(--accent); }
+
 .case-card {
   text-align: center;
   align-items: center;
