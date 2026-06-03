@@ -75,13 +75,23 @@ async def play_with_pet(
     apply_decay(pet)
     reward = 25
     if data.action == "feed":
+        if pet.hunger >= 95:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец уже сыт")
         pet.hunger = min(100, pet.hunger + 12)
         pet.mood = min(100, pet.mood + 4)
     elif data.action == "pet":
+        if pet.hunger <= 5:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец слишком голоден, сначала покорми")
+        if pet.energy <= 5:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец спит без сил")
         pet.mood = min(100, pet.mood + 12)
     elif data.action == "ball":
+        if pet.hunger <= 10:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец голоден и не хочет играть")
+        if pet.energy < 12:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Недостаточно энергии для мячика")
         pet.mood = min(100, pet.mood + 10)
-        pet.energy = max(0, pet.energy - 4)
+        pet.energy = max(0, pet.energy - 12)
     else:
         reward = 100
     pet.coins = (pet.coins or 0) + reward
@@ -169,6 +179,8 @@ async def shop_equip(
     # цвет тела применяем сразу (это не «шапка», а основной вид)
     if item["type"] == "body":
         pet.body_color = item["data"] if equipped.get("body") else pet.body_color
+    if item["type"] == "accent":
+        pet.accent_color = item["data"] if equipped.get("accent") else pet.accent_color
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)

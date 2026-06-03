@@ -58,6 +58,12 @@
     grad: cdnIcon('1f393'),
     flower: cdnIcon('1f338'),
     star: cdnIcon('2b50'),
+    sunglasses: cdnIcon('1f60e'),
+    microscope: cdnIcon('1f52c'),
+    moon: cdnIcon('1f319'),
+    ribbon: cdnIcon('1f380'),
+    fire: cdnIcon('1f525'),
+    gem: cdnIcon('1f48e'),
     happy: cdnIcon('1f60a'),
     ok: cdnIcon('1f642'),
     sad: cdnIcon('1f61f'),
@@ -775,6 +781,12 @@
     hat_grad: 'grad',
     hat_flower: 'flower',
     hat_star: 'star',
+    hat_goggles: 'sunglasses',
+    hat_lab: 'microscope',
+    hat_moon: 'moon',
+    hat_ribbon: 'ribbon',
+    hat_fire: 'fire',
+    hat_gem: 'gem',
   };
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
 
@@ -900,6 +912,7 @@
     $('#coinBalance') && ($('#coinBalance').innerHTML = iconLabel('coin', String(pet.coins || 0)));
     paintSprites(pet);
     renderBackpack();
+    updatePlayControls();
   }
   async function refreshPet() {
     const pet = await api.get('/pets/me');
@@ -1786,20 +1799,51 @@
     } catch (err) { toast(err.message, ''); }
   });
 
+  function caseTile(it, winner = false) {
+    return `<div class="case-tile rar-${it.rarity} ${winner ? 'winner' : ''}">
+      ${itemPreview(it)}
+      <div class="nm">${esc(it.name)}</div>
+      <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
+    </div>`;
+  }
+
+  function runCaseRoll(resultItem) {
+    const pool = state.shopCatalog && state.shopCatalog.length ? state.shopCatalog : [resultItem];
+    const winnerIndex = 24;
+    const roll = Array.from({ length: 34 }, (_, idx) =>
+      idx === winnerIndex ? resultItem : pool[Math.floor(Math.random() * pool.length)],
+    );
+    $('#caseResult').innerHTML = `<div class="case-roulette">
+      <div class="case-marker"></div>
+      <div class="case-strip">${roll.map((it, idx) => caseTile(it, idx === winnerIndex)).join('')}</div>
+    </div>`;
+    const strip = $('#caseResult .case-strip');
+    requestAnimationFrame(() => {
+      strip.style.transform = `translateX(calc(50% - ${winnerIndex * 94 + 43}px))`;
+    });
+    return new Promise((resolve) => setTimeout(resolve, 2600));
+  }
+
   $('#openCase').addEventListener('click', async () => {
+    const btn = $('#openCase');
+    btn.disabled = true;
     try {
       const res = await api.post('/shop/open-case', {});
       const it = res.item;
-      $('#caseResult').innerHTML =
-        `<div class="shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
+      await runCaseRoll(it);
+      $('#caseResult').insertAdjacentHTML(
+        'beforeend',
+        `<div class="case-final shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
           <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
           <div class="sm">${res.is_new ? iconLabel('party', 'Новый предмет!') : 'Дубликат - вернули монеты'}</div>
-        </div>`;
+        </div>`,
+      );
       await refreshPet();
       renderShop();
       toast(res.is_new ? `Выпал: ${it.name}!` : 'Дубликат', res.is_new ? 'lvl' : 'xp');
     } catch (err) { toast(err.message, ''); }
+    finally { btn.disabled = false; }
   });
 
   // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
@@ -1815,14 +1859,43 @@
       setTimeout(() => burst.remove(), 1200);
     }
   };
+  function updatePlayControls() {
+    const pet = state.pet || {};
+    const rules = {
+      playFeed: {
+        disabled: Number(pet.hunger || 0) >= 95,
+        title: 'Питомец уже сыт',
+      },
+      playPet: {
+        disabled: Number(pet.hunger || 0) <= 5 || Number(pet.energy || 0) <= 5,
+        title: Number(pet.hunger || 0) <= 5 ? 'Сначала покорми питомца' : 'Питомец спит без сил',
+      },
+      playBall: {
+        disabled: Number(pet.hunger || 0) <= 10 || Number(pet.energy || 0) < 12,
+        title: Number(pet.hunger || 0) <= 10 ? 'Питомец голоден' : 'Нужно минимум 12 энергии',
+      },
+    };
+    Object.entries(rules).forEach(([id, rule]) => {
+      const btn = $('#' + id);
+      if (!btn) return;
+      btn.disabled = rule.disabled;
+      btn.title = rule.disabled ? rule.title : '';
+      btn.classList.toggle('disabled', rule.disabled);
+    });
+  }
+
   async function playWithPet(action, iconName, message) {
     try {
-      playAnim(iconName);
       state.pet = await api.post('/pets/me/play', { action });
+      playAnim(iconName);
       paintPet(state.pet);
       renderShop();
       $('#playMsg').innerHTML = `${esc(message)} ${iconLabel('coin', action === 'test_coins' ? '+100' : '+25')}`;
-    } catch (err) { toast(err.message, ''); }
+    } catch (err) {
+      $('#playMsg').textContent = err.message;
+      toast(err.message, '');
+      await refreshPet().catch(() => {});
+    }
   }
 
   $('#playFeed').addEventListener('click', () => playWithPet('feed', 'apple', 'Питомец поел и доволен!'));

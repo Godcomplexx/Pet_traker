@@ -29,16 +29,36 @@ SHOP_ITEMS: list[dict] = [
     {"id": "body_lav",    "name": "Лавандовый", "type": "body", "rarity": "rare",   "price": 60,  "data": "#b5acce"},
     {"id": "body_gold",   "name": "Золотой",    "type": "body", "rarity": "epic",   "price": 150, "data": "#e8c14a"},
     {"id": "body_aurora", "name": "Аврора",     "type": "body", "rarity": "legendary", "price": 400, "data": "#7af0d0"},
+    {"id": "body_peach",  "name": "Персик",     "type": "body", "rarity": "common", "price": 35,  "data": "#e6ad8f"},
+    {"id": "body_ice",    "name": "Ледяной",    "type": "body", "rarity": "rare",   "price": 85,  "data": "#9fd8e6"},
+    {"id": "body_plum",   "name": "Сливовый",   "type": "body", "rarity": "epic",   "price": 170, "data": "#8d6aa0"},
+    {"id": "body_neon",   "name": "Неон",       "type": "body", "rarity": "legendary", "price": 450, "data": "#8cff6a"},
+    # ── акценты ──
+    {"id": "accent_leaf",  "name": "Лист",      "type": "accent", "rarity": "common", "price": 20,  "data": "#4d7c45"},
+    {"id": "accent_berry", "name": "Ягода",     "type": "accent", "rarity": "common", "price": 20,  "data": "#8f3f5f"},
+    {"id": "accent_ocean", "name": "Океан",     "type": "accent", "rarity": "rare",   "price": 55,  "data": "#3c7da8"},
+    {"id": "accent_lava",  "name": "Лава",      "type": "accent", "rarity": "epic",   "price": 120, "data": "#b34b2e"},
+    {"id": "accent_void",  "name": "Войд",      "type": "accent", "rarity": "legendary", "price": 280, "data": "#43224e"},
     # ── шапки (эмодзи) ──
     {"id": "hat_crown",   "name": "Корона",     "type": "hat", "rarity": "legendary", "price": 350, "data": "👑"},
     {"id": "hat_party",   "name": "Колпак",     "type": "hat", "rarity": "common", "price": 25,  "data": "🎉"},
     {"id": "hat_grad",    "name": "Выпускник",  "type": "hat", "rarity": "rare",   "price": 80,  "data": "🎓"},
     {"id": "hat_flower",  "name": "Цветок",     "type": "hat", "rarity": "common", "price": 25,  "data": "🌸"},
     {"id": "hat_star",    "name": "Звезда",     "type": "hat", "rarity": "epic",   "price": 160, "data": "⭐"},
+    {"id": "hat_goggles", "name": "Очки",       "type": "hat", "rarity": "rare",   "price": 90,  "data": "😎"},
+    {"id": "hat_lab",     "name": "Лаборатория", "type": "hat", "rarity": "epic",   "price": 180, "data": "🔬"},
+    {"id": "hat_moon",    "name": "Луна",       "type": "hat", "rarity": "rare",   "price": 95,  "data": "🌙"},
+    {"id": "hat_ribbon",  "name": "Бант",       "type": "hat", "rarity": "common", "price": 35,  "data": "🎀"},
+    {"id": "hat_fire",    "name": "Огонь",      "type": "hat", "rarity": "epic",   "price": 190, "data": "🔥"},
+    {"id": "hat_gem",     "name": "Кристалл",   "type": "hat", "rarity": "legendary", "price": 420, "data": "💎"},
     # ── фоны ──
     {"id": "bg_space",    "name": "Космос",     "type": "bg", "rarity": "epic",   "price": 140, "data": "#1b1740"},
     {"id": "bg_forest",   "name": "Лес",        "type": "bg", "rarity": "rare",   "price": 70,  "data": "#1d3a24"},
     {"id": "bg_sunset",   "name": "Закат",      "type": "bg", "rarity": "rare",   "price": 70,  "data": "#5a2f3a"},
+    {"id": "bg_lab",      "name": "Лаборатория", "type": "bg", "rarity": "common", "price": 45,  "data": "#dce6df"},
+    {"id": "bg_ocean",    "name": "Океан",      "type": "bg", "rarity": "rare",   "price": 75,  "data": "#244b66"},
+    {"id": "bg_candy",    "name": "Конфета",    "type": "bg", "rarity": "epic",   "price": 150, "data": "#6f3d61"},
+    {"id": "bg_gold",     "name": "Сокровище",  "type": "bg", "rarity": "legendary", "price": 360, "data": "#6b4b16"},
 ]
 
 ITEMS_BY_ID = {it["id"]: it for it in SHOP_ITEMS}

@@ -1,6 +1,7 @@
 """Тамагочи-логика: decay во времени, забота от работы, состояния."""
 from datetime import datetime, timedelta, timezone
 
+from app.core.database import SessionLocal
 from app.models import Pet
 from app.services.pet import apply_decay, pet_state, reward_care
 
@@ -70,3 +71,32 @@ async def test_pet_play_grants_coins(client):
     boost = await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
     assert boost.status_code == 200, boost.text
     assert boost.json()["coins"] == 125
+
+
+async def test_pet_play_respects_stats(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "stats@lab.ru")
+    headers = auth_headers(tokens)
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="stats@lab.ru")))
+        pet.energy = 0
+        pet.hunger = 80
+        await db.commit()
+
+    tired = await client.post("/pets/me/play", json={"action": "ball"}, headers=headers)
+    assert tired.status_code == 400
+    assert "энергии" in tired.json()["detail"]
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="stats@lab.ru")))
+        pet.energy = 20
+        pet.hunger = 80
+        await db.commit()
+
+    ok = await client.post("/pets/me/play", json={"action": "ball"}, headers=headers)
+    assert ok.status_code == 200, ok.text
+    body = ok.json()
+    assert body["energy"] == 8
+    assert body["coins"] == 25
