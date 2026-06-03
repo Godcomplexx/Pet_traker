@@ -1508,6 +1508,8 @@ textarea.input { resize: vertical; min-height: 70px; }
   object-fit: contain;
   object-position: center bottom;
   image-rendering: pixelated;
+  transform: scaleX(var(--pet-hat-flip, 1));
+  transform-origin: center bottom;
 }
 .petbig .pet-hat {
   top: var(--pet-hat-top, 10%);
@@ -2158,6 +2160,8 @@ textarea.input { resize: vertical; min-height: 70px; }
 .pet-hat .ui-icon {
   width: 34px;
   height: 34px;
+  transform: scaleX(var(--pet-hat-flip, 1));
+  transform-origin: center bottom;
 }
 .shopcard .nm { font-size: var(--fs-sm); color: var(--ink); }
 .shopcard .rar {

@@ -19,12 +19,12 @@
   ];
   const TASK_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   const CHARACTER_CATALOG = [
-    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 17, opaqueCenter: 19, hatScale: 0.88 },
+    { id: 'char_agent_mike', name: 'Agent Mike', file: 'agent_mike.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 17, opaqueCenter: 19, hatScale: 0.88, hatFlip: true },
     { id: 'char_angie', name: 'Angie', file: 'angie.png', frameWidth: 32, frameHeight: 32, frames: 6, opaqueTop: 10, opaqueCenter: 15.5, hatScale: 0.89 },
     { id: 'char_armand', name: 'Armand', file: 'armand.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 1, opaqueCenter: 15, hatScale: 1.25 },
     { id: 'char_ballooney', name: 'Ballooney', file: 'ballooney.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 3, opaqueCenter: 15.5, hatScale: 0.78 },
     { id: 'char_barry_cherry', name: 'Barry Cherry', file: 'barry_cherry.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 16, opaqueCenter: 16, hatScale: 0.94 },
-    { id: 'char_big_red', name: 'Big Red', file: 'big_red.png', frameWidth: 32, frameHeight: 32, frames: 6, opaqueTop: 12, opaqueCenter: 15, hatScale: 1.06 },
+    { id: 'char_big_red', name: 'Big Red', file: 'big_red.png', frameWidth: 32, frameHeight: 32, frames: 6, opaqueTop: 12, opaqueCenter: 15, hatScale: 1.06, hatFlip: true },
     { id: 'char_blankey', name: 'Blankey', file: 'blankey.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 9, opaqueCenter: 15.5, hatScale: 1 },
     { id: 'char_blocky_bub', name: 'Blocky Bub', file: 'blocky_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 4, opaqueCenter: 7.5, hatScale: 0.68 },
     { id: 'char_bub', name: 'Bub', file: 'bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 5, opaqueCenter: 7.5, hatScale: 0.68 },
@@ -39,10 +39,10 @@
     { id: 'char_gloppy_slime', name: 'Gloppy Slime', file: 'gloppy_slime.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.7 },
     { id: 'char_grizzly', name: 'Grizzly', file: 'grizzly.png', frameWidth: 48, frameHeight: 32, frames: 1, opaqueTop: 10, opaqueCenter: 23, hatScale: 1.25 },
     { id: 'char_gum_bot', name: 'Gum Bot', file: 'gum_bot.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.89 },
-    { id: 'char_hermie', name: 'Hermie', file: 'hermie.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 19, opaqueCenter: 16, hatScale: 1.06 },
+    { id: 'char_hermie', name: 'Hermie', file: 'hermie.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 19, opaqueCenter: 16, hatScale: 1.06, hatFlip: true },
     { id: 'char_jumpy_lumpy', name: 'Jumpy Lumpy', file: 'jumpy_lumpy.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 21, opaqueCenter: 15.5, hatScale: 0.78 },
     { id: 'char_lil_wiz', name: 'Lil Wiz', file: 'lil_wiz.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 6, opaqueCenter: 15.5, hatScale: 1.11 },
-    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 12, opaqueCenter: 15.5, hatScale: 0.92 },
+    { id: 'char_martian_red', name: 'Martian Red', file: 'martian_red.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 12, opaqueCenter: 15.5, hatScale: 0.92, hatFlip: true },
     { id: 'char_moe_scotty', name: 'Moe Scotty', file: 'moe_scotty.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 4, opaqueCenter: 16, hatScale: 1.25 },
     { id: 'char_mr_chomps', name: 'Mr. Chomps', file: 'mr_chomps.png', frameWidth: 32, frameHeight: 32, frames: 12, opaqueTop: 18, opaqueCenter: 15, hatScale: 1.25 },
     { id: 'char_mr_circuit', name: 'Mr. Circuit', file: 'mr_circuit.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 15, hatScale: 0.9 },
@@ -51,26 +51,26 @@
     { id: 'char_octi', name: 'Octi', file: 'octi.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 4, opaqueCenter: 7.5, hatScale: 0.78 },
     { id: 'char_onion_lad', name: 'Onion Lad', file: 'onion_lad.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 3, opaqueCenter: 6.5, hatScale: 0.78 },
     { id: 'char_orange', name: 'Orange', file: 'orange.png', frameWidth: 32, frameHeight: 32, frames: 4, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.9 },
-    { id: 'char_orc', name: 'Orc', file: 'orc.png', frameWidth: 64, frameHeight: 32, frames: 7, opaqueTop: 3, opaqueCenter: 27.5, hatScale: 1.25 },
+    { id: 'char_orc', name: 'Orc', file: 'orc.png', frameWidth: 64, frameHeight: 32, frames: 7, opaqueTop: 3, opaqueCenter: 27.5, hatScale: 1.25, hatFlip: true },
     { id: 'char_orchid_owl', name: 'Orchid Owl', file: 'orchid_owl.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 0.82 },
     { id: 'char_penguin', name: 'Penguin', file: 'penguin.png', frameWidth: 16, frameHeight: 16, frames: 5, opaqueTop: 1, opaqueCenter: 7.5, hatScale: 0.76 },
-    { id: 'char_percy', name: 'Percy', file: 'percy.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 10, opaqueCenter: 15, hatScale: 1.25 },
+    { id: 'char_percy', name: 'Percy', file: 'percy.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 10, opaqueCenter: 15, hatScale: 1.25, hatFlip: true },
     { id: 'char_pokey_bub', name: 'Pokey Bub', file: 'pokey_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 3, opaqueCenter: 7.5, hatScale: 0.89 },
-    { id: 'char_roach', name: 'Roach', file: 'roach.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 13, opaqueCenter: 17, hatScale: 0.94 },
+    { id: 'char_roach', name: 'Roach', file: 'roach.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 13, opaqueCenter: 17, hatScale: 0.94, hatFlip: true },
     { id: 'char_robo_pumpkin', name: 'Robo Pumpkin', file: 'robo_pumpkin.png', frameWidth: 16, frameHeight: 16, frames: 1, opaqueTop: 0, opaqueCenter: 7.5, hatScale: 0.78 },
     { id: 'char_robo_retro', name: 'Robo Retro', file: 'robo_retro.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 14, opaqueCenter: 15.5, hatScale: 1.22 },
     { id: 'char_robo_totem', name: 'Robo Totem', file: 'robo_totem.png', frameWidth: 16, frameHeight: 32, frames: 1, opaqueTop: 10, opaqueCenter: 7.5, hatScale: 0.78 },
     { id: 'char_robot_j5', name: 'Robot J5', file: 'robot_j5.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 16, opaqueCenter: 15.5, hatScale: 1 },
     { id: 'char_robot_walky', name: 'Robot Walky', file: 'robot_walky.png', frameWidth: 32, frameHeight: 32, frames: 2, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 0.88 },
-    { id: 'char_rocket_cherry', name: 'Rocket Cherry', file: 'rocket_cherry.png', frameWidth: 16, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 8.5, hatScale: 0.78 },
+    { id: 'char_rocket_cherry', name: 'Rocket Cherry', file: 'rocket_cherry.png', frameWidth: 16, frameHeight: 32, frames: 2, opaqueTop: 10, opaqueCenter: 8.5, hatScale: 0.78, hatFlip: true },
     { id: 'char_rolling_nero', name: 'Rolling Nero', file: 'rolling_nero.png', frameWidth: 16, frameHeight: 16, frames: 6, opaqueTop: 0, opaqueCenter: 7.5, hatScale: 0.89 },
-    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 5, opaqueCenter: 16, hatScale: 0.92 },
+    { id: 'char_skeleton', name: 'Skeleton', file: 'skeleton.png', frameWidth: 32, frameHeight: 32, frames: 9, opaqueTop: 5, opaqueCenter: 16, hatScale: 0.92, hatFlip: true },
     { id: 'char_snip_snap_crab', name: 'Snip Snap Crab', file: 'snip_snap_crab.png', frameWidth: 32, frameHeight: 32, frames: 1, opaqueTop: 15, opaqueCenter: 15.5, hatScale: 1.25 },
-    { id: 'char_spikey_bub', name: 'Spikey Bub', file: 'spikey_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.68 },
-    { id: 'char_squirmy_wormy', name: 'Squirmy Wormy', file: 'squirmy_wormy.png', frameWidth: 32, frameHeight: 32, frames: 3, opaqueTop: 21, opaqueCenter: 15, hatScale: 1.25 },
-    { id: 'char_toggle', name: 'Toggle', file: 'toggle.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 11, opaqueCenter: 15.5, hatScale: 0.78 },
+    { id: 'char_spikey_bub', name: 'Spikey Bub', file: 'spikey_bub.png', frameWidth: 16, frameHeight: 16, frames: 2, opaqueTop: 2, opaqueCenter: 7.5, hatScale: 0.68, hatFlip: true },
+    { id: 'char_squirmy_wormy', name: 'Squirmy Wormy', file: 'squirmy_wormy.png', frameWidth: 32, frameHeight: 32, frames: 3, opaqueTop: 21, opaqueCenter: 15, hatScale: 1.25, hatFlip: true },
+    { id: 'char_toggle', name: 'Toggle', file: 'toggle.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 11, opaqueCenter: 15.5, hatScale: 0.78, hatFlip: true },
     { id: 'char_twiggy', name: 'Twiggy', file: 'twiggy.png', frameWidth: 32, frameHeight: 32, frames: 5, opaqueTop: 7, opaqueCenter: 15, hatScale: 0.92 },
-    { id: 'char_vessa', name: 'Vessa', file: 'vessa.png', frameWidth: 32, frameHeight: 32, frames: 10, opaqueTop: 8, opaqueCenter: 15, hatScale: 0.83 },
+    { id: 'char_vessa', name: 'Vessa', file: 'vessa.png', frameWidth: 32, frameHeight: 32, frames: 10, opaqueTop: 8, opaqueCenter: 15, hatScale: 0.83, hatFlip: true },
     { id: 'char_wispy_fire', name: 'Wispy Fire', file: 'wispy_fire.png', frameWidth: 32, frameHeight: 32, frames: 21, opaqueTop: 4, opaqueCenter: 15.5, hatScale: 0.89 },
   ];
   const CHARACTER_INDEX = Object.fromEntries(CHARACTER_CATALOG.map((c) => [c.id, c]));
@@ -992,6 +992,8 @@
     hat.style.setProperty('--pet-hat-left', `${Math.round(headX)}px`);
     hat.style.setProperty('--pet-hat-top', `${Math.round(top)}px`);
     hat.style.setProperty('--pet-hat-scale', String(scale));
+    // hatFlip:true зеркалит шапку для персонажей, смотрящих в другую сторону.
+    hat.style.setProperty('--pet-hat-flip', c.hatFlip ? '-1' : '1');
   }
 
   // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
