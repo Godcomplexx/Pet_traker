@@ -2473,7 +2473,7 @@
     const stats = compact
       ? ''
       : `<div class="sm food-stats">+${Number(data.hunger || 0)} сытость</div>`;
-    return `<div class="shopcard bagitem fooditem" data-food="${it.id}" title="Съесть: ${esc(it.name)}">
+    return `<div class="shopcard bagitem fooditem" data-food="${it.id}" draggable="true" title="Перетащи на питомца или кликни: ${esc(it.name)}">
       ${itemPreview(it)}
       <span class="food-count">x${count}</span>
       ${compact ? '' : `<div class="nm">${esc(it.name)}</div><div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>`}
@@ -2720,6 +2720,68 @@
     if (!it) return;
     await playWithPet('feed', itemIcon(it), `Питомец съел: ${it.name}`, itemId);
   }
+
+  let draggedFoodId = null;
+
+  function foodDropScreens() {
+    return $$('.petscreen').filter((screen) => !screen.closest('#petcreate'));
+  }
+
+  function setFoodDropReady(ready) {
+    foodDropScreens().forEach((screen) => {
+      screen.classList.toggle('food-drop-ready', ready);
+      if (!ready) screen.classList.remove('food-drop-over');
+    });
+  }
+
+  function foodDragId(e) {
+    return e.dataTransfer?.getData('application/x-petpro-food') || draggedFoodId || '';
+  }
+
+  document.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('[data-food]');
+    if (!card) return;
+    draggedFoodId = card.dataset.food;
+    card.classList.add('dragging-food');
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('application/x-petpro-food', draggedFoodId);
+    e.dataTransfer.setData('text/plain', draggedFoodId);
+    setFoodDropReady(true);
+  });
+
+  document.addEventListener('dragend', (e) => {
+    e.target.closest('[data-food]')?.classList.remove('dragging-food');
+    draggedFoodId = null;
+    setFoodDropReady(false);
+  });
+
+  document.addEventListener('dragover', (e) => {
+    const screen = e.target.closest('.petscreen');
+    if (!screen || screen.closest('#petcreate') || !foodDragId(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    screen.classList.add('food-drop-over');
+  });
+
+  document.addEventListener('dragleave', (e) => {
+    const screen = e.target.closest('.petscreen');
+    if (!screen || screen.contains(e.relatedTarget)) return;
+    screen.classList.remove('food-drop-over');
+  });
+
+  document.addEventListener('drop', (e) => {
+    const screen = e.target.closest('.petscreen');
+    const itemId = foodDragId(e);
+    if (!screen || screen.closest('#petcreate') || !itemId) return;
+    e.preventDefault();
+    draggedFoodId = null;
+    setFoodDropReady(false);
+    if (Number(state.pet?.hunger || 0) >= 95) {
+      $('#playMsg').textContent = 'Питомец уже сыт.';
+      return;
+    }
+    feedWithFood(itemId);
+  });
 
   document.addEventListener('click', (e) => {
     const card = e.target.closest('[data-food]');

@@ -1447,6 +1447,15 @@ textarea.input { resize: vertical; min-height: 70px; }
   letter-spacing: .05em;
   z-index: 2;
 }
+.petscreen.food-drop-ready {
+  outline: 2px dashed rgba(184,149,58,0.52);
+  outline-offset: -8px;
+}
+.petscreen.food-drop-over {
+  background: linear-gradient(160deg, rgba(232,213,143,0.40) 0%, rgba(195,188,220,0.48) 100%);
+  outline-color: rgba(184,149,58,0.86);
+  box-shadow: 0 0 0 3px rgba(184,149,58,0.18) inset, 0 10px 30px rgba(100,120,95,0.16);
+}
 
 .pet-emote {
   position: absolute;
@@ -1978,6 +1987,15 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .fooditem {
   position: relative;
+  cursor: grab;
+  user-select: none;
+}
+.fooditem:active {
+  cursor: grabbing;
+}
+.fooditem.dragging-food {
+  opacity: .62;
+  transform: scale(.96);
 }
 .fooditem .food-prev {
   background: rgba(255,255,255,0.42);

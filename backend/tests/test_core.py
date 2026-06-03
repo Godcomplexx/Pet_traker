@@ -81,7 +81,12 @@ async def test_character_shop_items_include_sprite_metadata(client):
 
     resp = await client.get("/shop/items", headers=h)
     assert resp.status_code == 200, resp.text
-    penguin = next(it for it in resp.json()["items"] if it["id"] == "char_penguin")
+    characters = [it for it in resp.json()["items"] if it["type"] == "character"]
+    assert len(characters) >= 50
+    assert all(
+        {"file", "frame_width", "frame_height", "frames"}.issubset(it["data"]) for it in characters
+    )
+    penguin = next(it for it in characters if it["id"] == "char_penguin")
     assert penguin["type"] == "character"
     assert penguin["data"]["frame_width"] == 16
     assert penguin["data"]["frame_height"] == 16
