@@ -2246,8 +2246,19 @@
     if (panel) panel.hidden = !state.shopOpen;
     const toggle = $('#shopToggle');
     if (toggle) toggle.classList.toggle('primary', state.shopOpen);
+    renderDailyBonus();
     renderShop();
     loadSudoku();
+  }
+
+  function renderDailyBonus() {
+    const status = $('#dailyStatus');
+    const btn = $('#claimDaily');
+    if (!status || !btn) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const claimed = (state.pet?.daily_claimed_on || '') === today;
+    status.textContent = claimed ? 'Бонус на сегодня уже получен.' : '';
+    btn.disabled = claimed;
   }
 
   /* ──────────────── ежедневная судоку 6×6 ──────────────── */
@@ -2396,22 +2407,30 @@
     $('#shopTabs')?.querySelectorAll('[data-shop-tab]').forEach((b) => {
       b.classList.toggle('on', b.dataset.shopTab === tab);
     });
-    const items = (state.shopCatalog || []).filter((it) => tab === 'all' || it.type === tab);
+    const hiddenTypes = new Set(['body', 'accent']);
+    const catalogOnlyTypes = new Set(['body', 'accent', 'species', 'character']);
+    const items = (state.shopCatalog || []).filter((it) => {
+      if (hiddenTypes.has(it.type)) return false;
+      return tab === 'all' || it.type === tab;
+    });
     $('#shopGrid').innerHTML = items
       .map((it) => {
         const foodCount = Number(pet.food_inventory?.[it.id] || 0);
         const owned = it.type !== 'food' && inv.includes(it.id);
+        const catalogOnly = catalogOnlyTypes.has(it.type);
         const selectedCharacter = it.type === 'character' && pet.species === it.id;
         const lockedCharacter = it.type === 'character' && Number(pet.level || 1) < Number(it.min_level || 1);
-        const cls = `shopcard ${owned ? 'owned' : ''}`;
-        const action = selectedCharacter
+        const cls = `shopcard ${owned ? 'owned' : ''} ${catalogOnly ? 'catalog-only' : ''}`;
+        const action = catalogOnly
+          ? 'только рулетка'
+          : selectedCharacter
           ? 'выбран'
           : owned
             ? 'в коллекции'
             : lockedCharacter
               ? `с ${it.min_level} уровня`
               : `${iconLabel('coin', String(it.price))}${it.type === 'food' && foodCount ? ` <span class="food-count-inline">x${foodCount}</span>` : ''}`;
-        return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}">
+        return `<div class="${cls}" data-shop="${it.id}" data-owned="${owned ? 1 : 0}" data-catalog-only="${catalogOnly ? 1 : 0}">
           ${itemPreview(it)}
           <div class="nm">${esc(it.name)}</div>
           <div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>
@@ -2436,7 +2455,9 @@
 
   function renderBackpack() {
     const pet = state.pet || {};
-    const items = (pet.inventory || []).map((id) => SHOP_INDEX[id]).filter(Boolean);
+    const items = (pet.inventory || [])
+      .map((id) => SHOP_INDEX[id])
+      .filter((it) => it && !['body', 'accent', 'species', 'character'].includes(it.type));
     const full = $('#inventoryGrid');
     if (full) {
       full.innerHTML = items.length
@@ -2555,6 +2576,10 @@
     if (!card) return;
     const id = card.dataset.shop;
     const owned = card.dataset.owned === '1';
+    if (card.dataset.catalogOnly === '1') {
+      toast('Персонажи будут выбиваться через отдельную рулетку.', '');
+      return;
+    }
     if (owned) {
       toast('Уже в рюкзаке. Надеть можно ниже в рюкзаке.', 'xp');
       return;
@@ -2586,7 +2611,9 @@
   }
 
   function runCaseRoll(resultItem) {
-    const casePool = (state.shopCatalog || []).filter((it) => it.type !== 'food' && it.type !== 'character');
+    const casePool = (state.shopCatalog || []).filter(
+      (it) => !['food', 'body', 'accent', 'species', 'character'].includes(it.type),
+    );
     const pool = casePool.length ? casePool : [resultItem];
     const winnerIndex = 24;
     const roll = Array.from({ length: 34 }, (_, idx) =>
@@ -2706,9 +2733,7 @@
       paintPet(state.pet);
       playAnim(iconName);
       renderShop();
-      const coins = action === 'test_coins'
-        ? iconLabel('coin', '+100')
-        : (action === 'feed' || action === 'sleep' ? '' : iconLabel('coin', '+25'));
+      const coins = action === 'feed' || action === 'sleep' ? '' : iconLabel('coin', '+25');
       $('#playMsg').innerHTML = `${esc(message)} ${coins}`;
     } catch (err) {
       $('#playMsg').textContent = err.message;
@@ -2824,7 +2849,20 @@
     state.shopOpen = !state.shopOpen;
     renderGameRoom();
   });
-  $('#testCoins').addEventListener('click', () => playWithPet('test_coins', 'coin', 'Тестовые монеты начислены.'));
+  $('#claimDaily')?.addEventListener('click', async () => {
+    const btn = $('#claimDaily');
+    btn.disabled = true;
+    try {
+      const res = await api.post('/pets/me/daily', {});
+      state.pet = res.pet;
+      paintPet(state.pet);
+      renderDailyBonus();
+      toast(`+${res.coins_awarded} монет`, 'xp');
+    } catch (err) {
+      toast(err.message, '');
+      renderDailyBonus();
+    }
+  });
 
   /* ---------------- notifications ---------------- */
   const UI_NOTIFICATION_TYPES = new Set(['TASK_ASSIGNED', 'DEADLINE']);

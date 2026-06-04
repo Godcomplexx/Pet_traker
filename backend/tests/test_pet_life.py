@@ -64,13 +64,9 @@ async def test_pet_play_grants_coins(client):
 
     tokens = await register(client, "play@lab.ru")
     headers = auth_headers(tokens)
-    boost = await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
-    assert boost.status_code == 200, boost.text
-    assert boost.json()["coins"] == 100
-
     r = await client.post("/pets/me/play", json={"action": "pet"}, headers=headers)
     assert r.status_code == 200, r.text
-    assert r.json()["coins"] == 125
+    assert r.json()["coins"] == 25
 
 
 async def test_pet_feed_requires_food_and_consumes_it(client):
@@ -83,7 +79,8 @@ async def test_pet_feed_requires_food_and_consumes_it(client):
     no_food = await client.post("/pets/me/play", json={"action": "feed"}, headers=headers)
     assert no_food.status_code == 400
 
-    await client.post("/pets/me/play", json={"action": "test_coins"}, headers=headers)
+    daily = await client.post("/pets/me/daily", headers=headers)
+    assert daily.status_code == 200, daily.text
     bought = await client.post("/shop/buy", json={"item_id": "food_banana"}, headers=headers)
     assert bought.status_code == 200, bought.text
     assert bought.json()["food_inventory"]["food_banana"] == 1
@@ -100,6 +97,23 @@ async def test_pet_feed_requires_food_and_consumes_it(client):
     body = fed.json()
     assert body["hunger"] > 40
     assert "food_banana" not in body["food_inventory"]
+
+
+async def test_shop_hides_body_and_accent_items(client):
+    from app.services.shop import roll_case
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "shop-clean@lab.ru")
+    headers = auth_headers(tokens)
+
+    catalog = await client.get("/shop/items", headers=headers)
+    assert catalog.status_code == 200, catalog.text
+    types = {item["type"] for item in catalog.json()["items"]}
+    assert "body" not in types
+    assert "accent" not in types
+
+    for _ in range(20):
+        assert roll_case()["type"] not in {"body", "accent", "species", "character", "food"}
 
 
 async def test_pet_play_respects_stats(client):
@@ -152,3 +166,56 @@ async def test_pet_sleep_restores_energy_without_coins(client):
 
     awake = await client.post("/pets/me/play", json={"action": "sleep"}, headers=headers)
     assert awake.status_code == 400
+
+
+async def test_daily_claim_grants_coins_once_per_day(client):
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "daily@lab.ru")
+    headers = auth_headers(tokens)
+
+    first = await client.post("/pets/me/daily", headers=headers)
+    assert first.status_code == 200, first.text
+    body = first.json()
+    assert body["coins_awarded"] == 30
+    assert body["pet"]["coins"] == 30
+    assert body["pet"]["daily_claimed_on"] is not None
+
+    second = await client.post("/pets/me/daily", headers=headers)
+    assert second.status_code == 400
+
+
+async def test_sudoku_grants_daily_reward_after_valid_solution(client):
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "sudoku@lab.ru")
+    headers = auth_headers(tokens)
+
+    status = await client.get("/pets/me/sudoku", headers=headers)
+    assert status.status_code == 200, status.text
+    assert status.json()["reward"] == 40
+    assert status.json()["completed_today"] is False
+
+    wrong = await client.post(
+        "/pets/me/sudoku",
+        json={"grid": [[1, 2, 3, 4, 5, 6]] * 6},
+        headers=headers,
+    )
+    assert wrong.status_code == 400
+
+    from datetime import date
+    from app.services import sudoku as sudoku_svc
+
+    puzzle_date = date.fromisoformat(status.json()["puzzle_date"])
+    solution = sudoku_svc.daily_solution(puzzle_date)
+    solved = await client.post("/pets/me/sudoku", json={"grid": solution}, headers=headers)
+    assert solved.status_code == 200, solved.text
+    body = solved.json()
+    assert body["coins_awarded"] == 40
+    assert body["pet"]["coins"] == 40
+    assert body["pet"]["sudoku_completed_on"] is not None
+
+    again = await client.post("/pets/me/sudoku", json={"grid": solution}, headers=headers)
+    assert again.status_code == 200, again.text
+    assert again.json()["coins_awarded"] == 0
+    assert again.json()["pet"]["coins"] == 40

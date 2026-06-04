@@ -569,7 +569,7 @@
       <div class="grid g-2-1">
         <div class="col">
           <div class="card sk">
-            <div class="note wall-warning">Стена очищается каждые 24 часа. Важные картинки и сообщения лучше сохранить отдельно.</div>
+            <div class="note wall-warning" title="Стена очищается каждые 24 часа. Важные картинки и сообщения лучше сохранить отдельно.">⚠ Стена очищается каждые 24 ч — важное сохраняйте отдельно.</div>
             <div class="row" style="gap:8px;">
               <input class="input" id="wallInput" placeholder="Написать на стене…" style="flex:1;" maxlength="2000">
               <input type="file" id="wallImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
@@ -619,8 +619,14 @@
           <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>
           <div class="case-chest-preview"><span class="asset-icon" data-icon="chest" data-label="кейс" data-size="case-xl"></span></div>
           <button class="btn primary case-open-btn" id="openCase">Открыть кейс <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
-          <button class="btn sm" id="testCoins" style="margin-top:8px;">Тест +100 монет</button>
           <div id="caseResult" style="margin-top:10px;"></div>
+        </div>
+        <div class="card sk2 daily-card">
+          <h3>Ежедневный бонус</h3>
+          <div class="muted sm">Зайди сегодня и забери монеты для кейсов и магазина.</div>
+          <div class="daily-coin">+30</div>
+          <button class="btn primary" id="claimDaily">Получить монеты</button>
+          <div class="note" id="dailyStatus"></div>
         </div>
         <div class="row shop-toggle-row">
           <button class="btn" id="shopToggle"><span class="asset-icon" data-icon="present" data-label="магазин"></span> Магазин</button>
@@ -630,12 +636,10 @@
           <h3>Каталог <span class="mono" id="shopHint">покупай предметы по категориям</span></h3>
           <div class="seg shop-tabs" id="shopTabs" style="margin-top:8px;">
             <button class="on" data-shop-tab="all">Все</button>
-            <button data-shop-tab="body">Цвет</button>
-            <button data-shop-tab="accent">Акцент</button>
+            <button data-shop-tab="character">Персонажи</button>
             <button data-shop-tab="hat">Шапки</button>
             <button data-shop-tab="bg">Фоны</button>
             <button data-shop-tab="food">Еда</button>
-            <button data-shop-tab="character">Персонажи</button>
           </div>
           <div id="shopGrid" class="grid g2" style="margin-top:10px;"></div>
           <h3 style="margin-top:16px;">Рюкзак <span class="mono">клик - надеть/снять</span></h3>

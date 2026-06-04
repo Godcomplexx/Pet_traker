@@ -109,6 +109,8 @@ class PetOut(ORMModel):
     hunger: int
     energy: int
     coins: int = 0
+    daily_claimed_on: date | None = None
+    sudoku_completed_on: date | None = None
     inventory: list[str] = Field(default_factory=list)
     food_inventory: dict[str, int] = Field(default_factory=dict)
     equipped: dict = Field(default_factory=dict)
@@ -122,8 +124,48 @@ class PetUpdate(BaseModel):
 
 
 class PetPlayIn(BaseModel):
-    action: str = Field(pattern="^(feed|pet|ball|sleep|test_coins)$")
+    action: str = Field(pattern="^(feed|pet|ball|sleep)$")
     item_id: str | None = None
+
+
+class PetSudokuSolveIn(BaseModel):
+    grid: list[list[int]] = Field(min_length=6, max_length=6)
+    seconds: int = Field(default=0, ge=0, le=86400)
+    hints_used: int = Field(default=0, ge=0)
+
+    @field_validator("grid")
+    @classmethod
+    def check_grid(cls, v: list[list[int]]) -> list[list[int]]:
+        if any(len(row) != 6 for row in v):
+            raise ValueError("Судоку должно быть 6x6")
+        if any(cell < 1 or cell > 6 for row in v for cell in row):
+            raise ValueError("В судоку можно ставить только цифры 1-6")
+        return v
+
+
+class SudokuCheckIn(BaseModel):
+    """Промежуточная проверка (подсветка ошибок). Клетки могут быть пустыми (0)."""
+    grid: list[list[int]] = Field(min_length=6, max_length=6)
+
+
+class SudokuHintIn(BaseModel):
+    grid: list[list[int]] = Field(min_length=6, max_length=6)
+
+
+class CoinRewardOut(BaseModel):
+    pet: PetOut
+    coins_awarded: int
+    message: str
+    best_seconds: int | None = None
+    seconds: int | None = None
+
+
+class SudokuScoreOut(BaseModel):
+    user_id: str
+    name: str
+    seconds: int
+    hints_used: int
+    is_me: bool = False
 
 
 class PetCustomize(BaseModel):

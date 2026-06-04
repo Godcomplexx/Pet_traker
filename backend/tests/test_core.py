@@ -32,7 +32,6 @@ async def test_customize_pet(client):
     assert pet["species"] == "char_agent_mike"
     assert pet["body_color"] == "#7bA86b"
     assert pet["customized"] is True
-    assert "char_agent_mike" in pet["inventory"]
 
     # Неизвестный вид — 422.
     bad = await client.put(
@@ -43,7 +42,7 @@ async def test_customize_pet(client):
     assert bad.status_code == 422
 
 
-async def test_character_purchase_requires_level_five_and_equips(client):
+async def test_character_purchase_is_catalog_only(client):
     from sqlalchemy import select
 
     from app.core.database import SessionLocal
@@ -67,12 +66,16 @@ async def test_character_purchase_requires_level_five_and_equips(client):
         pet.coins = 120
         await db.commit()
 
-    bought = await client.post("/shop/buy", json={"item_id": "char_penguin"}, headers=h)
-    assert bought.status_code == 200, bought.text
-    pet = bought.json()
-    assert pet["coins"] == 0
-    assert pet["species"] == "char_penguin"
-    assert "char_penguin" in pet["inventory"]
+    blocked = await client.post("/shop/buy", json={"item_id": "char_penguin"}, headers=h)
+    assert blocked.status_code == 400
+    assert "рулетк" in blocked.text or "СЂСѓР»РµС‚Рє" in blocked.text
+
+    current = await client.get("/pets/me", headers=h)
+    assert current.status_code == 200, current.text
+    pet = current.json()
+    assert pet["coins"] == 120
+    assert pet["species"] == "char_agent_mike"
+    assert "char_penguin" not in pet["inventory"]
 
 
 async def test_character_shop_items_include_sprite_metadata(client):

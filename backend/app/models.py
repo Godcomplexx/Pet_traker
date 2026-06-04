@@ -93,6 +93,8 @@ class Pet(Base):
     energy: Mapped[int] = mapped_column(Integer, default=80)
     # Игровая экономика: монеты + инвентарь купленных/выпавших предметов (список id).
     coins: Mapped[int] = mapped_column(Integer, default=0)
+    daily_claimed_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    sudoku_completed_on: Mapped[date | None] = mapped_column(Date, nullable=True)
     inventory: Mapped[list] = mapped_column(JsonType, default=list)
     food_inventory: Mapped[dict] = mapped_column(JsonType, default=dict)
     # Экипировано: {type: item_id}, напр. {"hat": "hat_01", "bg": "bg_space"}.
@@ -352,11 +354,7 @@ class WallPresence(Base):
 
 
 class DailyGameCompletion(Base):
-    """Отметка, что пользователь прошёл ежедневную игру в конкретный день.
-
-    Уникальность (user_id, game, day) гарантирует, что награда за день
-    начисляется один раз — даже при гонке параллельных запросов.
-    """
+    """A user's once-per-day completion for a rewarded mini-game."""
     __tablename__ = "daily_game_completions"
     __table_args__ = (
         UniqueConstraint("user_id", "game", "day", name="uq_daily_game"),
@@ -368,3 +366,19 @@ class DailyGameCompletion(Base):
     day: Mapped[date] = mapped_column(Date, nullable=False)
     coins_awarded: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = TS()
+
+
+class SudokuScore(Base):
+    """Лучший результат игрока по дневной судоку (для рейтинга по лаборатории)."""
+    __tablename__ = "sudoku_scores"
+    __table_args__ = (
+        UniqueConstraint("user_id", "puzzle_date", name="uq_sudoku_score_user_day"),
+    )
+
+    id: Mapped[str] = PK()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    puzzle_date: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD
+    seconds: Mapped[int] = mapped_column(Integer, nullable=False)     # лучшее время в секундах
+    hints_used: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = TS()
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

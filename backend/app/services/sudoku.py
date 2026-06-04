@@ -1,58 +1,60 @@
-"""Ежедневная судоку 6×6 (блоки 2×3, цифры 1–6).
+"""Daily 6x6 Sudoku service.
 
-Головоломка детерминирована по дате: для каждого дня (UTC) генерируется одна
-и та же задача с единственным решением. Это позволяет:
-  • не хранить задачи в БД — достаточно даты;
-  • проверять ответ на сервере, не доверяя клиенту;
-  • показывать всем «головоломку дня».
+The public contract is shared by two API surfaces:
+- /games/sudoku/* needs a puzzle payload with metadata and solution checking.
+- /pets/me/sudoku* needs the same daily puzzle plus hints/error highlighting.
 """
 from __future__ import annotations
 
 import random
 from datetime import date
 
-N = 6          # размер поля
-BR, BC = 2, 3  # высота/ширина блока (2 строки × 3 столбца)
+N = 6
+BR, BC = 2, 3
 
 
 def _pattern(r: int, c: int) -> int:
-    """Базовая корректная раскладка латинских блоков для 6×6."""
     return (BC * (r % BR) + r // BR + c) % N
 
 
 def _shuffled_solution(seed: int) -> list[list[int]]:
-    """Полностью заполненное корректное поле, перемешанное по seed."""
     rnd = random.Random(seed)
 
-    n_row_bands = N // BR   # число полос строк (6/2 = 3)
-    n_col_bands = N // BC   # число полос столбцов (6/3 = 2)
+    row_bands = list(range(N // BR))
+    col_bands = list(range(N // BC))
+    rnd.shuffle(row_bands)
+    rnd.shuffle(col_bands)
 
-    rows_band = list(range(n_row_bands))
-    cols_band = list(range(n_col_bands))
-    rnd.shuffle(rows_band)
-    rnd.shuffle(cols_band)
+    row_in = [list(range(BR)) for _ in row_bands]
+    col_in = [list(range(BC)) for _ in col_bands]
+    for group in row_in:
+        rnd.shuffle(group)
+    for group in col_in:
+        rnd.shuffle(group)
 
-    # перестановка строк/столбцов внутри полос
-    row_in = [list(range(BR)) for _ in range(n_row_bands)]
-    col_in = [list(range(BC)) for _ in range(n_col_bands)]
-    for g in row_in:
-        rnd.shuffle(g)
-    for g in col_in:
-        rnd.shuffle(g)
-
-    rows = [b * BR + r for b in rows_band for r in row_in[b]]
-    cols = [b * BC + c for b in cols_band for c in col_in[b]]
+    rows = [band * BR + r for band in row_bands for r in row_in[band]]
+    cols = [band * BC + c for band in col_bands for c in col_in[band]]
 
     nums = list(range(1, N + 1))
-    rnd.shuffle(nums)  # перестановка значений символов
+    rnd.shuffle(nums)
 
     return [[nums[_pattern(r, c)] for c in cols] for r in rows]
 
 
+def _valid(grid: list[list[int]], r: int, c: int, v: int) -> bool:
+    for i in range(N):
+        if grid[r][i] == v or grid[i][c] == v:
+            return False
+    br, bc = (r // BR) * BR, (c // BC) * BC
+    for i in range(br, br + BR):
+        for j in range(bc, bc + BC):
+            if grid[i][j] == v:
+                return False
+    return True
+
+
 def _count_solutions(grid: list[list[int]], limit: int = 2) -> int:
-    """Подсчёт решений (с ранним выходом при достижении limit)."""
-    # найти пустую клетку
-    pos = None
+    pos: tuple[int, int] | None = None
     for r in range(N):
         for c in range(N):
             if grid[r][c] == 0:
@@ -75,34 +77,18 @@ def _count_solutions(grid: list[list[int]], limit: int = 2) -> int:
     return count
 
 
-def _valid(grid: list[list[int]], r: int, c: int, v: int) -> bool:
-    for i in range(N):
-        if grid[r][i] == v or grid[i][c] == v:
-            return False
-    br, bc = (r // BR) * BR, (c // BC) * BC
-    for i in range(br, br + BR):
-        for j in range(bc, bc + BC):
-            if grid[i][j] == v:
-                return False
-    return True
-
-
 def _make_puzzle(seed: int) -> tuple[list[list[int]], list[list[int]]]:
-    """Вернуть (puzzle, solution): убираем клетки, сохраняя единственность."""
     solution = _shuffled_solution(seed)
     puzzle = [row[:] for row in solution]
     rnd = random.Random(seed ^ 0x5DEECE66)
 
     cells = [(r, c) for r in range(N) for c in range(N)]
     rnd.shuffle(cells)
-
-    # пытаемся убрать как можно больше клеток, сохраняя единственное решение
     for r, c in cells:
         saved = puzzle[r][c]
         puzzle[r][c] = 0
-        grid = [row[:] for row in puzzle]
-        if _count_solutions(grid, limit=2) != 1:
-            puzzle[r][c] = saved  # вернуть — иначе решений станет несколько
+        if _count_solutions([row[:] for row in puzzle], limit=2) != 1:
+            puzzle[r][c] = saved
     return puzzle, solution
 
 
@@ -111,23 +97,25 @@ def _seed_for(day: date) -> int:
 
 
 def daily_puzzle(day: date) -> dict:
-    """Головоломка дня: задача с дырами + её решение."""
     puzzle, solution = _make_puzzle(_seed_for(day))
     return {
         "date": day.isoformat(),
         "size": N,
         "block_rows": BR,
         "block_cols": BC,
-        "puzzle": puzzle,      # 0 = пустая клетка
+        "puzzle": puzzle,
         "solution": solution,
     }
 
 
+def daily_solution(day: date) -> list[list[int]]:
+    return [row[:] for row in daily_puzzle(day)["solution"]]
+
+
 def check_solution(day: date, attempt: list[list[int]]) -> bool:
-    """Сверить присланное поле с решением головоломки дня."""
     if not isinstance(attempt, list) or len(attempt) != N:
         return False
-    target = daily_puzzle(day)["solution"]
+    target = daily_solution(day)
     for r in range(N):
         row = attempt[r]
         if not isinstance(row, list) or len(row) != N:
@@ -136,3 +124,26 @@ def check_solution(day: date, attempt: list[list[int]]) -> bool:
             if row[c] != target[r][c]:
                 return False
     return True
+
+
+def find_errors(day: date, grid: list[list[int]]) -> list[list[int]]:
+    target = daily_solution(day)
+    errors: list[list[int]] = []
+    for r in range(N):
+        row = grid[r] if isinstance(grid, list) and r < len(grid) and isinstance(grid[r], list) else []
+        for c in range(N):
+            value = row[c] if c < len(row) else 0
+            if value and value != target[r][c]:
+                errors.append([r, c])
+    return errors
+
+
+def hint_for(day: date, grid: list[list[int]]) -> dict | None:
+    target = daily_solution(day)
+    for r in range(N):
+        row = grid[r] if isinstance(grid, list) and r < len(grid) and isinstance(grid[r], list) else []
+        for c in range(N):
+            value = row[c] if c < len(row) else 0
+            if value != target[r][c]:
+                return {"row": r, "col": c, "value": target[r][c]}
+    return None

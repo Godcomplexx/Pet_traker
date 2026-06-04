@@ -2189,6 +2189,22 @@ textarea.input { resize: vertical; min-height: 70px; }
   align-items: center;
   flex-wrap: wrap;
 }
+.daily-card {
+  text-align: center;
+}
+.daily-card .daily-coin {
+  margin: 12px auto;
+  width: 76px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.58);
+  color: var(--accent);
+  font-size: 16px;
+}
 .shop-panel[hidden] {
   display: none;
 }
@@ -2204,6 +2220,13 @@ textarea.input { resize: vertical; min-height: 70px; }
 .shopcard:hover { background: rgba(255,255,255,0.55); transform: translateY(-2px); }
 .shopcard.owned { border-color: var(--xp); }
 .shopcard.equipped { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.shopcard.catalog-only {
+  cursor: default;
+  border-color: rgba(92, 58, 69, 0.32);
+}
+.shopcard.catalog-only:hover {
+  transform: none;
+}
 .shopcard.bagitem { background: rgba(255,255,255,0.42); }
 .shopcard .swatch-prev {
   width: 36px; height: 36px; margin: 0 auto 6px;

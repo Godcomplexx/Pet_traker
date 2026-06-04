@@ -10,6 +10,8 @@ import secrets
 
 from app.services.characters import character_shop_items
 
+CASE_EXCLUDED_TYPES = {"food", "body", "accent", "species", "character"}
+
 # Редкость влияет на цену и шанс выпадения из кейса.
 RARITY_WEIGHTS = {
     "common": 60,
@@ -19,28 +21,10 @@ RARITY_WEIGHTS = {
 }
 
 # Каждый предмет: id, название, тип, редкость, цена (для прямой покупки), data.
-#  - body  : цвет тела питомца
-#  - accent: цвет акцента (рот/детали)
+#  - species/character: витрина персонажей; покупка отключена, выдача будет через отдельную рулетку
 #  - hat    : косметическая «шапка» (PNG поверх питомца)
 #  - bg     : фон экрана питомца
 SHOP_ITEMS: list[dict] = [
-    # ── цвета тела ──
-    {"id": "body_mint",   "name": "Мятный",     "type": "body", "rarity": "common", "price": 30,  "data": "#9dbf9b"},
-    {"id": "body_sky",    "name": "Небесный",   "type": "body", "rarity": "common", "price": 30,  "data": "#a8c4d4"},
-    {"id": "body_rose",   "name": "Розовый",    "type": "body", "rarity": "rare",   "price": 60,  "data": "#c9a5ba"},
-    {"id": "body_lav",    "name": "Лавандовый", "type": "body", "rarity": "rare",   "price": 60,  "data": "#b5acce"},
-    {"id": "body_gold",   "name": "Золотой",    "type": "body", "rarity": "epic",   "price": 150, "data": "#e8c14a"},
-    {"id": "body_aurora", "name": "Аврора",     "type": "body", "rarity": "legendary", "price": 400, "data": "#7af0d0"},
-    {"id": "body_peach",  "name": "Персик",     "type": "body", "rarity": "common", "price": 35,  "data": "#e6ad8f"},
-    {"id": "body_ice",    "name": "Ледяной",    "type": "body", "rarity": "rare",   "price": 85,  "data": "#9fd8e6"},
-    {"id": "body_plum",   "name": "Сливовый",   "type": "body", "rarity": "epic",   "price": 170, "data": "#8d6aa0"},
-    {"id": "body_neon",   "name": "Неон",       "type": "body", "rarity": "legendary", "price": 450, "data": "#8cff6a"},
-    # ── акценты ──
-    {"id": "accent_leaf",  "name": "Лист",      "type": "accent", "rarity": "common", "price": 20,  "data": "#4d7c45"},
-    {"id": "accent_berry", "name": "Ягода",     "type": "accent", "rarity": "common", "price": 20,  "data": "#8f3f5f"},
-    {"id": "accent_ocean", "name": "Океан",     "type": "accent", "rarity": "rare",   "price": 55,  "data": "#3c7da8"},
-    {"id": "accent_lava",  "name": "Лава",      "type": "accent", "rarity": "epic",   "price": 120, "data": "#b34b2e"},
-    {"id": "accent_void",  "name": "Войд",      "type": "accent", "rarity": "legendary", "price": 280, "data": "#43224e"},
     # ── шапки (PNG из assets/Small Size) ──
     {"id": "hat_01", "name": "Шапка 01", "type": "hat", "rarity": "common", "price": 35, "data": "hat_01.png"},
     {"id": "hat_02", "name": "Шапка 02", "type": "hat", "rarity": "common", "price": 35, "data": "hat_02.png"},
@@ -101,7 +85,7 @@ def roll_case() -> dict:
     # формируем взвешенный пул один раз на вызов (каталог маленький — дёшево)
     pool: list[dict] = []
     for it in SHOP_ITEMS:
-        if it["type"] in {"food", "character"}:
+        if it["type"] in CASE_EXCLUDED_TYPES:
             continue
         pool.extend([it] * RARITY_WEIGHTS.get(it["rarity"], 1))
     return secrets.choice(pool)
