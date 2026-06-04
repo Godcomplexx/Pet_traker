@@ -97,12 +97,17 @@
     wallImageData: null,
     wallUnread: 0,
     currentScreen: null,
+    miniGame: null,
+    caseSoundMuted: false,
   };
 
   const esc = (s) =>
     String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = (name) =>
     (name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  try {
+    state.caseSoundMuted = localStorage.getItem('petpro_case_sound_muted') === '1';
+  } catch (e) {}
 
   const cdnIcon = (code) => `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${code}.svg`;
   const ICON_FALLBACKS = {
@@ -501,6 +506,7 @@
     $('#petcreate').classList.remove('on');
     $('#app').style.display = 'grid';
     hydrateAssetIcons();
+    initHelpModal();
     initSidebarControls();
     $('#meName').innerHTML = `${esc(state.me.display_name)}<div class="mono">${esc(state.me.email)}</div>`;
     $('#meAvatar').textContent = initials(state.me.display_name);
@@ -522,6 +528,30 @@
   }
 
   // закреплённый питомец справа: сворачивание с запоминанием
+  function initHelpModal() {
+    const modal = $('#helpModal');
+    const open = $('#appHelpBtn');
+    const close = () => {
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.style.overflow = '';
+    };
+    const show = () => {
+      if (!modal) return;
+      modal.hidden = false;
+      hydrateAssetIcons(modal);
+      document.body.style.overflow = 'hidden';
+    };
+    open?.addEventListener('click', show);
+    $('#helpClose')?.addEventListener('click', close);
+    modal?.addEventListener('click', (e) => {
+      if (e.target.closest('[data-help-close]')) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && !modal.hidden) close();
+    });
+  }
+
   function initPetDock() {
     const dock = $('#petDock');
     const toggle = $('#petDockToggle');
@@ -1114,12 +1144,6 @@
     set('[data-petmood]', pet.mood); num('[data-petmoodnum]', pet.mood);
     set('[data-pethunger]', pet.hunger); num('[data-pethungernum]', pet.hunger);
     set('[data-petenergy]', pet.energy); num('[data-petenergynum]', pet.energy);
-    $$('[data-petenergyhint]').forEach((e) => {
-      const energy = Number(pet.energy || 0);
-      e.textContent = energy < 80
-        ? 'Энергия от времени не растёт сама: работа даёт +6, а сон быстро восстановит её до 100.'
-        : 'Энергия тратится на игры и падает примерно на 3 в час. Сон станет доступен, когда питомец устанет ниже 80.';
-    });
     // Подпись состояния (тамагочи).
     const stateIcon = STATE_ICON[pet.state];
     $$('[data-petstate]').forEach((e) => {
@@ -2247,8 +2271,27 @@
     const toggle = $('#shopToggle');
     if (toggle) toggle.classList.toggle('primary', state.shopOpen);
     renderDailyBonus();
+    renderMiniGameChoice();
+    updateCaseSoundButton();
     renderShop();
-    loadSudoku();
+  }
+
+  function renderMiniGameChoice() {
+    const active = state.miniGame;
+    $('#miniGamePicker')?.querySelectorAll('[data-mini-game]').forEach((btn) => {
+      btn.classList.toggle('on', btn.dataset.miniGame === active);
+    });
+    const sudokuPanel = $('#sudokuGame');
+    const memoryPanel = $('#memoryGame');
+    if (sudokuPanel) sudokuPanel.hidden = active !== 'sudoku';
+    if (memoryPanel) memoryPanel.hidden = active !== 'memory';
+  }
+
+  async function openMiniGame(name) {
+    state.miniGame = name;
+    renderMiniGameChoice();
+    if (name === 'sudoku' && !sudoku.loaded) await loadSudoku();
+    if (name === 'memory') await loadMemory();
   }
 
   function renderDailyBonus() {
@@ -2262,7 +2305,7 @@
   }
 
   /* ──────────────── ежедневная судоку 6×6 ──────────────── */
-  const sudoku = { size: 6, br: 2, bc: 3, puzzle: null, cells: null, sel: null, solved: false };
+  const sudoku = { loaded: false, size: 6, br: 2, bc: 3, puzzle: null, cells: null, sel: null, solved: false };
 
   async function loadSudoku() {
     try {
@@ -2273,6 +2316,7 @@
       sudoku.puzzle = d.puzzle;
       // cells: текущее состояние поля (копия задачи, 0 = пусто)
       sudoku.cells = d.puzzle.map((row) => row.slice());
+      sudoku.loaded = true;
       sudoku.solved = d.solved_today;
       $('#sudokuReward').textContent = d.reward;
       $('#sudokuStatus').textContent = d.solved_today ? '✓ решена сегодня' : 'не решена';
@@ -2390,6 +2434,129 @@
     } finally {
       btn.disabled = false;
     }
+  });
+
+  const memory = {
+    cards: [],
+    opened: [],
+    matched: new Set(),
+    moves: 0,
+    pairs: 0,
+    maxMoves: 18,
+    reward: 35,
+    solved: false,
+    busy: false,
+  };
+
+  async function loadMemory() {
+    try {
+      const d = await api.get('/games/memory/daily');
+      memory.cards = d.cards || [];
+      memory.opened = [];
+      memory.matched = new Set();
+      memory.moves = 0;
+      memory.pairs = 0;
+      memory.maxMoves = d.max_moves || 18;
+      memory.reward = d.reward || 35;
+      memory.solved = d.solved_today;
+      memory.busy = false;
+      $('#memoryReward').textContent = memory.reward;
+      $('#memoryMaxMoves').textContent = memory.maxMoves;
+      $('#memoryStatus').textContent = memory.solved ? '✓ решена сегодня' : 'не решена';
+      $('#memoryStatus').classList.toggle('xp', memory.solved);
+      $('#memoryMsg').textContent = memory.solved
+        ? 'Сегодня награда уже получена. Можно сыграть ещё раз без монет.'
+        : '';
+      renderMemoryBoard();
+    } catch (err) {
+      $('#memoryMsg').textContent = err.message || 'Не удалось загрузить игру';
+    }
+  }
+
+  function renderMemoryBoard() {
+    const board = $('#memoryBoard');
+    if (!board) return;
+    $('#memoryMoves').textContent = memory.moves;
+    $('#memoryPairs').textContent = memory.pairs;
+    board.innerHTML = memory.cards.map((name, idx) => {
+      const open = memory.opened.includes(idx) || memory.matched.has(idx);
+      return `<button class="memory-cell ${open ? 'open' : ''} ${memory.matched.has(idx) ? 'matched' : ''}" data-memory-card="${idx}" ${open ? 'aria-pressed="true"' : ''}>
+        ${open ? iconImg(name, name, 'lg') : '<span>?</span>'}
+      </button>`;
+    }).join('');
+  }
+
+  async function finishMemory() {
+    try {
+      const res = await api.post('/games/memory/solve', {
+        moves: memory.moves,
+        matched_pairs: memory.pairs,
+      });
+      $('#memoryMsg').textContent = res.message;
+      if (res.correct) {
+        memory.solved = true;
+        $('#memoryStatus').textContent = '✓ решена сегодня';
+        $('#memoryStatus').classList.add('xp');
+        if (res.coins_awarded > 0) {
+          toast(`+${res.coins_awarded} монет за пары`, 'xp');
+          await refreshPet();
+        }
+      }
+    } catch (err) {
+      $('#memoryMsg').textContent = err.message || 'Ошибка проверки';
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    const choice = e.target.closest('[data-mini-game]');
+    if (!choice) return;
+    openMiniGame(choice.dataset.miniGame);
+  });
+
+  $('#memoryBack')?.addEventListener('click', () => {
+    state.miniGame = null;
+    renderMiniGameChoice();
+  });
+
+  $('#memoryNew')?.addEventListener('click', () => loadMemory());
+
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-memory-card]');
+    if (!card || state.miniGame !== 'memory' || memory.busy) return;
+    const idx = Number(card.dataset.memoryCard);
+    if (memory.moves >= memory.maxMoves && memory.pairs < 6) {
+      $('#memoryMsg').textContent = 'Ходы закончились. Попробуй новую раскладку.';
+      return;
+    }
+    if (memory.opened.includes(idx) || memory.matched.has(idx)) return;
+    if (memory.opened.length >= 2) return;
+
+    memory.opened.push(idx);
+    renderMemoryBoard();
+    if (memory.opened.length < 2) return;
+
+    memory.moves += 1;
+    const [a, b] = memory.opened;
+    const matched = memory.cards[a] === memory.cards[b];
+    if (matched) {
+      memory.matched.add(a);
+      memory.matched.add(b);
+      memory.pairs += 1;
+      memory.opened = [];
+      renderMemoryBoard();
+      if (memory.pairs >= 6) finishMemory();
+      return;
+    }
+
+    memory.busy = true;
+    setTimeout(() => {
+      memory.opened = [];
+      memory.busy = false;
+      renderMemoryBoard();
+      if (memory.moves >= memory.maxMoves) {
+        $('#memoryMsg').textContent = 'Ходы закончились. Попробуй новую раскладку.';
+      }
+    }, 650);
   });
 
   function itemPreview(it) {
@@ -2602,6 +2769,68 @@
     } catch (err) { toast(err.message, ''); }
   });
 
+  const caseAudio = { ctx: null };
+
+  function getCaseAudioCtx() {
+    if (state.caseSoundMuted) return null;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return null;
+    if (!caseAudio.ctx) caseAudio.ctx = new AudioContext();
+    if (caseAudio.ctx.state === 'suspended') caseAudio.ctx.resume().catch(() => {});
+    return caseAudio.ctx;
+  }
+
+  function caseTone(freq, duration = 0.08, type = 'square', volume = 0.045, delay = 0) {
+    const ctx = getCaseAudioCtx();
+    if (!ctx) return;
+    const start = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + duration + 0.02);
+  }
+
+  function playCaseStartSound() {
+    caseTone(392, 0.06, 'square', 0.035);
+    caseTone(523.25, 0.08, 'square', 0.035, 0.055);
+  }
+
+  function playCaseRollSound() {
+    const ticks = 18;
+    for (let i = 0; i < ticks; i++) {
+      const delayMs = i * 95 + Math.pow(i, 1.45) * 8;
+      setTimeout(() => caseTone(520 + i * 12, 0.028, 'square', 0.022), delayMs);
+    }
+  }
+
+  function playCaseResultSound(item, isNew) {
+    if (!isNew) {
+      caseTone(330, 0.08, 'triangle', 0.035);
+      caseTone(247, 0.12, 'triangle', 0.03, 0.09);
+      return;
+    }
+    const base = item?.rarity === 'legendary' ? 659.25 : item?.rarity === 'epic' ? 587.33 : 523.25;
+    caseTone(base, 0.08, 'triangle', 0.04);
+    caseTone(base * 1.25, 0.09, 'triangle', 0.04, 0.08);
+    caseTone(base * 1.5, 0.14, 'triangle', 0.045, 0.17);
+  }
+
+  function updateCaseSoundButton() {
+    const btn = $('#caseSoundToggle');
+    if (!btn) return;
+    btn.textContent = state.caseSoundMuted ? '×' : '♪';
+    btn.classList.toggle('muted', state.caseSoundMuted);
+    btn.title = state.caseSoundMuted ? 'Включить звук кейса' : 'Выключить звук кейса';
+    btn.setAttribute('aria-label', btn.title);
+  }
+
   function caseTile(it, winner = false) {
     return `<div class="case-tile rar-${it.rarity}" ${winner ? 'data-case-winner="1"' : ''}>
       ${itemPreview(it)}
@@ -2611,6 +2840,7 @@
   }
 
   function runCaseRoll(resultItem) {
+    playCaseRollSound();
     const casePool = (state.shopCatalog || []).filter(
       (it) => !['food', 'body', 'accent', 'species', 'character'].includes(it.type),
     );
@@ -2646,9 +2876,11 @@
     const btn = $('#openCase');
     btn.disabled = true;
     try {
+      playCaseStartSound();
       const res = await api.post('/shop/open-case', {});
       const it = res.item;
       await runCaseRoll(it);
+      playCaseResultSound(it, res.is_new);
       $('#caseResult').insertAdjacentHTML(
         'beforeend',
         `<div class="case-final shopcard ${res.is_new ? 'owned' : ''}">${itemPreview(it)}
@@ -2665,6 +2897,13 @@
   });
 
   // игры с питомцем — лёгкие локальные действия (поднимают настроение визуально)
+  $('#caseSoundToggle')?.addEventListener('click', () => {
+    state.caseSoundMuted = !state.caseSoundMuted;
+    try { localStorage.setItem('petpro_case_sound_muted', state.caseSoundMuted ? '1' : '0'); } catch (e) {}
+    updateCaseSoundButton();
+    if (!state.caseSoundMuted) playCaseStartSound();
+  });
+
   const playAnim = (iconName) => {
     const screens = ['#dockPetScreen', '#screen-pet .petscreen']
       .map((sel) => $(sel))

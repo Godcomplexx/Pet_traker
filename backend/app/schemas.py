@@ -223,6 +223,27 @@ class SudokuSolveOut(BaseModel):
     message: str
 
 
+class DailyMemoryOut(BaseModel):
+    date: str
+    cards: list[str]
+    reward: int
+    max_moves: int
+    solved_today: bool
+
+
+class MemorySolveIn(BaseModel):
+    moves: int = Field(ge=6, le=99)
+    matched_pairs: int = Field(ge=0, le=6)
+
+
+class MemorySolveOut(BaseModel):
+    correct: bool
+    coins_awarded: int
+    coins: int
+    already_solved: bool
+    message: str
+
+
 # ── Workspace ──
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)

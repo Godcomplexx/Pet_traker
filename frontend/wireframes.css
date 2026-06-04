@@ -487,6 +487,7 @@ a:hover{ color: var(--xp2); }
 #app.side-collapsed .side { padding: 18px 8px; }
 /* прячем тексты, оставляем иконки */
 #app.side-collapsed .side .brand b,
+#app.side-collapsed .side .help-open,
 #app.side-collapsed .side .nav a .lbl,
 #app.side-collapsed .side .nav a .badge,
 #app.side-collapsed .side .nav .grp,
@@ -525,6 +526,26 @@ a:hover{ color: var(--xp2); }
   letter-spacing: .02em;
 }
 .brand .v { display: none; }
+.help-open {
+  margin-left: 8px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.55);
+  color: var(--accent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 11px;
+  line-height: 1;
+}
+.help-open:hover {
+  background: rgba(255,255,255,0.78);
+  color: var(--ink);
+}
 
 /* ── LAB PICKER ── */
 .labpick {
@@ -605,6 +626,70 @@ a:hover{ color: var(--xp2); }
 }
 
 .side .spacer { flex: 1; }
+
+.help-modal[hidden] {
+  display: none;
+}
+.help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.help-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 28, 24, 0.28);
+  backdrop-filter: blur(4px);
+}
+.help-card {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(720px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 20px;
+  background: rgba(247, 252, 244, 0.94);
+}
+.help-card h2 {
+  font-size: 18px;
+}
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.help-item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.44);
+}
+.help-item .asset-icon,
+.help-item .ui-icon {
+  width: 28px;
+  height: 28px;
+}
+.help-item b {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 10px;
+}
+.help-item p {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 11px;
+  line-height: 1.55;
+}
 
 /* ── PET MINI ── */
 .petmini {
@@ -2054,6 +2139,51 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: min(100%, 760px);
   margin: 0 auto;
 }
+.mini-game-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.mini-game-choice {
+  min-height: 118px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.42);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 14px;
+  text-align: center;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+}
+.mini-game-choice:hover,
+.mini-game-choice.on {
+  background: rgba(255,255,255,0.64);
+  border-color: var(--accent);
+}
+.mini-game-choice b {
+  font-size: 12px;
+}
+.mini-game-choice span {
+  font-size: 8px;
+  line-height: 1.45;
+}
+.mini-game-ico {
+  width: 48px;
+  min-height: 34px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.58);
+  color: var(--accent);
+}
+.mini-game-panel[hidden] {
+  display: none;
+}
 /* ── судоку дня ── */
 .sudoku-card {
   --sudoku-paper: #fffaf0;
@@ -2165,6 +2295,63 @@ textarea.input { resize: vertical; min-height: 70px; }
   min-height: 40px;
   padding: 9px 16px;
 }
+.memory-card {
+  background: rgba(247, 252, 244, 0.72);
+  border-color: rgba(84, 121, 82, 0.34);
+  padding: 18px;
+}
+.memory-card .between {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.memory-stats {
+  width: min(100%, 432px);
+  margin: 10px auto 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 9px;
+}
+.memory-board {
+  width: min(100%, 432px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.memory-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.44);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 16px;
+  transition: background .12s, border-color .12s, transform .08s;
+}
+.memory-cell:hover {
+  background: rgba(255,255,255,0.68);
+  transform: translateY(-1px);
+}
+.memory-cell.open,
+.memory-cell.matched {
+  background: #fffaf0;
+  border-color: var(--xp);
+}
+.memory-cell.matched {
+  box-shadow: 0 0 0 1px var(--xp) inset;
+}
+.memory-cell .ui-icon {
+  width: 30px;
+  height: 30px;
+}
 
 .case-card {
   text-align: center;
@@ -2185,6 +2372,24 @@ textarea.input { resize: vertical; min-height: 70px; }
   min-width: min(320px, 100%);
   justify-content: center;
 }
+.case-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.case-sound-btn {
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  justify-content: center;
+  color: var(--accent);
+}
+.case-sound-btn.muted {
+  color: var(--ink3);
+  opacity: .78;
+}
 .shop-toggle-row {
   align-items: center;
   flex-wrap: wrap;
@@ -2204,6 +2409,16 @@ textarea.input { resize: vertical; min-height: 70px; }
   background: rgba(255,255,255,0.58);
   color: var(--accent);
   font-size: 16px;
+}
+.daily-card #claimDaily {
+  margin-left: auto;
+  margin-right: auto;
+}
+.daily-card #dailyStatus {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  text-align: center;
 }
 .shop-panel[hidden] {
   display: none;

@@ -149,6 +149,7 @@
   <aside class="side" id="sidebar">
     <div class="brand">
       <b>lab tracker</b>
+      <button id="appHelpBtn" class="help-open" title="Справка" aria-label="Справка">!</button>
       <button id="sideCollapse" class="side-collapse" title="Свернуть меню" aria-label="Свернуть меню">&lt;</button>
     </div>
     <div class="labpick soft">
@@ -185,6 +186,50 @@
       <span class="mono btn-like asset-icon" id="logoutBtn" title="Выйти" data-icon="logout" data-label="Выйти"></span>
     </div>
   </aside>
+
+  <div class="help-modal" id="helpModal" hidden>
+    <div class="help-backdrop" data-help-close></div>
+    <div class="help-card sk">
+      <div class="between">
+        <h2>Справка</h2>
+        <button class="btn sm" id="helpClose" aria-label="Закрыть">×</button>
+      </div>
+      <div class="help-grid">
+        <div class="help-item">
+          <span class="asset-icon" data-icon="pet" data-label="Питомец"></span>
+          <div><b>Питомец</b><p>Питомец живёт вместе с работой: настроение, сытость и энергия показывают его состояние.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="tasks" data-label="Задачи"></span>
+          <div><b>XP и уровни</b><p>Закрывай задачи и проекты, чтобы получать XP. Каждые 100 XP дают новый уровень.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="moon" data-label="Сон"></span>
+          <div><b>Энергия</b><p>Энергия постепенно тратится и падает со временем. Работа добавляет энергию, а сон доступен, когда питомец устал.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="apple" data-label="Еда"></span>
+          <div><b>Еда</b><p>Еду можно купить в магазине, потом кликнуть по ней или перетащить на питомца. Разная еда восстанавливает сытость, настроение и иногда энергию.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="game" data-label="Игры"></span>
+          <div><b>Мини-игры</b><p>В комнате игр выбирай Sudoku или Пары. За прохождение дневной игры монеты начисляются один раз в день.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="coin" data-label="Монеты"></span>
+          <div><b>Монеты</b><p>Монеты нужны для еды, магазина и кейсов. Их дают ежедневный бонус, мини-игры и действия с питомцем.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="chest" data-label="Кейс"></span>
+          <div><b>Кейсы</b><p>Кейс выдаёт случайный предмет. Если выпал дубликат, часть монет возвращается.</p></div>
+        </div>
+        <div class="help-item">
+          <span class="asset-icon" data-icon="present" data-label="Магазин"></span>
+          <div><b>Магазин</b><p>Шапки, фоны и еда покупаются в каталоге. Персонажи показаны для просмотра, но будут выбиваться через отдельную рулетку.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <main class="main">
     <!-- ===== LABORATORY ===== -->
@@ -246,9 +291,7 @@
             <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
             <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap;">
               <button class="btn sm" data-go="gameroom"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
-              <span class="note grow" data-petenergyhint style="margin:0;"></span>
             </div>
-            <div class="note" style="margin-top:4px;">Каждые 100 XP — новый уровень. Закрывай задачи, чтобы питомец рос!</div>
           </div>
         </div>
       </div>
@@ -554,7 +597,6 @@
         <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
         <div class="stat"><span class="lbl">Сытость</span><div class="track"><div class="fill" data-pethunger style="width:60%"></div></div><span class="num" data-pethungernum>60</span></div>
         <div class="stat"><span class="lbl">Энергия</span><div class="track"><div class="fill" data-petenergy style="width:80%"></div></div><span class="num" data-petenergynum>80</span></div>
-        <div class="note" data-petenergyhint style="margin-top:8px;"></div>
         <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px;">
           <button class="btn sm" id="petSleep"><span class="asset-icon" data-icon="moon" data-label="Спать"></span> Уложить спать</button>
           <button class="btn primary sm" data-go="gameroom"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
@@ -600,7 +642,19 @@
         <span class="chip acc" id="coinBalance"></span>
       </div>
       <div class="game-room">
-        <div class="card sk2 sudoku-card">
+        <div class="mini-game-picker" id="miniGamePicker">
+          <button class="mini-game-choice" data-mini-game="sudoku">
+            <span class="mini-game-ico">6x6</span>
+            <b>Судоку дня</b>
+            <span>логика и монеты</span>
+          </button>
+          <button class="mini-game-choice" data-mini-game="memory">
+            <span class="mini-game-ico">2x</span>
+            <b>Пары</b>
+            <span>найди одинаковые карточки</span>
+          </button>
+        </div>
+        <div class="card sk2 sudoku-card mini-game-panel" id="sudokuGame" hidden>
           <div class="between">
             <h3>Судоку дня <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="sudokuReward">50</span></h3>
             <span class="chip" id="sudokuStatus"></span>
@@ -614,11 +668,31 @@
           </div>
           <div class="note" id="sudokuMsg" style="margin-top:8px;"></div>
         </div>
+        <div class="card sk2 memory-card mini-game-panel" id="memoryGame" hidden>
+          <div class="between">
+            <h3>Пары <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="memoryReward">35</span></h3>
+            <span class="chip" id="memoryStatus"></span>
+          </div>
+          <div class="muted sm">Открой все пары. Награда даётся один раз в день.</div>
+          <div class="memory-stats">
+            <span>Ходы: <b id="memoryMoves">0</b>/<span id="memoryMaxMoves">18</span></span>
+            <span>Пары: <b id="memoryPairs">0</b>/6</span>
+          </div>
+          <div id="memoryBoard" class="memory-board"></div>
+          <div class="row" style="gap:8px;margin-top:10px;">
+            <button class="btn primary" id="memoryNew">Новая раскладка</button>
+            <button class="btn sm" id="memoryBack">Выбрать игру</button>
+          </div>
+          <div class="note" id="memoryMsg" style="margin-top:8px;"></div>
+        </div>
         <div class="card sk2 case-card">
           <h3>Кейс</h3>
           <div class="muted sm">Случайный предмет. Дубликат вернёт часть монет.</div>
           <div class="case-chest-preview"><span class="asset-icon" data-icon="chest" data-label="кейс" data-size="case-xl"></span></div>
-          <button class="btn primary case-open-btn" id="openCase">Открыть кейс <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
+          <div class="case-controls">
+            <button class="btn primary case-open-btn" id="openCase">Открыть кейс <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
+            <button class="btn sm case-sound-btn" id="caseSoundToggle" title="Звук кейса" aria-label="Звук кейса">♪</button>
+          </div>
           <div id="caseResult" style="margin-top:10px;"></div>
         </div>
         <div class="card sk2 daily-card">
