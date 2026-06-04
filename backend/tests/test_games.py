@@ -182,6 +182,51 @@ async def test_zip_awards_once_per_day(client):
     assert body["already_solved"] is True
 
 
+async def test_zip_solve_records_and_improves_leaderboard_time(client):
+    tokens = await register(client, "zip-ranked@lab.ru", name="Zip Ranked")
+    h = auth_headers(tokens)
+    ws = (await client.post("/workspaces", json={"name": "Zip Lab"}, headers=h)).json()
+    daily = await client.get("/games/zip/daily", headers=h)
+    solution_path = daily.json()["solution_path"]
+
+    first = await client.post(
+        "/games/zip/solve",
+        json={"path": solution_path, "seconds": 130},
+        headers=h,
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["best_seconds"] == 130
+
+    slower = await client.post(
+        "/games/zip/solve",
+        json={"path": solution_path, "seconds": 180},
+        headers=h,
+    )
+    assert slower.status_code == 200, slower.text
+    assert slower.json()["coins_awarded"] == 0
+    assert slower.json()["best_seconds"] == 130
+
+    faster = await client.post(
+        "/games/zip/solve",
+        json={"path": solution_path, "seconds": 75},
+        headers=h,
+    )
+    assert faster.status_code == 200, faster.text
+    assert faster.json()["best_seconds"] == 75
+
+    board = await client.get(f"/workspaces/{ws['id']}/zip/leaderboard", headers=h)
+    assert board.status_code == 200, board.text
+    rows = board.json()
+    assert rows == [
+        {
+            "user_id": rows[0]["user_id"],
+            "name": "Zip Ranked",
+            "seconds": 75,
+            "is_me": True,
+        }
+    ]
+
+
 async def test_zip_wrong_no_reward(client):
     tokens = await register(client, "zip-wrong@lab.ru")
     h = auth_headers(tokens)

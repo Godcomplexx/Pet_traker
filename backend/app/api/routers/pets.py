@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
-from app.models import Pet, SudokuScore, User, WorkspaceMember
+from app.models import Pet, SudokuScore, User, WorkspaceMember, ZipScore
 from app.schemas import (
     CaseOpenOut,
     CoinRewardOut,
@@ -20,6 +20,7 @@ from app.schemas import (
     SudokuCheckIn,
     SudokuHintIn,
     SudokuScoreOut,
+    ZipScoreOut,
 )
 from app.services.pet import apply_decay, pet_state, state_label
 from app.services.shop import CASE_PRICE, SHOP_ITEMS, get_item, roll_case
@@ -283,6 +284,44 @@ async def sudoku_leaderboard(
             name=(name or email or sc.user_id[:6]),
             seconds=sc.seconds,
             hints_used=sc.hints_used,
+            is_me=sc.user_id == user.id,
+        )
+        for (sc, name, email) in rows
+    ]
+
+
+@router.get("/workspaces/{workspace_id}/zip/leaderboard", response_model=list[ZipScoreOut])
+async def zip_leaderboard(
+    workspace_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Workspace leaderboard for today's Zip puzzle, sorted by best time."""
+    await require_membership(workspace_id, db, user)
+    day = _today_utc().isoformat()
+    member_ids = (
+        await db.scalars(
+            select(WorkspaceMember.user_id).where(WorkspaceMember.workspace_id == workspace_id)
+        )
+    ).all()
+    if not member_ids:
+        return []
+    rows = (
+        await db.execute(
+            select(ZipScore, User.display_name, User.email)
+            .join(User, User.id == ZipScore.user_id)
+            .where(
+                ZipScore.puzzle_date == day,
+                ZipScore.user_id.in_(member_ids),
+            )
+            .order_by(ZipScore.seconds.asc())
+        )
+    ).all()
+    return [
+        ZipScoreOut(
+            user_id=sc.user_id,
+            name=(name or email or sc.user_id[:6]),
+            seconds=sc.seconds,
             is_me=sc.user_id == user.id,
         )
         for (sc, name, email) in rows

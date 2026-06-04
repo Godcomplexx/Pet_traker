@@ -1036,23 +1036,8 @@
     if (mode === 'burst') setTimeout(() => bubble.remove(), 1300);
   }
 
-  function legacyHatAnchor(species) {
-    const rows = PET_SHAPES[species] || PET_SHAPES.capybara;
-    let top = 0;
-    while (top < rows.length && !/[bsem]/.test(rows[top])) top += 1;
-    const headRows = rows.slice(top, Math.min(rows.length, top + 3));
-    const xs = [];
-    headRows.forEach((row) => {
-      row.split('').forEach((ch, x) => {
-        if (/[bsem]/.test(ch)) xs.push(x + 0.5);
-      });
-    });
-    const center = xs.length ? xs.reduce((sum, x) => sum + x, 0) / xs.length : 5;
-    return { frameWidth: 10, frameHeight: 9, opaqueTop: top, opaqueCenter: center, hatScale: 0.7, hatFlip: false };
-  }
-
   function petHatConfig(pet) {
-    return CHARACTER_INDEX[pet.species] || legacyHatAnchor(pet.species);
+    return CHARACTER_INDEX[pet.species] || null;
   }
 
   function fitHatToPet(screen, pet, hat, hatItem = null) {
@@ -1066,17 +1051,15 @@
     const fittedHatSize = hatSize * scale;
     const frameWidth = Number(c.frameWidth || 32);
     const frameHeight = Number(c.frameHeight || 32);
-    const isAssetPet = !!CHARACTER_INDEX[pet.species];
-    const spriteScale = isAssetPet
-      ? (32 / frameHeight) * uiScale
-      : (screen.clientWidth * (isBig ? 0.30 : 0.25)) / frameWidth;
+    const spriteScale = (32 / frameHeight) * uiScale;
     const spriteHeight = frameHeight * spriteScale;
     const spriteTop = screen.clientHeight / 2 - spriteHeight / 2;
     const headTop = spriteTop + Number(c.opaqueTop || 0) * spriteScale;
     const headX = screen.clientWidth / 2
       + (Number(c.opaqueCenter || frameWidth / 2) - frameWidth / 2) * spriteScale;
     const boxHeight = fittedHatSize * 0.72;
-    const top = headTop - boxHeight + 3 * spriteScale + Number(c.hatOffsetY || 0) * spriteScale;
+    const headOverlap = Math.min(7, 2.5 * spriteScale);
+    const top = headTop - boxHeight + headOverlap + Number(c.hatOffsetY || 0) * spriteScale;
     const left = headX + Number(c.hatOffsetX || 0) * spriteScale;
     const fit = HAT_IMAGE_FIT[hatItem?.id] || { bottom: 10, center: 0 };
     const flip = c.hatFlip ? -1 : 1;
@@ -2620,7 +2603,43 @@
     path: [],
     solved: false,
     hint: null,
+    startedAt: null,
+    timerId: null,
+    bestSeconds: null,
   };
+
+  function zipElapsedSeconds() {
+    if (!zip.startedAt) return 0;
+    return Math.max(1, Math.floor((Date.now() - zip.startedAt) / 1000));
+  }
+
+  function updateZipTimer() {
+    const timer = $('#zipTimer');
+    if (timer) timer.textContent = formatDuration(zipElapsedSeconds());
+  }
+
+  function startZipTimer() {
+    zip.startedAt = Date.now();
+    if (zip.timerId) clearInterval(zip.timerId);
+    updateZipTimer();
+    zip.timerId = setInterval(updateZipTimer, 1000);
+  }
+
+  function stopZipTimer() {
+    if (zip.timerId) clearInterval(zip.timerId);
+    zip.timerId = null;
+  }
+
+  function resetZipTimer() {
+    stopZipTimer();
+    zip.startedAt = null;
+    const timer = $('#zipTimer');
+    if (timer) timer.textContent = formatDuration(0);
+  }
+
+  function ensureZipTimer() {
+    if (!zip.startedAt) startZipTimer();
+  }
 
   function zipKey(r, c) {
     return `${r}:${c}`;
@@ -2643,7 +2662,35 @@
     zip.path = [];
     zip.hint = null;
     $('#zipMsg').textContent = '';
+    resetZipTimer();
     renderZipBoard();
+  }
+
+  async function loadZipLeaderboard() {
+    const box = $('#zipLeaderboard');
+    if (!box || !state.wsId) return;
+    try {
+      const rows = await api.get(`/workspaces/${state.wsId}/zip/leaderboard`);
+      const mine = rows.find((row) => row.is_me);
+      if (mine) {
+        zip.bestSeconds = mine.seconds;
+        const best = $('#zipBest');
+        if (best) best.textContent = formatDuration(mine.seconds);
+      }
+      if (!rows.length) {
+        box.innerHTML = '<div class="sudoku-rank-empty">Пока нет результатов за сегодня.</div>';
+        return;
+      }
+      box.innerHTML = rows.slice(0, 10).map((row, idx) => `
+        <div class="sudoku-rank ${row.is_me ? 'me' : ''}">
+          <span>#${idx + 1}</span>
+          <span class="sudoku-rank-name">${esc(row.name)}</span>
+          <span class="sudoku-rank-time">${formatDuration(row.seconds)}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      box.innerHTML = '<div class="sudoku-rank-empty">Рейтинг сейчас недоступен.</div>';
+    }
   }
 
   async function loadZip() {
@@ -2657,13 +2704,17 @@
       zip.path = [];
       zip.hint = null;
       zip.solved = d.solved_today;
+      zip.bestSeconds = d.best_seconds ?? null;
       $('#zipReward').textContent = zip.reward;
+      $('#zipBest').textContent = zip.bestSeconds ? formatDuration(zip.bestSeconds) : '—';
       $('#zipStatus').textContent = zip.solved ? '✓ решена сегодня' : 'не решена';
       $('#zipStatus').classList.toggle('xp', zip.solved);
       $('#zipMsg').textContent = zip.solved
         ? 'Сегодня награда уже получена. Можно пройти ещё раз без монет.'
-        : '';
+        : 'Таймер запустится с первой клетки.';
+      resetZipTimer();
       renderZipBoard();
+      await loadZipLeaderboard();
     } catch (err) {
       $('#zipMsg').textContent = err.message || 'Не удалось загрузить Zip';
     }
@@ -2713,6 +2764,7 @@
         return;
       }
     }
+    ensureZipTimer();
     zip.path.push([r, c]);
     zip.hint = null;
     $('#zipMsg').textContent = '';
@@ -2722,12 +2774,17 @@
 
   async function finishZip() {
     try {
-      const res = await api.post('/games/zip/solve', { path: zip.path });
+      const seconds = zipElapsedSeconds();
+      const res = await api.post('/games/zip/solve', { path: zip.path, seconds });
       $('#zipMsg').textContent = res.message;
       if (res.correct) {
         zip.solved = true;
+        stopZipTimer();
+        zip.bestSeconds = res.best_seconds ?? zip.bestSeconds;
+        $('#zipBest').textContent = zip.bestSeconds ? formatDuration(zip.bestSeconds) : '—';
         $('#zipStatus').textContent = '✓ решена сегодня';
         $('#zipStatus').classList.add('xp');
+        await loadZipLeaderboard();
         if (res.coins_awarded > 0) {
           toast(`+${res.coins_awarded} монет за Zip`, 'xp');
           await refreshPet();
@@ -2746,12 +2803,14 @@
 
   $('#zipBack')?.addEventListener('click', () => {
     state.miniGame = null;
+    resetZipTimer();
     renderMiniGameChoice();
   });
 
   $('#zipUndo')?.addEventListener('click', () => {
     zip.path.pop();
     zip.hint = null;
+    if (!zip.path.length) resetZipTimer();
     renderZipBoard();
   });
 

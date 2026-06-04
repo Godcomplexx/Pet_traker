@@ -168,6 +168,13 @@ class SudokuScoreOut(BaseModel):
     is_me: bool = False
 
 
+class ZipScoreOut(BaseModel):
+    user_id: str
+    name: str
+    seconds: int
+    is_me: bool = False
+
+
 class PetCustomize(BaseModel):
     """Создание/настройка внешности питомца (экран после онбординга)."""
     name: str = Field(min_length=1, max_length=80)
@@ -235,10 +242,12 @@ class DailyZipOut(BaseModel):
     solution_path: list[list[int]]
     reward: int
     solved_today: bool
+    best_seconds: int | None = None
 
 
 class ZipSolveIn(BaseModel):
     path: list[list[int]]
+    seconds: int = Field(default=0, ge=0, le=86400)
 
 
 class ZipSolveOut(BaseModel):
@@ -247,6 +256,8 @@ class ZipSolveOut(BaseModel):
     coins: int
     already_solved: bool
     message: str
+    best_seconds: int | None = None
+    seconds: int | None = None
 
 
 # ── Workspace ──

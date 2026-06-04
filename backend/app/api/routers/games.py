@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
-from app.models import DailyGameCompletion, Pet, SudokuScore, User
+from app.models import DailyGameCompletion, Pet, SudokuScore, User, ZipScore
 from app.schemas import (
     DailySudokuOut,
     SudokuSolveIn,
@@ -75,6 +75,32 @@ async def _record_sudoku_score(
     elif seconds < best.seconds:
         best.seconds = seconds
         best.hints_used = hints_used
+    return best
+
+
+async def _my_zip_score(db: AsyncSession, user_id: str, day) -> ZipScore | None:
+    return await db.scalar(
+        select(ZipScore).where(
+            ZipScore.user_id == user_id,
+            ZipScore.puzzle_date == day.isoformat(),
+        )
+    )
+
+
+async def _record_zip_score(db: AsyncSession, user_id: str, day, seconds: int) -> ZipScore | None:
+    if seconds <= 0:
+        return await _my_zip_score(db, user_id, day)
+
+    best = await _my_zip_score(db, user_id, day)
+    if best is None:
+        best = ZipScore(
+            user_id=user_id,
+            puzzle_date=day.isoformat(),
+            seconds=seconds,
+        )
+        db.add(best)
+    elif seconds < best.seconds:
+        best.seconds = seconds
     return best
 
 
@@ -264,6 +290,7 @@ async def daily_zip(
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     day = _today()
+    best = await _my_zip_score(db, user.id, day)
     return DailyZipOut(
         date=day.isoformat(),
         size=ZIP_SIZE,
@@ -271,6 +298,7 @@ async def daily_zip(
         solution_path=_zip_solution(day),
         reward=ZIP_REWARD,
         solved_today=await _solved_today(db, user.id, GAME_ZIP, day),
+        best_seconds=best.seconds if best else None,
     )
 
 
@@ -294,13 +322,20 @@ async def solve_zip(
             message="Путь неверный: соединяй числа по порядку и заполни все клетки.",
         )
 
+    best = await _record_zip_score(db, user.id, day, data.seconds)
+
     if await _solved_today(db, user.id, GAME_ZIP, day):
+        await db.commit()
+        if best is not None:
+            await db.refresh(best)
         return ZipSolveOut(
             correct=True,
             coins_awarded=0,
             coins=pet.coins or 0,
             already_solved=True,
-            message="Zip пройден. Награда за сегодня уже получена.",
+            message="Zip пройден. Награда за сегодня уже получена, время записано в рейтинг.",
+            best_seconds=best.seconds if best else None,
+            seconds=data.seconds or None,
         )
 
     completion = DailyGameCompletion(
@@ -323,10 +358,14 @@ async def solve_zip(
     pet.coins = (pet.coins or 0) + ZIP_REWARD
     await db.commit()
     await db.refresh(pet)
+    if best is not None:
+        await db.refresh(best)
     return ZipSolveOut(
         correct=True,
         coins_awarded=ZIP_REWARD,
         coins=pet.coins,
         already_solved=False,
         message=f"Zip пройден! +{ZIP_REWARD} монет",
+        best_seconds=best.seconds if best else None,
+        seconds=data.seconds or None,
     )

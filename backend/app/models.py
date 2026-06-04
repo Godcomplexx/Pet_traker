@@ -382,3 +382,18 @@ class SudokuScore(Base):
     hints_used: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class ZipScore(Base):
+    """Best daily Zip result for the workspace leaderboard."""
+    __tablename__ = "zip_scores"
+    __table_args__ = (
+        UniqueConstraint("user_id", "puzzle_date", name="uq_zip_score_user_day"),
+    )
+
+    id: Mapped[str] = PK()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    puzzle_date: Mapped[str] = mapped_column(String(10), index=True)
+    seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = TS()
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

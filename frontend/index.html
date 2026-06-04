@@ -683,6 +683,8 @@
           </div>
           <div class="muted sm">Соедини числа по порядку и заполни каждую клетку пути.</div>
           <div class="zip-stats">
+            <span>Время: <b id="zipTimer">00:00</b></span>
+            <span>Лучшее: <b id="zipBest">—</b></span>
             <span>Число: <b id="zipNext">1</b>/16</span>
             <span>Клетки: <b id="zipCells">0</b>/49</span>
           </div>
@@ -694,6 +696,10 @@
             <button class="btn sm" id="zipBack">Выбрать игру</button>
           </div>
           <div class="note" id="zipMsg" style="margin-top:8px;"></div>
+          <div class="sudoku-leaderboard">
+            <h4>Рейтинг лаборатории</h4>
+            <div id="zipLeaderboard" class="sudoku-leaderboard-list"></div>
+          </div>
         </div>
         <div class="card sk2 case-card">
           <h3>Кейс</h3>
