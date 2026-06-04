@@ -1,7 +1,9 @@
 """Ежедневные мини-игры. Сейчас — судоку 6×6 с наградой +50 монет раз в день."""
 from __future__ import annotations
 
+import random
 from datetime import datetime, timezone
+from functools import lru_cache
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -76,17 +78,53 @@ async def _record_sudoku_score(
     return best
 
 
-def _zip_solution() -> list[list[int]]:
-    path: list[list[int]] = []
+def _zip_neighbors(cell: tuple[int, int]) -> list[tuple[int, int]]:
+    r, c = cell
+    out: list[tuple[int, int]] = []
+    for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < ZIP_SIZE and 0 <= nc < ZIP_SIZE:
+            out.append((nr, nc))
+    return out
+
+
+@lru_cache(maxsize=90)
+def _zip_solution_cached(day_iso: str) -> tuple[tuple[int, int], ...]:
+    path: list[tuple[int, int]] = []
     for r in range(ZIP_SIZE):
         cols = range(ZIP_SIZE) if r % 2 == 0 else range(ZIP_SIZE - 1, -1, -1)
         for c in cols:
-            path.append([r, c])
-    return path
+            path.append((r, c))
+
+    rng = random.Random(f"zip:{day_iso}")
+    for _ in range(700):
+        index = {cell: i for i, cell in enumerate(path)}
+        if rng.choice((True, False)):
+            endpoint = path[0]
+            candidates = [n for n in _zip_neighbors(endpoint) if n in index and index[n] > 1]
+            if not candidates:
+                continue
+            j = index[rng.choice(candidates)]
+            path = list(reversed(path[:j])) + path[j:]
+        else:
+            endpoint = path[-1]
+            candidates = [
+                n for n in _zip_neighbors(endpoint) if n in index and index[n] < len(path) - 2
+            ]
+            if not candidates:
+                continue
+            j = index[rng.choice(candidates)]
+            path = path[: j + 1] + list(reversed(path[j + 1 :]))
+
+    return tuple(path)
 
 
-def _zip_markers() -> list[dict]:
-    path = _zip_solution()
+def _zip_solution(day) -> list[list[int]]:
+    return [[r, c] for r, c in _zip_solution_cached(day.isoformat())]
+
+
+def _zip_markers(day) -> list[dict]:
+    path = _zip_solution(day)
     last = len(path) - 1
     return [
         {"row": path[round(i * last / (ZIP_MARKERS - 1))][0],
@@ -96,10 +134,10 @@ def _zip_markers() -> list[dict]:
     ]
 
 
-def _valid_zip_path(path: list[list[int]]) -> bool:
+def _valid_zip_path(path: list[list[int]], day) -> bool:
     if len(path) != ZIP_SIZE * ZIP_SIZE:
         return False
-    markers = {(m["row"], m["col"]): m["value"] for m in _zip_markers()}
+    markers = {(m["row"], m["col"]): m["value"] for m in _zip_markers(day)}
     seen: set[tuple[int, int]] = set()
     marker_value = 1
     prev: tuple[int, int] | None = None
@@ -229,7 +267,8 @@ async def daily_zip(
     return DailyZipOut(
         date=day.isoformat(),
         size=ZIP_SIZE,
-        markers=_zip_markers(),
+        markers=_zip_markers(day),
+        solution_path=_zip_solution(day),
         reward=ZIP_REWARD,
         solved_today=await _solved_today(db, user.id, GAME_ZIP, day),
     )
@@ -246,7 +285,7 @@ async def solve_zip(
     if pet is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Pet not found")
 
-    if not _valid_zip_path(data.path):
+    if not _valid_zip_path(data.path, day):
         return ZipSolveOut(
             correct=False,
             coins_awarded=0,

@@ -1,6 +1,7 @@
 """Ежедневная судоку: генерация, проверка, награда раз в день."""
 from datetime import date
 
+from app.api.routers import games
 from app.services import sudoku
 from tests.conftest import auth_headers, register
 
@@ -118,13 +119,23 @@ async def test_solve_wrong_no_reward(client):
     assert body["coins_awarded"] == 0
 
 
-def zip_solution_path(size: int = 7) -> list[list[int]]:
-    path = []
-    for r in range(size):
-        cols = range(size) if r % 2 == 0 else range(size - 1, -1, -1)
-        for c in cols:
-            path.append([r, c])
-    return path
+def assert_zip_path_is_valid(path: list[list[int]]) -> None:
+    assert len(path) == 49
+    assert len({tuple(cell) for cell in path}) == 49
+    for a, b in zip(path, path[1:]):
+        assert abs(a[0] - b[0]) + abs(a[1] - b[1]) == 1
+
+
+def test_zip_daily_generation_is_deterministic_and_changes_by_date():
+    first = games._zip_solution(date(2026, 6, 4))
+    same = games._zip_solution(date(2026, 6, 4))
+    other = games._zip_solution(date(2026, 6, 5))
+
+    assert first == same
+    assert first != other
+    assert games._zip_markers(date(2026, 6, 4)) != games._zip_markers(date(2026, 6, 5))
+    assert_zip_path_is_valid(first)
+    assert_zip_path_is_valid(other)
 
 
 async def test_zip_daily_endpoint(client):
@@ -137,6 +148,7 @@ async def test_zip_daily_endpoint(client):
     assert body["size"] == 7
     assert body["solved_today"] is False
     assert len(body["markers"]) == 16
+    assert_zip_path_is_valid(body["solution_path"])
     assert body["markers"][0]["value"] == 1
     assert body["markers"][-1]["value"] == 16
 
@@ -145,10 +157,12 @@ async def test_zip_awards_once_per_day(client):
     tokens = await register(client, "zip-solve@lab.ru")
     h = auth_headers(tokens)
     coins_before = (await client.get("/pets/me", headers=h)).json()["coins"]
+    daily = await client.get("/games/zip/daily", headers=h)
+    solution_path = daily.json()["solution_path"]
 
     first = await client.post(
         "/games/zip/solve",
-        json={"path": zip_solution_path()},
+        json={"path": solution_path},
         headers=h,
     )
     assert first.status_code == 200, first.text
@@ -159,7 +173,7 @@ async def test_zip_awards_once_per_day(client):
 
     second = await client.post(
         "/games/zip/solve",
-        json={"path": zip_solution_path()},
+        json={"path": solution_path},
         headers=h,
     )
     body = second.json()

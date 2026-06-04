@@ -232,6 +232,7 @@ class DailyZipOut(BaseModel):
     date: str
     size: int
     markers: list[dict]
+    solution_path: list[list[int]]
     reward: int
     solved_today: bool
 

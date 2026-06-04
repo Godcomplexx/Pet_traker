@@ -2514,21 +2514,11 @@
     reward: 45,
     markers: [],
     markerMap: new Map(),
+    solutionPath: [],
     path: [],
     solved: false,
     hint: null,
   };
-
-  function zipSolutionPath(size = 7) {
-    const path = [];
-    for (let r = 0; r < size; r++) {
-      const cols = r % 2 === 0
-        ? Array.from({ length: size }, (_, c) => c)
-        : Array.from({ length: size }, (_, c) => size - 1 - c);
-      cols.forEach((c) => path.push([r, c]));
-    }
-    return path;
-  }
 
   function zipKey(r, c) {
     return `${r}:${c}`;
@@ -2561,6 +2551,7 @@
       zip.reward = d.reward || 45;
       zip.markers = d.markers || [];
       zip.markerMap = new Map(zip.markers.map((m) => [zipKey(m.row, m.col), m.value]));
+      zip.solutionPath = d.solution_path || [];
       zip.path = [];
       zip.hint = null;
       zip.solved = d.solved_today;
@@ -2665,8 +2656,7 @@
   $('#zipClear')?.addEventListener('click', resetZipPath);
 
   $('#zipHint')?.addEventListener('click', () => {
-    const solution = zipSolutionPath(zip.size);
-    const next = solution[zip.path.length];
+    const next = zip.solutionPath[zip.path.length];
     if (!next) return;
     zip.hint = next;
     $('#zipMsg').textContent = 'Подсвечена следующая клетка.';
