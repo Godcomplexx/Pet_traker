@@ -673,9 +673,21 @@ a:hover{ color: var(--xp2); }
   background: rgba(255,255,255,0.44);
 }
 .help-item .asset-icon,
-.help-item .ui-icon {
+.help-item .ui-icon:not(.pickup-sprite) {
   width: 28px;
   height: 28px;
+}
+.help-item .asset-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;          /* спрайт-лист не вылезает за колонку 36px */
+}
+/* анимированные спрайты в справке: стоп-кадр (первый кадр), без съезда */
+.help-item .pickup-sprite {
+  align-self: center;
+  animation: none !important;
+  background-position: 0 0 !important;
 }
 .help-item b {
   display: block;
@@ -898,6 +910,14 @@ small, .sm { font-size: var(--fs-xs); }
 .task .t:hover { color: var(--xp); }
 .task.priv .t:hover { color: var(--priv); }
 .task.done .t { text-decoration: line-through; color: var(--ink3); }
+.task.has-unread-comment {
+  background: linear-gradient(90deg, var(--xp-soft) 0 4px, rgba(255,255,255,0.22) 4px, transparent 42%);
+  padding-left: 10px;
+  border-radius: 0 var(--r2) var(--r2) 0;
+}
+.unread-comment-chip {
+  flex: 0 0 auto;
+}
 
 .task.priv {
   background: linear-gradient(90deg, var(--priv-soft) 0 4px, transparent 4px);
@@ -1576,9 +1596,9 @@ textarea.input { resize: vertical; min-height: 70px; }
   position: absolute;
   top: var(--pet-hat-top, 13%);
   left: var(--pet-hat-left, 50%);
-  width: 58px;
-  height: 42px;
-  transform: translateX(-50%) scale(var(--pet-hat-scale, 1));
+  width: var(--pet-hat-box-w, 58px);
+  height: var(--pet-hat-box-h, 42px);
+  transform: translateX(-50%);
   transform-origin: center bottom;
   z-index: 5;
   display: grid;
@@ -1588,31 +1608,19 @@ textarea.input { resize: vertical; min-height: 70px; }
   filter: drop-shadow(0 4px 3px rgba(35,42,32,0.18));
 }
 .pet-hat-img {
-  width: 64px;
-  height: 64px;
+  width: var(--pet-hat-img-size, 64px);
+  height: var(--pet-hat-img-size, 64px);
   object-fit: contain;
   object-position: center bottom;
   image-rendering: pixelated;
-  transform: scaleX(var(--pet-hat-flip, 1));
+  transform: translateX(var(--pet-hat-img-shift-x, 0px)) translateY(var(--pet-hat-img-shift-y, 0px)) scaleX(var(--pet-hat-flip, 1));
   transform-origin: center bottom;
 }
 .petbig .pet-hat {
   top: var(--pet-hat-top, 10%);
-  width: 72px;
-  height: 48px;
-}
-.petbig .pet-hat-img {
-  width: 78px;
-  height: 78px;
 }
 #dockPetScreen .pet-hat {
   top: var(--pet-hat-top, 10%);
-  width: 46px;
-  height: 32px;
-}
-#dockPetScreen .pet-hat-img {
-  width: 52px;
-  height: 52px;
 }
 @keyframes emoteFloat {
   0%,100% { transform: translateY(0) scale(1); }
@@ -1804,7 +1812,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   overflow-wrap: anywhere;
 }
 .comment-meta {
-  margin-top: 3px;
+  margin-bottom: 3px;
   line-height: 1.4;
 }
 
@@ -2254,25 +2262,27 @@ textarea.input { resize: vertical; min-height: 70px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(14px, 4.2vw, 22px);
   line-height: 1;
-  font-weight: 650;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
   background: var(--sudoku-paper);
   color: var(--sudoku-strong);
   cursor: pointer;
   user-select: none;
   border-right: 1px solid var(--sudoku-line);
   border-bottom: 1px solid var(--sudoku-line);
+  transition: background .1s, color .1s;
 }
 .sudoku-cell.given {
-  font-weight: 800;
   cursor: default;
   background: var(--sudoku-paper-given);
   color: #0f1d15;
 }
 .sudoku-cell.editable {
   color: var(--sudoku-entry);
-  font-weight: 800;
 }
 .sudoku-cell.sel {
   background: var(--sudoku-selected);
@@ -2295,7 +2305,12 @@ textarea.input { resize: vertical; min-height: 70px; }
 .sudoku-key {
   min-height: 48px;
   padding: 0;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  line-height: 1;
   background: var(--sudoku-paper);
   border-color: var(--sudoku-line);
   color: var(--sudoku-strong);
@@ -2462,6 +2477,14 @@ textarea.input { resize: vertical; min-height: 70px; }
   gap: 8px;
   flex-wrap: wrap;
 }
+.case-balance {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.case-balance .asset-icon { width: 16px; height: 16px; }
 .case-sound-btn {
   width: 42px;
   min-width: 42px;
@@ -2549,9 +2572,9 @@ textarea.input { resize: vertical; min-height: 70px; }
   image-rendering: pixelated;
 }
 .pet-hat .ui-icon {
-  width: 34px;
-  height: 34px;
-  transform: scaleX(var(--pet-hat-flip, 1));
+  width: calc(var(--pet-hat-img-size, 64px) * .55);
+  height: calc(var(--pet-hat-img-size, 64px) * .55);
+  transform: translateX(var(--pet-hat-img-shift-x, 0px)) translateY(var(--pet-hat-img-shift-y, 0px)) scaleX(var(--pet-hat-flip, 1));
   transform-origin: center bottom;
 }
 .shopcard .nm { font-size: var(--fs-sm); color: var(--ink); }

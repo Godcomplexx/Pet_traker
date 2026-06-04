@@ -10,7 +10,7 @@ from app.schemas import CommentCreate, CommentOut, CommentUpdate
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 from app.services.mentions import extract_mentioned_emails
-from app.services.notifications import notify_mentions
+from app.services.notifications import notify_mentions, notify_task_comment
 
 router = APIRouter(tags=["comments"])
 
@@ -45,6 +45,8 @@ async def _add_team_comment(
     db.add(comment)
     await db.flush()
 
+    target_id = task_id or project_id or article_id or comment.id
+    comment_preview = text[:180]
     await notify_mentions(
         db,
         workspace_id=workspace_id,
@@ -52,8 +54,29 @@ async def _add_team_comment(
         mentioned_user_ids=mention_user_ids,
         mentioned_emails=extract_mentioned_emails(text),
         entity_type=entity_type,
-        entity_id=comment.id,
+        entity_id=target_id,
+        body=comment_preview,
     )
+    if task_id:
+        task = await db.get(Task, task_id)
+        if task is not None:
+            recipients = {
+                task.owner_id,
+                task.created_by,
+                task.assignee_id,
+                *(task.assignees or []),
+            }
+            recipients.discard(None)
+            recipients.difference_update(mention_user_ids)
+            await notify_task_comment(
+                db,
+                workspace_id=workspace_id,
+                actor_id=user.id,
+                task_id=task_id,
+                title=f"Новый комментарий к задаче: {task.title}",
+                body=comment_preview,
+                recipient_ids=list(recipients),
+            )
 
     # FR-GAME (comment XP, daily-capped in the worker).
     event = await emit_event(

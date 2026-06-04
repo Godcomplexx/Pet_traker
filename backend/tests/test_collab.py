@@ -163,6 +163,37 @@ async def test_personal_task_comment_is_private(client):
     assert (await client.get("/notifications", headers=ha)).json() == []
 
 
+async def test_team_task_comment_notifies_assignee(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    bob_id = (await client.get("/auth/me", headers=hb)).json()["id"]
+    task = (
+        await client.post(
+            "/tasks",
+            json={
+                "scope": "WORKSPACE",
+                "workspace_id": ws["id"],
+                "title": "Discuss draft",
+                "assignee_ids": [bob_id],
+            },
+            headers=ho,
+        )
+    ).json()
+
+    await client.patch("/notifications/read-all", headers=hb)
+    resp = await client.post(
+        f"/tasks/{task['id']}/comments",
+        json={"text": "please check the last section"},
+        headers=ho,
+    )
+    assert resp.status_code == 201, resp.text
+
+    notifs = (await client.get("/notifications", headers=hb)).json()
+    comment_notif = next(n for n in notifs if n["type"] == "MENTION" and not n["is_read"])
+    assert comment_notif["entity_type"] == "task"
+    assert comment_notif["entity_id"] == task["id"]
+    assert "last section" in comment_notif["body"]
+
+
 async def test_assignment_creates_notification(client):
     ws, ho, hb, owner, bob = await _workspace_with_member(client)
     bob_id = (await client.get("/auth/me", headers=hb)).json()["id"]

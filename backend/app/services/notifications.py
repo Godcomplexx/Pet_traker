@@ -59,6 +59,7 @@ async def notify_mentions(
     mentioned_emails: list[str],
     entity_type: str,
     entity_id: str,
+    body: str | None = None,
 ) -> int:
     """Create MENTION notifications for valid workspace members. Returns count created.
 
@@ -91,8 +92,48 @@ async def notify_mentions(
             user_id=uid,
             type_=NotificationType.MENTION,
             title="Вас упомянули в комментарии",
+            body=body,
             workspace_id=workspace_id,
             entity_type=entity_type,
             entity_id=entity_id,
+        )
+    return len(member_ids)
+
+
+async def notify_task_comment(
+    db: AsyncSession,
+    *,
+    workspace_id: str,
+    actor_id: str,
+    task_id: str,
+    title: str,
+    body: str | None,
+    recipient_ids: list[str],
+) -> int:
+    recipients = set(recipient_ids)
+    recipients.discard(actor_id)
+    if not recipients:
+        return 0
+
+    member_ids = set(
+        (
+            await db.scalars(
+                select(WorkspaceMember.user_id).where(
+                    WorkspaceMember.workspace_id == workspace_id,
+                    WorkspaceMember.user_id.in_(recipients),
+                )
+            )
+        ).all()
+    )
+    for uid in member_ids:
+        await create_notification(
+            db,
+            user_id=uid,
+            type_=NotificationType.MENTION,
+            title=title,
+            body=body,
+            workspace_id=workspace_id,
+            entity_type="task",
+            entity_id=task_id,
         )
     return len(member_ids)

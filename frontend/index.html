@@ -216,15 +216,15 @@
           <div><b>Мини-игры</b><p>В комнате игр выбирай Sudoku или Zip. За прохождение дневной игры монеты начисляются один раз в день.</p></div>
         </div>
         <div class="help-item">
-          <span class="asset-icon" data-icon="coin" data-label="Монеты"></span>
+          <span class="asset-icon" data-icon="coin" data-label="Монеты" data-size="help"></span>
           <div><b>Монеты</b><p>Монеты нужны для еды, магазина и кейсов. Их дают ежедневный бонус, мини-игры и действия с питомцем.</p></div>
         </div>
         <div class="help-item">
-          <span class="asset-icon" data-icon="chest" data-label="Кейс"></span>
+          <span class="asset-icon" data-icon="chest" data-label="Кейс" data-size="help"></span>
           <div><b>Кейсы</b><p>Кейс выдаёт случайный предмет. Если выпал дубликат, часть монет возвращается.</p></div>
         </div>
         <div class="help-item">
-          <span class="asset-icon" data-icon="present" data-label="Магазин"></span>
+          <span class="asset-icon" data-icon="present" data-label="Магазин" data-size="help"></span>
           <div><b>Магазин</b><p>Шапки, фоны и еда покупаются в каталоге. Персонажи показаны для просмотра, но будут выбиваться через отдельную рулетку.</p></div>
         </div>
       </div>
@@ -703,6 +703,7 @@
             <button class="btn primary case-open-btn" id="openCase">Открыть кейс <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="casePrice">50</span></button>
             <button class="btn sm case-sound-btn" id="caseSoundToggle" title="Звук кейса" aria-label="Звук кейса">♪</button>
           </div>
+          <div class="case-balance muted sm">В наличии: <b id="caseCoinBalance">0</b> <span class="asset-icon" data-icon="coin" data-label="монеты"></span></div>
           <div id="caseResult" style="margin-top:10px;"></div>
         </div>
         <div class="card sk2 daily-card">

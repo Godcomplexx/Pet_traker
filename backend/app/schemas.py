@@ -464,6 +464,7 @@ class NotificationOut(ORMModel):
     entity_type: str | None = None
     entity_id: str | None = None
     is_read: bool
+    created_at: datetime
 
 
 class WallPostCreate(BaseModel):

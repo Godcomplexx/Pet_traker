@@ -99,6 +99,7 @@
     currentScreen: null,
     miniGame: null,
     caseSoundMuted: false,
+    unreadTaskCommentIds: new Set(),
   };
 
   const esc = (s) =>
@@ -198,7 +199,7 @@
     const s = PICKUP_SPRITES[name];
     const framesClass = s.frames === 4 ? 'pickup-4' : (s.frames === 3 ? 'pickup-3' : 'pickup-static');
     const label = alt || s.label || name;
-    const scale = size.includes('case-xl') ? 3.05 : (size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : 1.25));
+    const scale = size.includes('case-xl') ? 3.05 : (size.includes('xl') ? 2.15 : (size.includes('lg') ? 1.55 : (size.includes('help') ? 0.875 : 1.25)));
     const w = Math.round(s.w * scale);
     const h = Math.round(s.h * scale);
     const sheet = Math.round(s.w * s.frames * scale);
@@ -945,6 +946,33 @@
 
   // id предмета -> объект из каталога (заполняется при загрузке магазина).
   const SHOP_INDEX = {};
+  const HAT_IMAGE_FIT = {
+    hat_01: { bottom: 9, center: 0 },
+    hat_02: { bottom: 10, center: 0 },
+    hat_03: { bottom: 12, center: 0 },
+    hat_04: { bottom: 11, center: 0 },
+    hat_05: { bottom: 11, center: 0.5 },
+    hat_06: { bottom: 11, center: 0 },
+    hat_07: { bottom: 12, center: 0 },
+    hat_08: { bottom: 12, center: 0 },
+    hat_09: { bottom: 13, center: 0 },
+    hat_10: { bottom: 15, center: 0.5 },
+    hat_11: { bottom: 13, center: 0 },
+    hat_12: { bottom: 12, center: 0 },
+    hat_13: { bottom: 12, center: 0 },
+    hat_14: { bottom: 11, center: 0.5 },
+    hat_15: { bottom: 11, center: 0.5 },
+    hat_16: { bottom: 11, center: 0.5 },
+    hat_17: { bottom: 10, center: 0 },
+    hat_18: { bottom: 10, center: 0.5 },
+    hat_19: { bottom: 9, center: 0 },
+    hat_20: { bottom: 13, center: 0 },
+    hat_21: { bottom: 13, center: 0 },
+    hat_22: { bottom: 13, center: 0 },
+    hat_23: { bottom: 13, center: 0 },
+    hat_24: { bottom: 12, center: 0 },
+    hat_25: { bottom: 13, center: 0 },
+  };
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
   const PET_EMOTES = {
     alert: 'alert',
@@ -1008,30 +1036,63 @@
     if (mode === 'burst') setTimeout(() => bubble.remove(), 1300);
   }
 
-  function fitHatToPet(screen, pet, hat) {
-    const c = CHARACTER_INDEX[pet.species];
+  function legacyHatAnchor(species) {
+    const rows = PET_SHAPES[species] || PET_SHAPES.capybara;
+    let top = 0;
+    while (top < rows.length && !/[bsem]/.test(rows[top])) top += 1;
+    const headRows = rows.slice(top, Math.min(rows.length, top + 3));
+    const xs = [];
+    headRows.forEach((row) => {
+      row.split('').forEach((ch, x) => {
+        if (/[bsem]/.test(ch)) xs.push(x + 0.5);
+      });
+    });
+    const center = xs.length ? xs.reduce((sum, x) => sum + x, 0) / xs.length : 5;
+    return { frameWidth: 10, frameHeight: 9, opaqueTop: top, opaqueCenter: center, hatScale: 0.7, hatFlip: false };
+  }
+
+  function petHatConfig(pet) {
+    return CHARACTER_INDEX[pet.species] || legacyHatAnchor(pet.species);
+  }
+
+  function fitHatToPet(screen, pet, hat, hatItem = null) {
+    const c = petHatConfig(pet);
     if (!screen || !hat || !c) return;
     const isDock = screen.id === 'dockPetScreen';
     const isBig = !isDock && !!screen.closest('.petbig');
     const uiScale = isDock ? 1.8 : (isBig ? 2.8 : 2.35);
     const hatSize = isDock ? 52 : (isBig ? 78 : 64);
     const scale = Number(c.hatScale || 1);
+    const fittedHatSize = hatSize * scale;
     const frameWidth = Number(c.frameWidth || 32);
     const frameHeight = Number(c.frameHeight || 32);
-    const spriteScale = (32 / frameHeight) * uiScale;
+    const isAssetPet = !!CHARACTER_INDEX[pet.species];
+    const spriteScale = isAssetPet
+      ? (32 / frameHeight) * uiScale
+      : (screen.clientWidth * (isBig ? 0.30 : 0.25)) / frameWidth;
     const spriteHeight = frameHeight * spriteScale;
     const spriteTop = screen.clientHeight / 2 - spriteHeight / 2;
     const headTop = spriteTop + Number(c.opaqueTop || 0) * spriteScale;
     const headX = screen.clientWidth / 2
       + (Number(c.opaqueCenter || frameWidth / 2) - frameWidth / 2) * spriteScale;
-    const hatOpaqueBottom = hatSize * 0.68 * scale;
-    const top = headTop - hatOpaqueBottom + 5 * spriteScale;
+    const boxHeight = fittedHatSize * 0.72;
+    const top = headTop - boxHeight + 3 * spriteScale + Number(c.hatOffsetY || 0) * spriteScale;
+    const left = headX + Number(c.hatOffsetX || 0) * spriteScale;
+    const fit = HAT_IMAGE_FIT[hatItem?.id] || { bottom: 10, center: 0 };
+    const flip = c.hatFlip ? -1 : 1;
+    const imageShiftY = (Number(fit.bottom || 0) / 30) * fittedHatSize;
+    const imageShiftX = (-Number(fit.center || 0) / 30) * fittedHatSize * flip;
 
-    hat.style.setProperty('--pet-hat-left', `${Math.round(headX)}px`);
+    hat.style.setProperty('--pet-hat-left', `${Math.round(left)}px`);
     hat.style.setProperty('--pet-hat-top', `${Math.round(top)}px`);
-    hat.style.setProperty('--pet-hat-scale', String(scale));
+    hat.style.setProperty('--pet-hat-scale', '1');
+    hat.style.setProperty('--pet-hat-box-w', `${Math.round(fittedHatSize)}px`);
+    hat.style.setProperty('--pet-hat-box-h', `${Math.round(boxHeight)}px`);
+    hat.style.setProperty('--pet-hat-img-size', `${Math.round(fittedHatSize)}px`);
+    hat.style.setProperty('--pet-hat-img-shift-x', `${Math.round(imageShiftX)}px`);
+    hat.style.setProperty('--pet-hat-img-shift-y', `${Math.round(imageShiftY)}px`);
     // hatFlip:true зеркалит шапку для персонажей, смотрящих в другую сторону.
-    hat.style.setProperty('--pet-hat-flip', c.hatFlip ? '-1' : '1');
+    hat.style.setProperty('--pet-hat-flip', String(flip));
   }
 
   // Перерисовать спрайт во всех экранах-«дисплеях» с учётом состояния + экипировки.
@@ -1063,7 +1124,7 @@
         } else {
           hat.appendChild(iconNode(itemIcon(hatItem), 'lg'));
         }
-        fitHatToPet(screen, pet, hat);
+        fitHatToPet(screen, pet, hat, hatItem);
         screen.appendChild(hat);
       }
     });
@@ -1163,6 +1224,7 @@
     // Монеты (для дока и комнаты игр).
     $$('[data-petcoins]').forEach((e) => (e.innerHTML = iconLabel('coin', String(pet.coins || 0))));
     $('#coinBalance') && ($('#coinBalance').innerHTML = iconLabel('coin', String(pet.coins || 0)));
+    $('#caseCoinBalance') && ($('#caseCoinBalance').textContent = String(pet.coins || 0));
     paintSprites(pet);
     renderBackpack();
     renderFoodBags();
@@ -1219,13 +1281,28 @@
   });
 
   /* ---------------- task rendering ---------------- */
+  function hasUnreadTaskComment(taskId) {
+    return state.unreadTaskCommentIds && state.unreadTaskCommentIds.has(taskId);
+  }
+
+  function markUnreadTaskRows() {
+    $$('[data-task]').forEach((row) => {
+      const unread = hasUnreadTaskComment(row.dataset.task);
+      row.classList.toggle('has-unread-comment', unread);
+      const chip = row.querySelector('[data-unread-comment-chip]');
+      if (chip) chip.hidden = !unread;
+    });
+  }
+
   function taskRow(t) {
     const personal = t.scope === 'PERSONAL';
     const done = t.status === 'DONE';
-    return `<div class="task ${personal ? 'priv' : ''} ${done ? 'done' : ''}" data-task="${t.id}">
+    const unread = hasUnreadTaskComment(t.id);
+    return `<div class="task ${personal ? 'priv' : ''} ${done ? 'done' : ''} ${unread ? 'has-unread-comment' : ''}" data-task="${t.id}">
       <div class="prio ${t.priority}"></div>
       <div class="chk ${done ? 'done' : ''}" data-toggle="${t.id}"></div>
       <div class="t" data-open-task="${t.id}" style="cursor:pointer;">${esc(t.title)} <span class="tag">${t.type}</span></div>
+      <span class="chip acc unread-comment-chip" data-unread-comment-chip ${unread ? '' : 'hidden'}>чат</span>
       ${done ? `<span class="chip ${personal ? 'priv' : 'xp'}">+${personal ? 5 : 10} XP</span>` : (t.due_date ? `<span class="chip">${t.due_date}</span>` : '')}
     </div>`;
   }
@@ -1710,9 +1787,11 @@
   function taskRowLinked(t) {
     const personal = t.scope === 'PERSONAL';
     const done = t.status === 'DONE';
-    return `<div class="task ${personal ? 'priv' : ''} ${done ? 'done' : ''}">
+    const unread = hasUnreadTaskComment(t.id);
+    return `<div class="task ${personal ? 'priv' : ''} ${done ? 'done' : ''} ${unread ? 'has-unread-comment' : ''}" data-task="${t.id}">
       <div class="chk ${done ? 'done' : ''}" data-toggle="${t.id}"></div>
       <div class="t" data-open-task="${t.id}" style="cursor:pointer;">${esc(t.title)} <span class="tag">${t.type}</span></div>
+      <span class="chip acc unread-comment-chip" data-unread-comment-chip ${unread ? '' : 'hidden'}>чат</span>
     </div>`;
   }
 
@@ -1796,8 +1875,8 @@
             return `<div class="feed comment-feed"><div class="it comment-row">
             <div class="av" title="${esc(nm)}">${initials(nm)}</div>
             <div class="comment-body">
+              <div class="when comment-meta"><b>${esc(nm)}</b> · ${new Date(c.created_at).toLocaleString('ru')}</div>
               <div class="comment-text">${esc(c.text)}</div>
-              <div class="when comment-meta">${esc(nm)} · ${new Date(c.created_at).toLocaleString('ru')}</div>
             </div>
           </div></div>`;
           }).join('')
@@ -2344,6 +2423,17 @@
     sudoku.timerId = setInterval(updateSudokuTimer, 1000);
   }
 
+  function stopSudokuTimer() {
+    if (sudoku.timerId) clearInterval(sudoku.timerId);
+    sudoku.timerId = null;
+  }
+
+  // Таймер запускается только с первым введённым числом (а не при открытии).
+  function ensureSudokuTimer() {
+    if (sudoku.solved) return;
+    if (!sudoku.startedAt) startSudokuTimer();
+  }
+
   async function loadSudokuLeaderboard() {
     const box = $('#sudokuLeaderboard');
     if (!box || !state.wsId) return;
@@ -2389,8 +2479,12 @@
       $('#sudokuStatus').classList.toggle('xp', d.solved_today);
       $('#sudokuMsg').textContent = d.solved_today
         ? 'Сегодня уже пройдена. Возвращайся завтра за новой 🎉'
-        : '';
-      startSudokuTimer();
+        : 'Таймер запустится с первой цифрой.';
+      // таймер НЕ стартуем здесь — он пойдёт с первой введённой цифры
+      stopSudokuTimer();
+      sudoku.startedAt = null;
+      const t = $('#sudokuTimer');
+      if (t) t.textContent = formatDuration(0);
       renderSudokuBoard();
       renderSudokuPad();
       await loadSudokuLeaderboard();
@@ -2448,7 +2542,9 @@
     if (!key || !sudoku.sel) return;
     const [r, c] = sudoku.sel;
     if (sudoku.puzzle[r][c] !== 0) return; // нельзя менять данные
-    sudoku.cells[r][c] = Number(key.dataset.sk);
+    const val = Number(key.dataset.sk);
+    if (val !== 0) ensureSudokuTimer();   // старт таймера с первой цифры
+    sudoku.cells[r][c] = val;
     renderSudokuBoard();
   });
 
@@ -2459,6 +2555,7 @@
     const [r, c] = sudoku.sel;
     if (sudoku.puzzle[r][c] !== 0) return;
     if (/^[1-9]$/.test(e.key) && Number(e.key) <= sudoku.size) {
+      ensureSudokuTimer();
       sudoku.cells[r][c] = Number(e.key);
       renderSudokuBoard();
     } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
@@ -2471,8 +2568,12 @@
     if (!sudoku.puzzle) return;
     sudoku.cells = sudoku.puzzle.map((row) => row.slice());
     sudoku.sel = null;
-    $('#sudokuMsg').textContent = '';
-    startSudokuTimer();
+    $('#sudokuMsg').textContent = 'Таймер запустится с первой цифрой.';
+    // сброс возвращает таймер в исходное — пойдёт снова с первого ввода
+    stopSudokuTimer();
+    sudoku.startedAt = null;
+    const t = $('#sudokuTimer');
+    if (t) t.textContent = formatDuration(0);
     renderSudokuBoard();
   });
 
@@ -2492,6 +2593,7 @@
       $('#sudokuMsg').textContent = res.message;
       if (res.correct) {
         sudoku.solved = true;
+        stopSudokuTimer();
         sudoku.bestSeconds = res.best_seconds ?? sudoku.bestSeconds;
         $('#sudokuBest').textContent = sudoku.bestSeconds ? formatDuration(sudoku.bestSeconds) : '—';
         $('#sudokuStatus').textContent = '✓ решена сегодня';
@@ -3214,14 +3316,21 @@
   });
 
   /* ---------------- notifications ---------------- */
-  const UI_NOTIFICATION_TYPES = new Set(['TASK_ASSIGNED', 'DEADLINE']);
+  const UI_NOTIFICATION_TYPES = new Set(['TASK_ASSIGNED', 'DEADLINE', 'MENTION']);
 
   async function refreshNotifBadge() {
     const list = await api.get('/notifications');
-    const unread = list.filter((n) => UI_NOTIFICATION_TYPES.has(n.type) && !n.is_read).length;
+    const visible = list.filter((n) => UI_NOTIFICATION_TYPES.has(n.type));
+    const unread = visible.filter((n) => !n.is_read).length;
+    state.unreadTaskCommentIds = new Set(
+      visible
+        .filter((n) => n.type === 'MENTION' && !n.is_read && n.entity_type === 'task' && n.entity_id)
+        .map((n) => n.entity_id),
+    );
     const badge = $('#notifBadge');
     badge.textContent = unread;
     badge.classList.toggle('hide', unread === 0);
+    markUnreadTaskRows();
   }
 
   async function renderNotifications() {
@@ -3265,7 +3374,8 @@
     const id = note.dataset.notif;
     const et = note.dataset.entityType;
     const eid = note.dataset.entityId;
-    api.patch(`/notifications/${id}/read`, {}).then(() => refreshNotifBadge()).catch(() => {});
+    await api.patch(`/notifications/${id}/read`, {}).catch(() => {});
+    await refreshNotifBadge().catch(() => {});
     openNotifTarget(et, eid);
   });
 
