@@ -213,7 +213,7 @@
         </div>
         <div class="help-item">
           <span class="asset-icon" data-icon="game" data-label="Игры"></span>
-          <div><b>Мини-игры</b><p>В комнате игр выбирай Sudoku или Пары. За прохождение дневной игры монеты начисляются один раз в день.</p></div>
+          <div><b>Мини-игры</b><p>В комнате игр выбирай Sudoku или Zip. За прохождение дневной игры монеты начисляются один раз в день.</p></div>
         </div>
         <div class="help-item">
           <span class="asset-icon" data-icon="coin" data-label="Монеты"></span>
@@ -648,10 +648,10 @@
             <b>Судоку дня</b>
             <span>логика и монеты</span>
           </button>
-          <button class="mini-game-choice" data-mini-game="memory">
-            <span class="mini-game-ico">2x</span>
-            <b>Пары</b>
-            <span>найди одинаковые карточки</span>
+          <button class="mini-game-choice" data-mini-game="zip">
+            <span class="mini-game-ico">1-16</span>
+            <b>Zip</b>
+            <span>соедини точки по порядку</span>
           </button>
         </div>
         <div class="card sk2 sudoku-card mini-game-panel" id="sudokuGame" hidden>
@@ -660,6 +660,10 @@
             <span class="chip" id="sudokuStatus"></span>
           </div>
           <div class="muted sm">Новая головоломка каждый день. Реши — получи монеты (раз в день).</div>
+          <div class="sudoku-stats">
+            <span>Время: <b id="sudokuTimer">00:00</b></span>
+            <span>Лучшее: <b id="sudokuBest">—</b></span>
+          </div>
           <div id="sudokuBoard" class="sudoku-board"></div>
           <div class="sudoku-pad" id="sudokuPad"></div>
           <div class="row" style="gap:8px;margin-top:10px;">
@@ -667,23 +671,29 @@
             <button class="btn sm" id="sudokuReset">Очистить</button>
           </div>
           <div class="note" id="sudokuMsg" style="margin-top:8px;"></div>
+          <div class="sudoku-leaderboard">
+            <h4>Рейтинг лаборатории</h4>
+            <div id="sudokuLeaderboard" class="sudoku-leaderboard-list"></div>
+          </div>
         </div>
-        <div class="card sk2 memory-card mini-game-panel" id="memoryGame" hidden>
+        <div class="card sk2 zip-card mini-game-panel" id="zipGame" hidden>
           <div class="between">
-            <h3>Пары <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="memoryReward">35</span></h3>
-            <span class="chip" id="memoryStatus"></span>
+            <h3>Zip <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="zipReward">45</span></h3>
+            <span class="chip" id="zipStatus"></span>
           </div>
-          <div class="muted sm">Открой все пары. Награда даётся один раз в день.</div>
-          <div class="memory-stats">
-            <span>Ходы: <b id="memoryMoves">0</b>/<span id="memoryMaxMoves">18</span></span>
-            <span>Пары: <b id="memoryPairs">0</b>/6</span>
+          <div class="muted sm">Соедини числа по порядку и заполни каждую клетку пути.</div>
+          <div class="zip-stats">
+            <span>Число: <b id="zipNext">1</b>/16</span>
+            <span>Клетки: <b id="zipCells">0</b>/49</span>
           </div>
-          <div id="memoryBoard" class="memory-board"></div>
+          <div id="zipBoard" class="zip-board"></div>
           <div class="row" style="gap:8px;margin-top:10px;">
-            <button class="btn primary" id="memoryNew">Новая раскладка</button>
-            <button class="btn sm" id="memoryBack">Выбрать игру</button>
+            <button class="btn sm" id="zipUndo">Отменить</button>
+            <button class="btn sm" id="zipHint">Подсказка</button>
+            <button class="btn sm" id="zipClear">Очистить</button>
+            <button class="btn sm" id="zipBack">Выбрать игру</button>
           </div>
-          <div class="note" id="memoryMsg" style="margin-top:8px;"></div>
+          <div class="note" id="zipMsg" style="margin-top:8px;"></div>
         </div>
         <div class="card sk2 case-card">
           <h3>Кейс</h3>

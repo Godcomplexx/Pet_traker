@@ -2216,6 +2216,24 @@ textarea.input { resize: vertical; min-height: 70px; }
   padding: 5px 10px;
   font-size: 9px;
 }
+.sudoku-stats {
+  width: min(100%, 432px);
+  margin: 10px auto 6px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.sudoku-stats span {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(23, 37, 28, 0.22);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.45);
+  font-size: 9px;
+}
 .sudoku-board {
   display: grid;
   grid-template-columns: repeat(var(--sg, 6), 1fr);
@@ -2295,17 +2313,63 @@ textarea.input { resize: vertical; min-height: 70px; }
   min-height: 40px;
   padding: 9px 16px;
 }
-.memory-card {
+.sudoku-leaderboard {
+  width: min(100%, 432px);
+  margin: 14px auto 0;
+}
+.sudoku-leaderboard h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.sudoku-leaderboard-list {
+  display: grid;
+  gap: 6px;
+}
+.sudoku-rank {
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(23, 37, 28, 0.2);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.42);
+  font-size: 9px;
+}
+.sudoku-rank.me {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.68);
+}
+.sudoku-rank-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sudoku-rank-time {
+  font-weight: 800;
+}
+.sudoku-rank-empty {
+  padding: 9px 10px;
+  border: 1px dashed rgba(23, 37, 28, 0.24);
+  border-radius: var(--r2);
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: center;
+}
+.zip-card {
   background: rgba(247, 252, 244, 0.72);
   border-color: rgba(84, 121, 82, 0.34);
   padding: 18px;
 }
-.memory-card .between {
+.zip-card .between {
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px 12px;
 }
-.memory-stats {
+.zip-stats {
   width: min(100%, 432px);
   margin: 10px auto 8px;
   display: flex;
@@ -2315,42 +2379,61 @@ textarea.input { resize: vertical; min-height: 70px; }
   font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
   font-size: 9px;
 }
-.memory-board {
-  width: min(100%, 432px);
+.zip-board {
+  width: min(100%, 420px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(var(--zip-size, 7), 1fr);
+  gap: 0;
+  border: 2px solid #8e9690;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #8e9690;
 }
-.memory-cell {
+.zip-cell {
   aspect-ratio: 1;
-  border: 1px solid var(--border-out);
-  border-radius: var(--r2);
-  background: rgba(255,255,255,0.44);
-  color: var(--accent);
+  border: 0;
+  border-right: 1px solid #a2aaa4;
+  border-bottom: 1px solid #a2aaa4;
+  background: #f7faf8;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  position: relative;
   font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
-  font-size: 16px;
-  transition: background .12s, border-color .12s, transform .08s;
+  font-size: 10px;
+  transition: background .12s, box-shadow .12s;
 }
-.memory-cell:hover {
-  background: rgba(255,255,255,0.68);
-  transform: translateY(-1px);
+.zip-cell:hover {
+  background: #eef8f8;
 }
-.memory-cell.open,
-.memory-cell.matched {
-  background: #fffaf0;
-  border-color: var(--xp);
+.zip-cell.in-path {
+  background: #8ed7ef;
 }
-.memory-cell.matched {
-  box-shadow: 0 0 0 1px var(--xp) inset;
+.zip-cell.hint {
+  box-shadow: 0 0 0 4px rgba(255, 221, 112, .85) inset;
 }
-.memory-cell .ui-icon {
+.zip-dot {
   width: 30px;
   height: 30px;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+.zip-line {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.68);
+  display: block;
 }
 
 .case-card {

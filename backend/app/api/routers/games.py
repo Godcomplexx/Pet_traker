@@ -1,7 +1,6 @@
 """Ежедневные мини-игры. Сейчас — судоку 6×6 с наградой +50 монет раз в день."""
 from __future__ import annotations
 
-import random
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,26 +10,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
-from app.models import DailyGameCompletion, Pet, User
+from app.models import DailyGameCompletion, Pet, SudokuScore, User
 from app.schemas import (
-    DailyMemoryOut,
     DailySudokuOut,
-    MemorySolveIn,
-    MemorySolveOut,
     SudokuSolveIn,
     SudokuSolveOut,
+    DailyZipOut,
+    ZipSolveIn,
+    ZipSolveOut,
 )
 from app.services import sudoku
 
 router = APIRouter(tags=["games"])
 
 GAME_SUDOKU = "sudoku"
-GAME_MEMORY = "memory"
+GAME_ZIP = "zip"
 SUDOKU_REWARD = 50
-MEMORY_REWARD = 35
-MEMORY_MAX_MOVES = 18
-MEMORY_PAIRS = 6
-MEMORY_SYMBOLS = ["heart", "coin", "star", "flower", "crown", "ribbon"]
+ZIP_REWARD = 45
+ZIP_SIZE = 7
+ZIP_MARKERS = 16
 
 
 def _today() -> "datetime.date":
@@ -48,10 +46,83 @@ async def _solved_today(db: AsyncSession, user_id: str, game: str, day) -> bool:
     return row is not None
 
 
-def _daily_memory_cards(day) -> list[str]:
-    cards = MEMORY_SYMBOLS[:MEMORY_PAIRS] * 2
-    random.Random(day.toordinal() ^ 0xC0FFEE).shuffle(cards)
-    return cards
+async def _my_sudoku_score(db: AsyncSession, user_id: str, day) -> SudokuScore | None:
+    return await db.scalar(
+        select(SudokuScore).where(
+            SudokuScore.user_id == user_id,
+            SudokuScore.puzzle_date == day.isoformat(),
+        )
+    )
+
+
+async def _record_sudoku_score(
+    db: AsyncSession, user_id: str, day, seconds: int, hints_used: int = 0
+) -> SudokuScore | None:
+    if seconds <= 0:
+        return await _my_sudoku_score(db, user_id, day)
+
+    best = await _my_sudoku_score(db, user_id, day)
+    if best is None:
+        best = SudokuScore(
+            user_id=user_id,
+            puzzle_date=day.isoformat(),
+            seconds=seconds,
+            hints_used=hints_used,
+        )
+        db.add(best)
+    elif seconds < best.seconds:
+        best.seconds = seconds
+        best.hints_used = hints_used
+    return best
+
+
+def _zip_solution() -> list[list[int]]:
+    path: list[list[int]] = []
+    for r in range(ZIP_SIZE):
+        cols = range(ZIP_SIZE) if r % 2 == 0 else range(ZIP_SIZE - 1, -1, -1)
+        for c in cols:
+            path.append([r, c])
+    return path
+
+
+def _zip_markers() -> list[dict]:
+    path = _zip_solution()
+    last = len(path) - 1
+    return [
+        {"row": path[round(i * last / (ZIP_MARKERS - 1))][0],
+         "col": path[round(i * last / (ZIP_MARKERS - 1))][1],
+         "value": i + 1}
+        for i in range(ZIP_MARKERS)
+    ]
+
+
+def _valid_zip_path(path: list[list[int]]) -> bool:
+    if len(path) != ZIP_SIZE * ZIP_SIZE:
+        return False
+    markers = {(m["row"], m["col"]): m["value"] for m in _zip_markers()}
+    seen: set[tuple[int, int]] = set()
+    marker_value = 1
+    prev: tuple[int, int] | None = None
+    for cell in path:
+        if not isinstance(cell, list) or len(cell) != 2:
+            return False
+        r, c = cell
+        if not isinstance(r, int) or not isinstance(c, int):
+            return False
+        if r < 0 or r >= ZIP_SIZE or c < 0 or c >= ZIP_SIZE:
+            return False
+        pos = (r, c)
+        if pos in seen:
+            return False
+        if prev is not None and abs(prev[0] - r) + abs(prev[1] - c) != 1:
+            return False
+        if pos in markers:
+            if markers[pos] != marker_value:
+                return False
+            marker_value += 1
+        seen.add(pos)
+        prev = pos
+    return marker_value == ZIP_MARKERS + 1
 
 
 @router.get("/games/sudoku/daily", response_model=DailySudokuOut)
@@ -62,6 +133,7 @@ async def daily_sudoku(
     day = _today()
     puzzle = sudoku.daily_puzzle(day)
     solved = await _solved_today(db, user.id, GAME_SUDOKU, day)
+    best = await _my_sudoku_score(db, user.id, day)
     return DailySudokuOut(
         date=puzzle["date"],
         size=puzzle["size"],
@@ -70,6 +142,7 @@ async def daily_sudoku(
         puzzle=puzzle["puzzle"],
         reward=SUDOKU_REWARD,
         solved_today=solved,
+        best_seconds=best.seconds if best else None,
     )
 
 
@@ -96,14 +169,21 @@ async def solve_sudoku(
     if pet is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Pet not found")
 
+    best = await _record_sudoku_score(db, user.id, day, data.seconds, data.hints_used)
+
     # Уже была награда сегодня?
     if await _solved_today(db, user.id, GAME_SUDOKU, day):
+        await db.commit()
+        if best is not None:
+            await db.refresh(best)
         return SudokuSolveOut(
             correct=True,
             coins_awarded=0,
             coins=pet.coins or 0,
             already_solved=True,
-            message="Верно! Но награду за сегодня ты уже получил. Возвращайся завтра 🎉",
+            message="Верно! Награда за сегодня уже получена, время записано в рейтинг.",
+            best_seconds=best.seconds if best else None,
+            seconds=data.seconds or None,
         )
 
     # Записываем прохождение и начисляем монеты атомарно.
@@ -128,32 +208,36 @@ async def solve_sudoku(
     pet.coins = (pet.coins or 0) + SUDOKU_REWARD
     await db.commit()
     await db.refresh(pet)
+    if best is not None:
+        await db.refresh(best)
     return SudokuSolveOut(
         correct=True,
         coins_awarded=SUDOKU_REWARD,
         coins=pet.coins,
         already_solved=False,
         message=f"Судоку решена! +{SUDOKU_REWARD} монет 🪙",
+        best_seconds=best.seconds if best else None,
+        seconds=data.seconds or None,
     )
 
 
-@router.get("/games/memory/daily", response_model=DailyMemoryOut)
-async def daily_memory(
+@router.get("/games/zip/daily", response_model=DailyZipOut)
+async def daily_zip(
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     day = _today()
-    return DailyMemoryOut(
+    return DailyZipOut(
         date=day.isoformat(),
-        cards=_daily_memory_cards(day),
-        reward=MEMORY_REWARD,
-        max_moves=MEMORY_MAX_MOVES,
-        solved_today=await _solved_today(db, user.id, GAME_MEMORY, day),
+        size=ZIP_SIZE,
+        markers=_zip_markers(),
+        reward=ZIP_REWARD,
+        solved_today=await _solved_today(db, user.id, GAME_ZIP, day),
     )
 
 
-@router.post("/games/memory/solve", response_model=MemorySolveOut)
-async def solve_memory(
-    data: MemorySolveIn,
+@router.post("/games/zip/solve", response_model=ZipSolveOut)
+async def solve_zip(
+    data: ZipSolveIn,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -162,27 +246,26 @@ async def solve_memory(
     if pet is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Pet not found")
 
-    success = data.matched_pairs >= MEMORY_PAIRS and data.moves <= MEMORY_MAX_MOVES
-    if not success:
-        return MemorySolveOut(
+    if not _valid_zip_path(data.path):
+        return ZipSolveOut(
             correct=False,
             coins_awarded=0,
             coins=pet.coins or 0,
-            already_solved=await _solved_today(db, user.id, GAME_MEMORY, day),
-            message="Попробуй ещё раз: нужно найти все пары за лимит ходов.",
+            already_solved=await _solved_today(db, user.id, GAME_ZIP, day),
+            message="Путь неверный: соединяй числа по порядку и заполни все клетки.",
         )
 
-    if await _solved_today(db, user.id, GAME_MEMORY, day):
-        return MemorySolveOut(
+    if await _solved_today(db, user.id, GAME_ZIP, day):
+        return ZipSolveOut(
             correct=True,
             coins_awarded=0,
             coins=pet.coins or 0,
             already_solved=True,
-            message="Пары собраны. Награда за сегодня уже получена.",
+            message="Zip пройден. Награда за сегодня уже получена.",
         )
 
     completion = DailyGameCompletion(
-        user_id=user.id, game=GAME_MEMORY, day=day, coins_awarded=MEMORY_REWARD
+        user_id=user.id, game=GAME_ZIP, day=day, coins_awarded=ZIP_REWARD
     )
     db.add(completion)
     try:
@@ -190,7 +273,7 @@ async def solve_memory(
     except IntegrityError:
         await db.rollback()
         pet = await db.scalar(select(Pet).where(Pet.user_id == user.id))
-        return MemorySolveOut(
+        return ZipSolveOut(
             correct=True,
             coins_awarded=0,
             coins=pet.coins if pet else 0,
@@ -198,13 +281,13 @@ async def solve_memory(
             message="Награда за сегодня уже получена.",
         )
 
-    pet.coins = (pet.coins or 0) + MEMORY_REWARD
+    pet.coins = (pet.coins or 0) + ZIP_REWARD
     await db.commit()
     await db.refresh(pet)
-    return MemorySolveOut(
+    return ZipSolveOut(
         correct=True,
-        coins_awarded=MEMORY_REWARD,
+        coins_awarded=ZIP_REWARD,
         coins=pet.coins,
         already_solved=False,
-        message=f"Пары собраны! +{MEMORY_REWARD} монет",
+        message=f"Zip пройден! +{ZIP_REWARD} монет",
     )

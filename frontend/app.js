@@ -105,6 +105,12 @@
     String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = (name) =>
     (name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  const formatDuration = (seconds) => {
+    const total = Math.max(0, Number(seconds || 0));
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
   try {
     state.caseSoundMuted = localStorage.getItem('petpro_case_sound_muted') === '1';
   } catch (e) {}
@@ -760,6 +766,7 @@
     sel.value = state.wsId;
     sel.onchange = () => {
       state.wsId = sel.value;
+      sudoku.loaded = false;
       go('dashboard');
     };
   }
@@ -770,6 +777,7 @@
     const ws = await api.post('/workspaces', { name: name.trim() });
     state.workspaces.push(ws);
     state.wsId = ws.id;
+    sudoku.loaded = false;
     renderWorkspacePicker();
     toast('Лаборатория создана', 'xp');
     go('lab');
@@ -2282,16 +2290,16 @@
       btn.classList.toggle('on', btn.dataset.miniGame === active);
     });
     const sudokuPanel = $('#sudokuGame');
-    const memoryPanel = $('#memoryGame');
+    const zipPanel = $('#zipGame');
     if (sudokuPanel) sudokuPanel.hidden = active !== 'sudoku';
-    if (memoryPanel) memoryPanel.hidden = active !== 'memory';
+    if (zipPanel) zipPanel.hidden = active !== 'zip';
   }
 
   async function openMiniGame(name) {
     state.miniGame = name;
     renderMiniGameChoice();
     if (name === 'sudoku' && !sudoku.loaded) await loadSudoku();
-    if (name === 'memory') await loadMemory();
+    if (name === 'zip') await loadZip();
   }
 
   function renderDailyBonus() {
@@ -2305,7 +2313,63 @@
   }
 
   /* ──────────────── ежедневная судоку 6×6 ──────────────── */
-  const sudoku = { loaded: false, size: 6, br: 2, bc: 3, puzzle: null, cells: null, sel: null, solved: false };
+  const sudoku = {
+    loaded: false,
+    size: 6,
+    br: 2,
+    bc: 3,
+    puzzle: null,
+    cells: null,
+    sel: null,
+    solved: false,
+    startedAt: null,
+    timerId: null,
+    bestSeconds: null,
+  };
+
+  function sudokuElapsedSeconds() {
+    if (!sudoku.startedAt) return 0;
+    return Math.max(1, Math.floor((Date.now() - sudoku.startedAt) / 1000));
+  }
+
+  function updateSudokuTimer() {
+    const timer = $('#sudokuTimer');
+    if (timer) timer.textContent = formatDuration(sudokuElapsedSeconds());
+  }
+
+  function startSudokuTimer() {
+    sudoku.startedAt = Date.now();
+    if (sudoku.timerId) clearInterval(sudoku.timerId);
+    updateSudokuTimer();
+    sudoku.timerId = setInterval(updateSudokuTimer, 1000);
+  }
+
+  async function loadSudokuLeaderboard() {
+    const box = $('#sudokuLeaderboard');
+    if (!box || !state.wsId) return;
+    try {
+      const rows = await api.get(`/workspaces/${state.wsId}/sudoku/leaderboard`);
+      const mine = rows.find((row) => row.is_me);
+      if (mine) {
+        sudoku.bestSeconds = mine.seconds;
+        const best = $('#sudokuBest');
+        if (best) best.textContent = formatDuration(mine.seconds);
+      }
+      if (!rows.length) {
+        box.innerHTML = '<div class="sudoku-rank-empty">Пока нет результатов за сегодня.</div>';
+        return;
+      }
+      box.innerHTML = rows.slice(0, 10).map((row, idx) => `
+        <div class="sudoku-rank ${row.is_me ? 'me' : ''}">
+          <span>#${idx + 1}</span>
+          <span class="sudoku-rank-name">${esc(row.name)}</span>
+          <span class="sudoku-rank-time">${formatDuration(row.seconds)}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      box.innerHTML = '<div class="sudoku-rank-empty">Рейтинг сейчас недоступен.</div>';
+    }
+  }
 
   async function loadSudoku() {
     try {
@@ -2318,14 +2382,18 @@
       sudoku.cells = d.puzzle.map((row) => row.slice());
       sudoku.loaded = true;
       sudoku.solved = d.solved_today;
+      sudoku.bestSeconds = d.best_seconds ?? null;
       $('#sudokuReward').textContent = d.reward;
+      $('#sudokuBest').textContent = sudoku.bestSeconds ? formatDuration(sudoku.bestSeconds) : '—';
       $('#sudokuStatus').textContent = d.solved_today ? '✓ решена сегодня' : 'не решена';
       $('#sudokuStatus').classList.toggle('xp', d.solved_today);
       $('#sudokuMsg').textContent = d.solved_today
         ? 'Сегодня уже пройдена. Возвращайся завтра за новой 🎉'
         : '';
+      startSudokuTimer();
       renderSudokuBoard();
       renderSudokuPad();
+      await loadSudokuLeaderboard();
     } catch (err) {
       $('#sudokuMsg').textContent = err.message || 'Не удалось загрузить судоку';
     }
@@ -2404,6 +2472,7 @@
     sudoku.cells = sudoku.puzzle.map((row) => row.slice());
     sudoku.sel = null;
     $('#sudokuMsg').textContent = '';
+    startSudokuTimer();
     renderSudokuBoard();
   });
 
@@ -2418,12 +2487,16 @@
     const btn = $('#sudokuCheck');
     btn.disabled = true;
     try {
-      const res = await api.post('/games/sudoku/solve', { solution: sudoku.cells });
+      const seconds = sudokuElapsedSeconds();
+      const res = await api.post('/games/sudoku/solve', { solution: sudoku.cells, seconds });
       $('#sudokuMsg').textContent = res.message;
       if (res.correct) {
         sudoku.solved = true;
+        sudoku.bestSeconds = res.best_seconds ?? sudoku.bestSeconds;
+        $('#sudokuBest').textContent = sudoku.bestSeconds ? formatDuration(sudoku.bestSeconds) : '—';
         $('#sudokuStatus').textContent = '✓ решена сегодня';
         $('#sudokuStatus').classList.add('xp');
+        await loadSudokuLeaderboard();
         if (res.coins_awarded > 0) {
           toast(`+${res.coins_awarded} монет за судоку 🪙`, 'xp');
           await refreshPet();
@@ -2436,74 +2509,139 @@
     }
   });
 
-  const memory = {
-    cards: [],
-    opened: [],
-    matched: new Set(),
-    moves: 0,
-    pairs: 0,
-    maxMoves: 18,
-    reward: 35,
+  const zip = {
+    size: 7,
+    reward: 45,
+    markers: [],
+    markerMap: new Map(),
+    path: [],
     solved: false,
-    busy: false,
+    hint: null,
   };
 
-  async function loadMemory() {
+  function zipSolutionPath(size = 7) {
+    const path = [];
+    for (let r = 0; r < size; r++) {
+      const cols = r % 2 === 0
+        ? Array.from({ length: size }, (_, c) => c)
+        : Array.from({ length: size }, (_, c) => size - 1 - c);
+      cols.forEach((c) => path.push([r, c]));
+    }
+    return path;
+  }
+
+  function zipKey(r, c) {
+    return `${r}:${c}`;
+  }
+
+  function zipMarkerValue(r, c) {
+    return zip.markerMap.get(zipKey(r, c)) || null;
+  }
+
+  function nextZipMarker() {
+    let next = 1;
+    zip.path.forEach(([r, c]) => {
+      const v = zipMarkerValue(r, c);
+      if (v === next) next += 1;
+    });
+    return next;
+  }
+
+  function resetZipPath() {
+    zip.path = [];
+    zip.hint = null;
+    $('#zipMsg').textContent = '';
+    renderZipBoard();
+  }
+
+  async function loadZip() {
     try {
-      const d = await api.get('/games/memory/daily');
-      memory.cards = d.cards || [];
-      memory.opened = [];
-      memory.matched = new Set();
-      memory.moves = 0;
-      memory.pairs = 0;
-      memory.maxMoves = d.max_moves || 18;
-      memory.reward = d.reward || 35;
-      memory.solved = d.solved_today;
-      memory.busy = false;
-      $('#memoryReward').textContent = memory.reward;
-      $('#memoryMaxMoves').textContent = memory.maxMoves;
-      $('#memoryStatus').textContent = memory.solved ? '✓ решена сегодня' : 'не решена';
-      $('#memoryStatus').classList.toggle('xp', memory.solved);
-      $('#memoryMsg').textContent = memory.solved
-        ? 'Сегодня награда уже получена. Можно сыграть ещё раз без монет.'
+      const d = await api.get('/games/zip/daily');
+      zip.size = d.size || 7;
+      zip.reward = d.reward || 45;
+      zip.markers = d.markers || [];
+      zip.markerMap = new Map(zip.markers.map((m) => [zipKey(m.row, m.col), m.value]));
+      zip.path = [];
+      zip.hint = null;
+      zip.solved = d.solved_today;
+      $('#zipReward').textContent = zip.reward;
+      $('#zipStatus').textContent = zip.solved ? '✓ решена сегодня' : 'не решена';
+      $('#zipStatus').classList.toggle('xp', zip.solved);
+      $('#zipMsg').textContent = zip.solved
+        ? 'Сегодня награда уже получена. Можно пройти ещё раз без монет.'
         : '';
-      renderMemoryBoard();
+      renderZipBoard();
     } catch (err) {
-      $('#memoryMsg').textContent = err.message || 'Не удалось загрузить игру';
+      $('#zipMsg').textContent = err.message || 'Не удалось загрузить Zip';
     }
   }
 
-  function renderMemoryBoard() {
-    const board = $('#memoryBoard');
+  function renderZipBoard() {
+    const board = $('#zipBoard');
     if (!board) return;
-    $('#memoryMoves').textContent = memory.moves;
-    $('#memoryPairs').textContent = memory.pairs;
-    board.innerHTML = memory.cards.map((name, idx) => {
-      const open = memory.opened.includes(idx) || memory.matched.has(idx);
-      return `<button class="memory-cell ${open ? 'open' : ''} ${memory.matched.has(idx) ? 'matched' : ''}" data-memory-card="${idx}" ${open ? 'aria-pressed="true"' : ''}>
-        ${open ? iconImg(name, name, 'lg') : '<span>?</span>'}
-      </button>`;
-    }).join('');
+    const indexByCell = new Map(zip.path.map(([r, c], idx) => [zipKey(r, c), idx + 1]));
+    const next = Math.min(nextZipMarker(), 16);
+    $('#zipNext').textContent = next;
+    $('#zipCells').textContent = zip.path.length;
+    board.style.setProperty('--zip-size', zip.size);
+    let html = '';
+    for (let r = 0; r < zip.size; r++) {
+      for (let c = 0; c < zip.size; c++) {
+        const key = zipKey(r, c);
+        const marker = zipMarkerValue(r, c);
+        const order = indexByCell.get(key);
+        const hint = zip.hint && zip.hint[0] === r && zip.hint[1] === c;
+        html += `<button class="zip-cell ${order ? 'in-path' : ''} ${marker ? 'marker' : ''} ${hint ? 'hint' : ''}" data-zip-r="${r}" data-zip-c="${c}">
+          ${marker ? `<span class="zip-dot">${marker}</span>` : (order ? '<span class="zip-line"></span>' : '')}
+        </button>`;
+      }
+    }
+    board.innerHTML = html;
   }
 
-  async function finishMemory() {
+  function addZipCell(r, c) {
+    const key = zipKey(r, c);
+    if (zip.path.some(([pr, pc]) => zipKey(pr, pc) === key)) return;
+    const marker = zipMarkerValue(r, c);
+    const expected = nextZipMarker();
+    if (!zip.path.length) {
+      if (marker !== 1) {
+        $('#zipMsg').textContent = 'Начни с числа 1.';
+        return;
+      }
+    } else {
+      const [lr, lc] = zip.path[zip.path.length - 1];
+      if (Math.abs(lr - r) + Math.abs(lc - c) !== 1) {
+        $('#zipMsg').textContent = 'Следующая клетка должна быть рядом.';
+        return;
+      }
+      if (marker && marker !== expected) {
+        $('#zipMsg').textContent = `Сейчас нужно число ${expected}.`;
+        return;
+      }
+    }
+    zip.path.push([r, c]);
+    zip.hint = null;
+    $('#zipMsg').textContent = '';
+    renderZipBoard();
+    if (zip.path.length === zip.size * zip.size && nextZipMarker() === 17) finishZip();
+  }
+
+  async function finishZip() {
     try {
-      const res = await api.post('/games/memory/solve', {
-        moves: memory.moves,
-        matched_pairs: memory.pairs,
-      });
-      $('#memoryMsg').textContent = res.message;
+      const res = await api.post('/games/zip/solve', { path: zip.path });
+      $('#zipMsg').textContent = res.message;
       if (res.correct) {
-        memory.solved = true;
-        $('#memoryStatus').textContent = '✓ решена сегодня';
-        $('#memoryStatus').classList.add('xp');
+        zip.solved = true;
+        $('#zipStatus').textContent = '✓ решена сегодня';
+        $('#zipStatus').classList.add('xp');
         if (res.coins_awarded > 0) {
-          toast(`+${res.coins_awarded} монет за пары`, 'xp');
+          toast(`+${res.coins_awarded} монет за Zip`, 'xp');
           await refreshPet();
         }
       }
     } catch (err) {
-      $('#memoryMsg').textContent = err.message || 'Ошибка проверки';
+      $('#zipMsg').textContent = err.message || 'Ошибка проверки';
     }
   }
 
@@ -2513,50 +2651,32 @@
     openMiniGame(choice.dataset.miniGame);
   });
 
-  $('#memoryBack')?.addEventListener('click', () => {
+  $('#zipBack')?.addEventListener('click', () => {
     state.miniGame = null;
     renderMiniGameChoice();
   });
 
-  $('#memoryNew')?.addEventListener('click', () => loadMemory());
+  $('#zipUndo')?.addEventListener('click', () => {
+    zip.path.pop();
+    zip.hint = null;
+    renderZipBoard();
+  });
+
+  $('#zipClear')?.addEventListener('click', resetZipPath);
+
+  $('#zipHint')?.addEventListener('click', () => {
+    const solution = zipSolutionPath(zip.size);
+    const next = solution[zip.path.length];
+    if (!next) return;
+    zip.hint = next;
+    $('#zipMsg').textContent = 'Подсвечена следующая клетка.';
+    renderZipBoard();
+  });
 
   document.addEventListener('click', (e) => {
-    const card = e.target.closest('[data-memory-card]');
-    if (!card || state.miniGame !== 'memory' || memory.busy) return;
-    const idx = Number(card.dataset.memoryCard);
-    if (memory.moves >= memory.maxMoves && memory.pairs < 6) {
-      $('#memoryMsg').textContent = 'Ходы закончились. Попробуй новую раскладку.';
-      return;
-    }
-    if (memory.opened.includes(idx) || memory.matched.has(idx)) return;
-    if (memory.opened.length >= 2) return;
-
-    memory.opened.push(idx);
-    renderMemoryBoard();
-    if (memory.opened.length < 2) return;
-
-    memory.moves += 1;
-    const [a, b] = memory.opened;
-    const matched = memory.cards[a] === memory.cards[b];
-    if (matched) {
-      memory.matched.add(a);
-      memory.matched.add(b);
-      memory.pairs += 1;
-      memory.opened = [];
-      renderMemoryBoard();
-      if (memory.pairs >= 6) finishMemory();
-      return;
-    }
-
-    memory.busy = true;
-    setTimeout(() => {
-      memory.opened = [];
-      memory.busy = false;
-      renderMemoryBoard();
-      if (memory.moves >= memory.maxMoves) {
-        $('#memoryMsg').textContent = 'Ходы закончились. Попробуй новую раскладку.';
-      }
-    }, 650);
+    const cell = e.target.closest('[data-zip-r]');
+    if (!cell || state.miniGame !== 'zip') return;
+    addZipCell(Number(cell.dataset.zipR), Number(cell.dataset.zipC));
   });
 
   function itemPreview(it) {

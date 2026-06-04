@@ -209,10 +209,13 @@ class DailySudokuOut(BaseModel):
     puzzle: list[list[int]]   # 0 = пустая клетка
     reward: int               # сколько монет даётся за прохождение
     solved_today: bool        # уже пройдена сегодня этим пользователем
+    best_seconds: int | None = None
 
 
 class SudokuSolveIn(BaseModel):
     solution: list[list[int]]
+    seconds: int = Field(default=0, ge=0, le=86400)
+    hints_used: int = Field(default=0, ge=0)
 
 
 class SudokuSolveOut(BaseModel):
@@ -221,22 +224,23 @@ class SudokuSolveOut(BaseModel):
     coins: int                # текущий баланс монет
     already_solved: bool      # награда за сегодня уже выдана ранее
     message: str
+    best_seconds: int | None = None
+    seconds: int | None = None
 
 
-class DailyMemoryOut(BaseModel):
+class DailyZipOut(BaseModel):
     date: str
-    cards: list[str]
+    size: int
+    markers: list[dict]
     reward: int
-    max_moves: int
     solved_today: bool
 
 
-class MemorySolveIn(BaseModel):
-    moves: int = Field(ge=6, le=99)
-    matched_pairs: int = Field(ge=0, le=6)
+class ZipSolveIn(BaseModel):
+    path: list[list[int]]
 
 
-class MemorySolveOut(BaseModel):
+class ZipSolveOut(BaseModel):
     correct: bool
     coins_awarded: int
     coins: int

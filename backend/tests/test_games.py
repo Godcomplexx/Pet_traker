@@ -60,6 +60,54 @@ async def test_solve_awards_coins_once_per_day(client):
     assert sb["coins"] == coins_before + 50  # баланс не вырос
 
 
+async def test_sudoku_solve_records_and_improves_leaderboard_time(client):
+    tokens = await register(client, "ranked-solver@lab.ru", name="Ranked Solver")
+    h = auth_headers(tokens)
+    ws = (await client.post("/workspaces", json={"name": "Lab"}, headers=h)).json()
+
+    daily = await client.get("/games/sudoku/daily", headers=h)
+    day = date.fromisoformat(daily.json()["date"])
+    solution = sudoku.daily_puzzle(day)["solution"]
+
+    first = await client.post(
+        "/games/sudoku/solve",
+        json={"solution": solution, "seconds": 180},
+        headers=h,
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["best_seconds"] == 180
+
+    slower = await client.post(
+        "/games/sudoku/solve",
+        json={"solution": solution, "seconds": 240},
+        headers=h,
+    )
+    assert slower.status_code == 200, slower.text
+    assert slower.json()["coins_awarded"] == 0
+    assert slower.json()["best_seconds"] == 180
+
+    faster = await client.post(
+        "/games/sudoku/solve",
+        json={"solution": solution, "seconds": 95},
+        headers=h,
+    )
+    assert faster.status_code == 200, faster.text
+    assert faster.json()["best_seconds"] == 95
+
+    board = await client.get(f"/workspaces/{ws['id']}/sudoku/leaderboard", headers=h)
+    assert board.status_code == 200, board.text
+    rows = board.json()
+    assert rows == [
+        {
+            "user_id": rows[0]["user_id"],
+            "name": "Ranked Solver",
+            "seconds": 95,
+            "hints_used": 0,
+            "is_me": True,
+        }
+    ]
+
+
 async def test_solve_wrong_no_reward(client):
     tokens = await register(client, "wrong@lab.ru")
     h = auth_headers(tokens)
@@ -70,38 +118,48 @@ async def test_solve_wrong_no_reward(client):
     assert body["coins_awarded"] == 0
 
 
-async def test_memory_daily_endpoint(client):
-    tokens = await register(client, "memory@lab.ru")
+def zip_solution_path(size: int = 7) -> list[list[int]]:
+    path = []
+    for r in range(size):
+        cols = range(size) if r % 2 == 0 else range(size - 1, -1, -1)
+        for c in cols:
+            path.append([r, c])
+    return path
+
+
+async def test_zip_daily_endpoint(client):
+    tokens = await register(client, "zip@lab.ru")
     h = auth_headers(tokens)
-    r = await client.get("/games/memory/daily", headers=h)
+    r = await client.get("/games/zip/daily", headers=h)
     assert r.status_code == 200, r.text
     body = r.json()
-    assert body["reward"] == 35
-    assert body["max_moves"] == 18
+    assert body["reward"] == 45
+    assert body["size"] == 7
     assert body["solved_today"] is False
-    assert len(body["cards"]) == 12
-    assert len(set(body["cards"])) == 6
+    assert len(body["markers"]) == 16
+    assert body["markers"][0]["value"] == 1
+    assert body["markers"][-1]["value"] == 16
 
 
-async def test_memory_awards_once_per_day(client):
-    tokens = await register(client, "memory-solve@lab.ru")
+async def test_zip_awards_once_per_day(client):
+    tokens = await register(client, "zip-solve@lab.ru")
     h = auth_headers(tokens)
     coins_before = (await client.get("/pets/me", headers=h)).json()["coins"]
 
     first = await client.post(
-        "/games/memory/solve",
-        json={"moves": 10, "matched_pairs": 6},
+        "/games/zip/solve",
+        json={"path": zip_solution_path()},
         headers=h,
     )
     assert first.status_code == 200, first.text
     body = first.json()
     assert body["correct"] is True
-    assert body["coins_awarded"] == 35
-    assert body["coins"] == coins_before + 35
+    assert body["coins_awarded"] == 45
+    assert body["coins"] == coins_before + 45
 
     second = await client.post(
-        "/games/memory/solve",
-        json={"moves": 10, "matched_pairs": 6},
+        "/games/zip/solve",
+        json={"path": zip_solution_path()},
         headers=h,
     )
     body = second.json()
@@ -110,12 +168,12 @@ async def test_memory_awards_once_per_day(client):
     assert body["already_solved"] is True
 
 
-async def test_memory_wrong_no_reward(client):
-    tokens = await register(client, "memory-wrong@lab.ru")
+async def test_zip_wrong_no_reward(client):
+    tokens = await register(client, "zip-wrong@lab.ru")
     h = auth_headers(tokens)
     r = await client.post(
-        "/games/memory/solve",
-        json={"moves": 18, "matched_pairs": 5},
+        "/games/zip/solve",
+        json={"path": [[0, 0], [0, 1], [0, 2]]},
         headers=h,
     )
     body = r.json()
