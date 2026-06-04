@@ -1,1 +1,204 @@
-{}
+{
+  "char_agent_mike": {
+    "hat_16": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.75,
+      "hatOffsetX": -1.25,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_01": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 1.15,
+      "hatOffsetX": -3.25,
+      "hatOffsetY": 9,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 16.5,
+      "opaqueCenter": 19,
+      "hatScale": 1.2,
+      "hatOffsetX": -2.75,
+      "hatOffsetY": 8.75,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 19,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 16.5,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 24.5,
+      "opaqueCenter": 19,
+      "hatScale": 1.2,
+      "hatOffsetX": -3.75,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 24,
+      "opaqueCenter": 19,
+      "hatScale": 1.3,
+      "hatOffsetX": -3.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_09": {
+      "opaqueTop": 27,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.88,
+      "hatOffsetX": -2,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 22.5,
+      "opaqueCenter": 24,
+      "hatScale": 0.65,
+      "hatOffsetX": -4.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_10": {
+      "opaqueTop": 22,
+      "opaqueCenter": 18.5,
+      "hatScale": 1,
+      "hatOffsetX": -2,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_11": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_12": {
+      "opaqueTop": 17,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.88,
+      "hatOffsetX": -2,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_13": {
+      "opaqueTop": 17,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_14": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.7,
+      "hatOffsetX": -2,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_15": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.7,
+      "hatOffsetX": -2,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_17": {
+      "opaqueTop": 16.5,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.75,
+      "hatOffsetX": -2.25,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_18": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.75,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_19": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3.25,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_20": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_21": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.75,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_22": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.75,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_23": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.5,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_24": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -3.25,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_25": {
+      "opaqueTop": 17,
+      "opaqueCenter": 19,
+      "hatScale": 0.88,
+      "hatOffsetX": -2.75,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    }
+  }
+}
