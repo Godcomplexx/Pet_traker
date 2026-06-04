@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hat Tuner</title>
+  <style>
+    :root {
+      --bg: #f0f4ee;
+      --panel: #ffffff;
+      --line: #b9c4b4;
+      --ink: #253022;
+      --muted: #667060;
+      --accent: #2f7d46;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 13px/1.4 Arial, sans-serif;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 280px minmax(360px, 1fr) 340px;
+      min-height: 100vh;
+    }
+    aside, main {
+      min-width: 0;
+      border-right: 1px solid var(--line);
+    }
+    header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+    }
+    h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .muted { color: var(--muted); }
+    .list {
+      height: calc(100vh - 48px);
+      overflow: auto;
+      padding: 10px;
+    }
+    .search {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+    .items {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .item {
+      min-width: 0;
+      height: 92px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.5);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .item[data-on="true"] {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+      background: #f7fbf4;
+    }
+    .thumb {
+      height: 54px;
+      display: grid;
+      place-items: center;
+    }
+    .thumb img {
+      max-width: 64px;
+      max-height: 54px;
+      image-rendering: pixelated;
+      object-fit: contain;
+    }
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .preview-wrap {
+      display: grid;
+      grid-template-rows: 48px 1fr 170px;
+      min-height: 100vh;
+    }
+    .stage {
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+    canvas {
+      width: min(100%, 520px);
+      max-height: calc(100vh - 270px);
+      aspect-ratio: 1 / 1;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      image-rendering: pixelated;
+    }
+    .hat-strip {
+      border-top: 1px solid var(--line);
+      padding: 10px;
+      overflow: auto;
+      background: rgba(255,255,255,.4);
+    }
+    .hats {
+      display: grid;
+      grid-template-columns: repeat(5, 56px);
+      gap: 8px;
+      justify-content: center;
+    }
+    .hat {
+      height: 56px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .hat[data-on="true"] {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .hat img {
+      width: 42px;
+      height: 42px;
+      image-rendering: pixelated;
+      object-fit: contain;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: rgba(255,255,255,.55);
+    }
+    .control-body {
+      padding: 14px;
+      overflow: auto;
+      flex: 1;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 92px 1fr 54px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .row input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .value {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      text-align: right;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0 14px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    button.action {
+      height: 34px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      margin-top: 12px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      padding: 8px;
+      font: 11px/1.4 Consolas, monospace;
+      color: var(--ink);
+    }
+    .status {
+      min-height: 20px;
+      margin-top: 10px;
+      color: var(--muted);
+    }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside, main { border-right: 0; border-bottom: 1px solid var(--line); }
+      .list, .controls, .preview-wrap { min-height: auto; height: auto; }
+      .list { max-height: 360px; }
+      .preview-wrap { grid-template-rows: 48px auto auto; }
+      canvas { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <header>
+        <h1>Персонажи</h1>
+        <span class="muted" id="characterCount"></span>
+      </header>
+      <div class="list">
+        <input class="search" id="search" placeholder="поиск" />
+        <div class="items" id="characterList"></div>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <header>
+        <h1 id="currentTitle">Hat Tuner</h1>
+        <span class="muted" id="currentMeta"></span>
+      </header>
+      <section class="stage">
+        <canvas id="preview" width="520" height="520"></canvas>
+      </section>
+      <section class="hat-strip">
+        <div class="hats" id="hatList"></div>
+      </section>
+    </main>
+
+    <aside class="controls">
+      <header>
+        <h1>Настройка</h1>
+        <span class="muted" id="hatName"></span>
+      </header>
+      <div class="control-body">
+        <div class="row">
+          <label for="opaqueTop">top</label>
+          <input id="opaqueTop" type="range" min="-6" max="32" step="0.5" />
+          <span class="value" data-value="opaqueTop"></span>
+        </div>
+        <div class="row">
+          <label for="opaqueCenter">cx</label>
+          <input id="opaqueCenter" type="range" min="-12" max="64" step="0.5" />
+          <span class="value" data-value="opaqueCenter"></span>
+        </div>
+        <div class="row">
+          <label for="hatScale">scale</label>
+          <input id="hatScale" type="range" min="0.2" max="2.5" step="0.05" />
+          <span class="value" data-value="hatScale"></span>
+        </div>
+        <div class="row">
+          <label for="hatOffsetX">right</label>
+          <input id="hatOffsetX" type="range" min="-16" max="16" step="0.25" />
+          <span class="value" data-value="hatOffsetX"></span>
+        </div>
+        <div class="row">
+          <label for="hatOffsetY">down</label>
+          <input id="hatOffsetY" type="range" min="-16" max="16" step="0.25" />
+          <span class="value" data-value="hatOffsetY"></span>
+        </div>
+        <label class="toggle-row">
+          <span>flip</span>
+          <input id="hatFlip" type="checkbox" />
+        </label>
+
+        <div class="actions">
+          <button class="action primary" id="saveCombo">Сохранить пару</button>
+          <button class="action" id="clearCombo">Сбросить пару</button>
+          <button class="action" id="saveFile">Записать JSON</button>
+          <button class="action" id="copyJson">Копировать JSON</button>
+        </div>
+
+        <div class="status" id="status"></div>
+        <textarea id="output" spellcheck="false"></textarea>
+      </div>
+    </aside>
+  </div>
+
+  <script src="hat-tuner.js"></script>
+</body>
+</html>
