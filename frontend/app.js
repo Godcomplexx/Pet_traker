@@ -993,6 +993,7 @@
     hat_24: { bottom: 12, center: 0 },
     hat_25: { bottom: 13, center: 0 },
   };
+  const HAT_APP_NUDGE_Y = -2;
   const STATE_ICON = { happy: 'happy', ok: 'ok', sad: 'sad', hungry: 'hungry', sleepy: 'sleepy' };
   const PET_EMOTES = {
     alert: 'alert',
@@ -1101,7 +1102,7 @@
     const imageShiftY = (Number(fit.bottom || 0) / 30) * fittedHatSize;
     const imageShiftX = (-Number(fit.center || 0) / 30) * fittedHatSize * flip;
     const left = headLeft - fittedHatSize / 2 + imageShiftX;
-    const hatTop = top + boxHeight - fittedHatSize + imageShiftY;
+    const hatTop = top + boxHeight - fittedHatSize + imageShiftY + HAT_APP_NUDGE_Y;
 
     hat.style.setProperty('--pet-hat-left', `${Math.round(left)}px`);
     hat.style.setProperty('--pet-hat-top', `${Math.round(hatTop)}px`);
