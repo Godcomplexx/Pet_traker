@@ -205,21 +205,21 @@
     "hat_01": {
       "opaqueTop": 25,
       "opaqueCenter": 15.5,
-      "hatScale": 1.4,
-      "hatOffsetX": -1.5,
-      "hatOffsetY": 4.25,
-      "hatFlip": true
-    },
-    "hat_02": {
-      "opaqueTop": 24.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.2,
+      "hatScale": 1.25,
       "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
+    "hat_02": {
+      "opaqueTop": 25.5,
+      "opaqueCenter": 17,
+      "hatScale": 1.15,
+      "hatOffsetX": -1,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
     "hat_03": {
-      "opaqueTop": 16.5,
+      "opaqueTop": 16,
       "opaqueCenter": 15.5,
       "hatScale": 0.72,
       "hatOffsetX": 0,
@@ -227,23 +227,23 @@
       "hatFlip": true
     },
     "hat_04": {
-      "opaqueTop": 15,
+      "opaqueTop": 14.5,
       "opaqueCenter": 15.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
+      "hatScale": 1.45,
+      "hatOffsetX": 0.25,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_05": {
-      "opaqueTop": 13,
+      "opaqueTop": 23,
       "opaqueCenter": 15.5,
       "hatScale": 1.4,
-      "hatOffsetX": -2.5,
-      "hatOffsetY": 14.25,
+      "hatOffsetX": -1.25,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_06": {
-      "opaqueTop": 15,
+      "opaqueTop": 14.5,
       "opaqueCenter": 15.5,
       "hatScale": 0.72,
       "hatOffsetX": 0,
@@ -252,3323 +252,1845 @@
     },
     "hat_07": {
       "opaqueTop": 23,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.4,
+      "opaqueCenter": 15,
+      "hatScale": 1.5,
       "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_08": {
-      "opaqueTop": 21,
+      "opaqueTop": 13,
       "opaqueCenter": 15.5,
       "hatScale": 0.72,
-      "hatOffsetX": 3.25,
-      "hatOffsetY": 4.25,
+      "hatOffsetX": -1.5,
+      "hatOffsetY": 12.25,
       "hatFlip": true
     },
     "hat_09": {
-      "opaqueTop": 20.5,
-      "opaqueCenter": 16.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 4.75,
+      "opaqueTop": 25.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.1,
+      "hatOffsetX": -0.25,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_10": {
-      "opaqueTop": 19.5,
+      "opaqueTop": 20,
       "opaqueCenter": 15.5,
-      "hatScale": 1.15,
-      "hatOffsetX": -1,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
       "hatOffsetY": 4.25,
+      "hatFlip": true
+    }
+  },
+  "char_grizzly": {
+    "hat_16": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.85,
+      "hatOffsetX": -1,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_01": {
+      "opaqueTop": 25,
+      "opaqueCenter": 16.5,
+      "hatScale": 2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_02": {
+      "opaqueTop": 24.5,
+      "opaqueCenter": 13,
+      "hatScale": 1.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_03": {
+      "opaqueTop": 13,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_04": {
+      "opaqueTop": 9.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_05": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 15,
+      "hatScale": 1.55,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_06": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_07": {
+      "opaqueTop": 20,
+      "opaqueCenter": 15,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_08": {
+      "opaqueTop": 16.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.75,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_09": {
+      "opaqueTop": 25.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_10": {
+      "opaqueTop": 15.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_11": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_12": {
+      "opaqueTop": 12,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_13": {
+      "opaqueTop": 12,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_14": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.75,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_15": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.8,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_17": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.75,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_18": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.9,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_19": {
+      "opaqueTop": 12,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_20": {
+      "opaqueTop": 10.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_21": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_22": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_23": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_24": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    },
+    "hat_25": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": false
+    }
+  },
+  "char_gum_bot": {
+    "hat_01": {
+      "opaqueTop": 26.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.45,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 28.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.75,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 17.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 15,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 26.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 14,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 25,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 23,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_09": {
+      "opaqueTop": 28.5,
+      "opaqueCenter": 19.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_10": {
+      "opaqueTop": 22.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.3,
+      "hatOffsetX": 2.25,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_11": {
-      "opaqueTop": 15,
+      "opaqueTop": 14,
       "opaqueCenter": 15.5,
-      "hatScale": 0.72,
+      "hatScale": 0.89,
       "hatOffsetX": 0,
-      "hatOffsetY": 4.25,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_12": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
+      "opaqueTop": 14,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
       "hatOffsetX": 0,
-      "hatOffsetY": 4.25,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_13": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
+      "opaqueTop": 14,
+      "opaqueCenter": 16.5,
+      "hatScale": 0.89,
       "hatOffsetX": 0,
-      "hatOffsetY": 4.25,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_14": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4.25,
+      "opaqueTop": 15.5,
+      "opaqueCenter": 17.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_15": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 4.25,
+      "opaqueTop": 15.5,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_16": {
-      "opaqueTop": 17,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4.25,
+      "opaqueTop": 16.5,
+      "opaqueCenter": 18.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_17": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 4.25,
+      "opaqueTop": 15.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.15,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_18": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4.25,
+      "opaqueTop": 16.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_19": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15.5,
+      "opaqueTop": 17,
+      "opaqueCenter": 16,
       "hatScale": 1.15,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 4.75,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
       "hatFlip": true
     },
     "hat_20": {
       "opaqueTop": 15,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_21": {
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_22": {
+      "opaqueTop": 14,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.1,
+      "hatOffsetX": 0.75,
+      "hatOffsetY": 1.75,
+      "hatFlip": true
+    },
+    "hat_23": {
+      "opaqueTop": 14,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1.25,
+      "hatFlip": true
+    },
+    "hat_24": {
+      "opaqueTop": 14,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.89,
+      "hatOffsetX": 1.25,
+      "hatOffsetY": 1.25,
+      "hatFlip": true
+    },
+    "hat_25": {
+      "opaqueTop": 14,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.15,
+      "hatOffsetX": 1.25,
+      "hatOffsetY": 1.5,
+      "hatFlip": true
+    }
+  },
+  "char_hermie": {
+    "hat_01": {
+      "opaqueTop": 31,
+      "opaqueCenter": 17,
+      "hatScale": 1.3,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 29.5,
+      "opaqueCenter": 19,
+      "hatScale": 1.4,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 24.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 27.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.45,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 13.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 28,
+      "opaqueCenter": 17,
+      "hatScale": 1.6,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 25.5,
+      "opaqueCenter": 22.5,
+      "hatScale": 0.85,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_09": {
+      "opaqueTop": 30.5,
+      "opaqueCenter": 19.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_10": {
+      "opaqueTop": 25.5,
+      "opaqueCenter": 17,
+      "hatScale": 1.4,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_11": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 13.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_12": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 13.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_13": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 13,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_14": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_15": {
+      "opaqueTop": 20,
+      "opaqueCenter": 14.5,
+      "hatScale": 0.7,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_16": {
+      "opaqueTop": 20,
+      "opaqueCenter": 13.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_17": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 12.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_18": {
+      "opaqueTop": 21,
+      "opaqueCenter": 13,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_19": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 13,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_20": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 12,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_21": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 12.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_22": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 13.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_23": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_24": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 12.5,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    },
+    "hat_25": {
+      "opaqueTop": 19.5,
+      "opaqueCenter": 12,
+      "hatScale": 0.75,
+      "hatOffsetX": 1,
+      "hatOffsetY": 1,
+      "hatFlip": true
+    }
+  },
+  "char_jumpy_lumpy": {
+    "hat_01": {
+      "opaqueTop": 31,
+      "opaqueCenter": 14.5,
+      "hatScale": 1.35,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 31,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.3,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 23.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 21,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 28.5,
+      "opaqueCenter": 13.5,
+      "hatScale": 1.45,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 21,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 29,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 26.5,
+      "opaqueCenter": 13,
+      "hatScale": 0.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_09": {
+      "opaqueTop": 31.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_10": {
+      "opaqueTop": 25.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_11": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_12": {
+      "opaqueTop": 21.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_13": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_14": {
+      "opaqueTop": 22.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_15": {
+      "opaqueTop": 22,
+      "opaqueCenter": 17,
+      "hatScale": 0.6,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_16": {
+      "opaqueTop": 21.5,
+      "opaqueCenter": 17,
+      "hatScale": 0.6,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_17": {
+      "opaqueTop": 22,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_18": {
+      "opaqueTop": 21.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_19": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_20": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_21": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_22": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_23": {
+      "opaqueTop": 21,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_24": {
+      "opaqueTop": 21,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    },
+    "hat_25": {
+      "opaqueTop": 22.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.78,
+      "hatOffsetX": 0,
+      "hatOffsetY": 0,
+      "hatFlip": true
+    }
+  },
+  "char_lil_wiz": {
+    "hat_01": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 2.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 13,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.11,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 9.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.11,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 1.5,
+      "opaqueCenter": 12,
+      "hatScale": 0.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 21,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 17.5,
       "opaqueCenter": 15.5,
       "hatScale": 0.8,
       "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
-    "hat_21": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.75,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 0,
-      "hatOffsetY": 6.25,
-      "hatFlip": true
-    },
-    "hat_23": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.75,
-      "hatFlip": true
-    },
-    "hat_24": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 0,
-      "hatOffsetY": 6.25,
-      "hatFlip": true
-    },
-    "hat_25": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.72,
-      "hatOffsetX": 0,
-      "hatOffsetY": 6,
-      "hatFlip": true
-    }
-  },
-  "char_armand": {
-    "hat_25": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_01": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.65,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_02": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.65,
-      "hatOffsetX": 2.25,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15,
-      "hatScale": 1.75,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15,
-      "hatScale": 1.75,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": -0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
     "hat_09": {
-      "opaqueTop": 20,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
+      "opaqueTop": 24,
+      "opaqueCenter": 17,
+      "hatScale": 1.11,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_10": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 15,
+      "opaqueTop": 16.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.11,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_11": {
+      "opaqueTop": 8.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.11,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_12": {
+      "opaqueTop": 9,
+      "opaqueCenter": 15.5,
       "hatScale": 1.45,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 0.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 4,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 3,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 3.75,
+      "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
-    "hat_16": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 3.75,
-      "hatOffsetY": 4.5,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 3.5,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 3.25,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 3,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_21": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_23": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_24": {
-      "opaqueTop": 1,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    }
-  },
-  "char_ballooney": {
-    "hat_25": {
-      "opaqueTop": 3,
-      "opaqueCenter": 16,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_01": {
-      "opaqueTop": 17,
+    "hat_13": {
+      "opaqueTop": 8.5,
       "opaqueCenter": 15.5,
-      "hatScale": 1.4,
+      "hatScale": 1.11,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
-    "hat_02": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 14,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.8,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 21,
-      "hatScale": 0.75,
-      "hatOffsetX": -6,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_10": {
+    "hat_14": {
       "opaqueTop": 10,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.3,
+      "opaqueCenter": 17.5,
+      "hatScale": 1.11,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 6,
-      "opaqueCenter": 16,
-      "hatScale": 1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 6.5,
-      "opaqueCenter": 17,
-      "hatScale": 0.85,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_15": {
-      "opaqueTop": 6.5,
+      "opaqueTop": 9.5,
       "opaqueCenter": 17,
-      "hatScale": 0.95,
+      "hatScale": 1.11,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_16": {
-      "opaqueTop": 7,
+      "opaqueTop": 10.5,
       "opaqueCenter": 16.5,
-      "hatScale": 1,
+      "hatScale": 1.11,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_17": {
-      "opaqueTop": 5.5,
+      "opaqueTop": 11.5,
       "opaqueCenter": 15.5,
-      "hatScale": 0.95,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 3,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    }
-  },
-  "char_barry_cherry": {
-    "hat_25": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_01": {
-      "opaqueTop": 23.5,
-      "opaqueCenter": 16,
-      "hatScale": 1.2,
-      "hatOffsetX": -1,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 22.5,
-      "opaqueCenter": 16,
-      "hatScale": 1.3,
-      "hatOffsetX": -0.75,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 21.5,
-      "opaqueCenter": 16,
       "hatScale": 1.4,
       "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 19.5,
-      "opaqueCenter": 15,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 25,
-      "opaqueCenter": 16.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 19,
-      "opaqueCenter": 16,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16.5,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 17,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16.5,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_18": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_21": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_23": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    },
-    "hat_24": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.82,
-      "hatOffsetX": 0,
-      "hatOffsetY": 5.25,
-      "hatFlip": true
-    }
-  },
-  "char_big_red": {
-    "hat_25": {
       "opaqueTop": 13,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_01": {
-      "opaqueTop": 26.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.5,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_02": {
-      "opaqueTop": 27,
-      "opaqueCenter": 15,
-      "hatScale": 1.6,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 24.5,
-      "opaqueCenter": 12.5,
-      "hatScale": 1.7,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 25,
-      "opaqueCenter": 15,
-      "hatScale": 1.8,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 21.5,
-      "opaqueCenter": 13,
-      "hatScale": 0.9,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 29.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 20,
-      "opaqueCenter": 15,
-      "hatScale": 1.35,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 13.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 13.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 2.75,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 2.25,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 2.75,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 16,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_19": {
-      "opaqueTop": 16,
-      "opaqueCenter": 15,
-      "hatScale": 1.25,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 13,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.55,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_20": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 11.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_21": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
+      "opaqueTop": 12.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.6,
+      "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_22": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4,
+      "opaqueTop": 12.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_23": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 3.5,
+      "opaqueTop": 12.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.5,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_24": {
       "opaqueTop": 12,
-      "opaqueCenter": 15,
-      "hatScale": 1.06,
-      "hatOffsetX": 1,
-      "hatOffsetY": 2.75,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.45,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_25": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.5,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     }
   },
-  "char_blankey": {
-    "hat_25": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
+  "char_martian_red": {
     "hat_01": {
-      "opaqueTop": 19,
+      "opaqueTop": 24.5,
       "opaqueCenter": 15.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 0,
+      "hatScale": 1.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_02": {
+      "opaqueTop": 25,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 15.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 13.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.15,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
+      "hatFlip": true
+    },
+    "hat_05": {
       "opaqueTop": 23,
       "opaqueCenter": 15.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 9,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 19.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.55,
-      "hatOffsetX": -1.25,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 10,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": -0.75,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 19,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.55,
-      "hatOffsetX": -0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.75,
-      "hatOffsetX": -0.75,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 22.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.3,
-      "hatOffsetX": -0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 10,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 9,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 9.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.9,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.9,
-      "hatOffsetX": 1.25,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.85,
-      "hatOffsetX": 1.75,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 11,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.9,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 12,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 11,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 11,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_21": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_23": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_24": {
-      "opaqueTop": 11,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    }
-  },
-  "char_blocky_bub": {
-    "hat_01": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.1,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.9,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.2,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_08": {
-      "opaqueTop": 11,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 7.5,
       "hatScale": 1.7,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_10": {
-      "opaqueTop": 9.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_11": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_17": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.6,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.8,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.95,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.65,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_25": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    }
-  },
-  "char_bub": {
-    "hat_01": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 6.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 9,
-      "hatScale": 2.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 2.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_08": {
-      "opaqueTop": 11,
-      "opaqueCenter": 9,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 15,
-      "opaqueCenter": 8,
-      "hatScale": 1.7,
-      "hatOffsetX": -0.25,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_10": {
-      "opaqueTop": 9.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.9,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_11": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.6,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_25": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.65,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    }
-  },
-  "char_bumpy_the_robot": {
-    "hat_25": {
-      "opaqueTop": 3,
-      "opaqueCenter": 8,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_02": {
-      "opaqueTop": 13,
-      "opaqueCenter": 9.5,
-      "hatScale": 2.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.6,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 5.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_06": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 6.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 14,
-      "opaqueCenter": 9,
-      "hatScale": 2,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 7.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.7,
-      "hatOffsetX": -0.75,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.78,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0.75,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 1.25,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": -0.25,
-      "hatFlip": true
-    }
-  },
-  "char_bushly": {
-    "hat_25": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_01": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_02": {
       "opaqueTop": 12.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.1,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.72,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 6,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.55,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_05": {
-      "opaqueTop": 11,
-      "opaqueCenter": 7,
-      "hatScale": 2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_07": {
-      "opaqueTop": 11,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
+      "opaqueTop": 21.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.55,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_08": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 6.5,
-      "hatScale": 0.68,
+      "opaqueTop": 20,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.72,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_09": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.75,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 9,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.9,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 8,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_14": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 6.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 5,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 6,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 6,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_21": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_23": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_24": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    }
-  },
-  "char_chi_chi_the_bird": {
-    "hat_01": {
-      "opaqueTop": 15,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 13,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.65,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_08": {
-      "opaqueTop": 9,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 1.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_10": {
-      "opaqueTop": 9,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.95,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_11": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_17": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 5,
-      "opaqueCenter": 8,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_25": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    }
-  },
-  "char_daikon": {
-    "hat_01": {
-      "opaqueTop": 29,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 28.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.6,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 14,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 1.25,
-      "hatOffsetY": 5.5,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 17.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 26.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 17,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 26.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.7,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_08": {
       "opaqueTop": 24.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 1.25,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 29.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1,
+      "opaqueCenter": 17,
+      "hatScale": 1.1,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
+      "hatOffsetY": 4.25,
+      "hatFlip": true
     },
     "hat_10": {
-      "opaqueTop": 24.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
+      "opaqueTop": 18.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.2,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
+      "hatOffsetY": 4.25,
+      "hatFlip": true
     },
     "hat_11": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 19.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 18,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.68,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_17": {
-      "opaqueTop": 19,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 19,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 17,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 19,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 18.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_25": {
-      "opaqueTop": 17,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    }
-  },
-  "char_devo_the_devil": {
-    "hat_01": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 8.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 5.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 11.5,
-      "opaqueCenter": 9.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 3,
-      "opaqueCenter": 8.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 9,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_08": {
-      "opaqueTop": 9,
-      "opaqueCenter": 9,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 14.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_10": {
-      "opaqueTop": 7.5,
-      "opaqueCenter": 8,
-      "hatScale": 2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_11": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_17": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 7,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": -1,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.89,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 4,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_25": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    }
-  },
-  "char_diver_the_fish": {
-    "hat_25": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.3,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_01": {
       "opaqueTop": 13,
-      "opaqueCenter": 7,
-      "hatScale": 2.5,
-      "hatOffsetX": -0.25,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_02": {
-      "opaqueTop": 10.5,
-      "opaqueCenter": 7,
-      "hatScale": 2.2,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.72,
       "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_03": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_04": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.35,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_05": {
-      "opaqueTop": 10,
-      "opaqueCenter": 8.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_06": {
-      "opaqueTop": 1,
-      "opaqueCenter": 7,
-      "hatScale": 0.83,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_07": {
-      "opaqueTop": 11,
-      "opaqueCenter": 7,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_08": {
-      "opaqueTop": 7,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.83,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_09": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.85,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_10": {
-      "opaqueTop": 6.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_11": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 0.83,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
+      "hatOffsetY": 4.25,
+      "hatFlip": true
     },
     "hat_12": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.45,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_13": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_14": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_15": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_16": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.05,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_17": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_18": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_19": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_20": {
-      "opaqueTop": 3,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.6,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_21": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_22": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_23": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    },
-    "hat_24": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 7,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0.85,
-      "hatFlip": false
-    }
-  },
-  "char_fairy": {
-    "hat_01": {
-      "opaqueTop": 15,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_02": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_04": {
-      "opaqueTop": 7.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_05": {
       "opaqueTop": 13.5,
-      "opaqueCenter": 15,
-      "hatScale": 0.85,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_06": {
-      "opaqueTop": 7.5,
       "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_07": {
-      "opaqueTop": 14,
-      "opaqueCenter": 15.5,
-      "hatScale": 1,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_08": {
-      "opaqueTop": 13,
-      "opaqueCenter": 15,
-      "hatScale": 0.45,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 12.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 7.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 8,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "hatScale": 1.2,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_13": {
-      "opaqueTop": 9,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 13,
+      "opaqueCenter": 16,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_14": {
-      "opaqueTop": 9.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 17,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_15": {
-      "opaqueTop": 9,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 17.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_16": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_17": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14,
+      "opaqueCenter": 16.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_18": {
-      "opaqueTop": 8,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_19": {
-      "opaqueTop": 9,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_20": {
-      "opaqueTop": 8.5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 1,
+      "opaqueTop": 13.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_21": {
-      "opaqueTop": 5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4,
+      "opaqueTop": 13.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_22": {
-      "opaqueTop": 5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4.5,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_23": {
-      "opaqueTop": 5,
+      "opaqueTop": 13.5,
       "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
       "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_24": {
-      "opaqueTop": 5,
+      "opaqueTop": 13.5,
       "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 4,
+      "hatScale": 0.72,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     },
     "hat_25": {
-      "opaqueTop": 5,
-      "opaqueCenter": 15.5,
-      "hatScale": 0.52,
-      "hatOffsetX": 1,
-      "hatOffsetY": 3.5,
+      "opaqueTop": 14.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 4.25,
       "hatFlip": true
     }
   },
-  "char_geralt": {
-    "hat_25": {
-      "opaqueTop": 16,
-      "opaqueCenter": 17,
-      "hatScale": 0.95,
-      "hatOffsetX": -0.75,
-      "hatOffsetY": -1,
-      "hatFlip": true
-    },
+  "char_moe_scotty": {
     "hat_01": {
-      "opaqueTop": 26.5,
-      "opaqueCenter": 16,
-      "hatScale": 1.5,
+      "opaqueTop": 20,
+      "opaqueCenter": 19,
+      "hatScale": 2.05,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_02": {
-      "opaqueTop": 26.5,
+      "opaqueTop": 19.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.9,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_03": {
+      "opaqueTop": 10.5,
       "opaqueCenter": 16,
       "hatScale": 1.25,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_03": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_04": {
-      "opaqueTop": 14,
+      "opaqueTop": 7.5,
       "opaqueCenter": 16,
-      "hatScale": 0.55,
+      "hatScale": 1.25,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_05": {
-      "opaqueTop": 26.5,
-      "opaqueCenter": 16,
-      "hatScale": 1.7,
+      "opaqueTop": 15,
+      "opaqueCenter": 19.5,
+      "hatScale": 1.8,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_06": {
-      "opaqueTop": 16.5,
+      "opaqueTop": 6.5,
       "opaqueCenter": 16,
-      "hatScale": 0.55,
+      "hatScale": 0.95,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_07": {
-      "opaqueTop": 24.5,
-      "opaqueCenter": 16,
-      "hatScale": 1.4,
+      "opaqueTop": 16.5,
+      "opaqueCenter": 19,
+      "hatScale": 2.05,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_08": {
-      "opaqueTop": 22,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_09": {
-      "opaqueTop": 25.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_10": {
-      "opaqueTop": 21.5,
-      "opaqueCenter": 16.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_11": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_12": {
-      "opaqueTop": 17,
-      "opaqueCenter": 16,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_13": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16,
+      "opaqueTop": 13.5,
+      "opaqueCenter": 19,
       "hatScale": 1,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_09": {
+      "opaqueTop": 19,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_10": {
+      "opaqueTop": 13,
+      "opaqueCenter": 17.5,
+      "hatScale": 1.5,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_11": {
+      "opaqueTop": 6.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_12": {
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_13": {
+      "opaqueTop": 7.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_14": {
-      "opaqueTop": 17,
-      "opaqueCenter": 16.5,
-      "hatScale": 0.7,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_15": {
-      "opaqueTop": 17,
-      "opaqueCenter": 17,
-      "hatScale": 0.7,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_16": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 17.5,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_17": {
-      "opaqueTop": 16.5,
-      "opaqueCenter": 17,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_18": {
-      "opaqueTop": 15,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_19": {
-      "opaqueTop": 16,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_20": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_21": {
-      "opaqueTop": 16,
-      "opaqueCenter": 16,
-      "hatScale": 0.55,
-      "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
-    },
-    "hat_22": {
-      "opaqueTop": 15.5,
+      "opaqueTop": 7,
       "opaqueCenter": 16,
       "hatScale": 0.9,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_15": {
+      "opaqueTop": 6.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.7,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_16": {
+      "opaqueTop": 7.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.9,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_17": {
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_18": {
+      "opaqueTop": 7.5,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_19": {
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_20": {
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_21": {
+      "opaqueTop": 7.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_22": {
+      "opaqueTop": 8.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.25,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_23": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 17,
-      "hatScale": 0.65,
+      "opaqueTop": 8,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     },
     "hat_24": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 16.5,
-      "hatScale": 0.75,
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
       "hatOffsetX": 0,
-      "hatOffsetY": 0,
-      "hatFlip": true
+      "hatOffsetY": 1.3,
+      "hatFlip": false
+    },
+    "hat_25": {
+      "opaqueTop": 7,
+      "opaqueCenter": 16,
+      "hatScale": 0.9,
+      "hatOffsetX": 0,
+      "hatOffsetY": 1.3,
+      "hatFlip": false
     }
   },
-  "char_gloppy_slime": {
-    "hat_02": {
-      "opaqueTop": 15.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
+  "char_mr_chomps": {
+    "hat_01": {
+      "opaqueTop": 29.5,
+      "opaqueCenter": 11,
+      "hatScale": 1.95,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
-    "hat_01": {
-      "opaqueTop": 15,
-      "opaqueCenter": 11,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
+    "hat_02": {
+      "opaqueTop": 30,
+      "opaqueCenter": 8,
+      "hatScale": 1.5,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_03": {
-      "opaqueTop": 3,
-      "opaqueCenter": 8.5,
-      "hatScale": 0.7,
-      "hatOffsetX": 0,
+      "opaqueTop": 21.5,
+      "opaqueCenter": 11.5,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_04": {
-      "opaqueTop": 3,
-      "opaqueCenter": 8,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
+      "opaqueTop": 18.5,
+      "opaqueCenter": 9.5,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_05": {
-      "opaqueTop": 12.5,
+      "opaqueTop": 26.5,
       "opaqueCenter": 10.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
+      "hatScale": 1.55,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_06": {
-      "opaqueTop": 1.5,
+      "opaqueTop": 18.5,
       "opaqueCenter": 8,
       "hatScale": 0.7,
-      "hatOffsetX": 0,
+      "hatOffsetX": 4.75,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_07": {
-      "opaqueTop": 11,
-      "opaqueCenter": 10.5,
-      "hatScale": 2.5,
-      "hatOffsetX": 0,
+      "opaqueTop": 26.5,
+      "opaqueCenter": 11.5,
+      "hatScale": 1.65,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_08": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
+      "opaqueTop": 24,
+      "opaqueCenter": 11.5,
       "hatScale": 0.7,
-      "hatOffsetX": -2.25,
-      "hatOffsetY": 6.5,
+      "hatOffsetX": 2.1,
+      "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_09": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 2.25,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 16,
+      "opaqueTop": 32,
+      "opaqueCenter": 8,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
+      "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_10": {
-      "opaqueTop": 8.5,
+      "opaqueTop": 22.5,
       "opaqueCenter": 9.5,
-      "hatScale": 2.15,
-      "hatOffsetX": 0,
+      "hatScale": 1.05,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_11": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 0.7,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0,
-      "hatFlip": false
-    },
-    "hat_12": {
-      "opaqueTop": 2.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
+      "opaqueTop": 19,
+      "opaqueCenter": 12,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_13": {
-      "opaqueTop": 4,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.3,
-      "hatOffsetX": 0,
+      "opaqueTop": 19,
+      "opaqueCenter": 11.5,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_14": {
-      "opaqueTop": 3.5,
+      "opaqueTop": 19,
       "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0,
+      "hatScale": 0.6,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_15": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0,
+      "opaqueTop": 18.5,
+      "opaqueCenter": 9.5,
+      "hatScale": 0.8,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_16": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
+      "opaqueTop": 20.5,
+      "opaqueCenter": 9,
+      "hatScale": 1,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_17": {
-      "opaqueTop": 3.5,
+      "opaqueTop": 19.5,
       "opaqueCenter": 8,
-      "hatScale": 1.25,
-      "hatOffsetX": 0,
+      "hatScale": 0.95,
+      "hatOffsetX": 4.25,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_18": {
-      "opaqueTop": 4.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.4,
-      "hatOffsetX": 0,
+      "opaqueTop": 19,
+      "opaqueCenter": 9,
+      "hatScale": 0.95,
+      "hatOffsetX": 3.5,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_19": {
-      "opaqueTop": 3.5,
-      "opaqueCenter": 8,
-      "hatScale": 1.15,
-      "hatOffsetX": 0,
+      "opaqueTop": 19.5,
+      "opaqueCenter": 11,
+      "hatScale": 1.1,
+      "hatOffsetX": 2.1,
       "hatOffsetY": 0,
       "hatFlip": false
     },
     "hat_20": {
-      "opaqueTop": 3,
-      "opaqueCenter": 8.5,
-      "hatScale": 1.15,
-      "hatOffsetX": -0.5,
-      "hatOffsetY": 0,
+      "opaqueTop": 17,
+      "opaqueCenter": 10.5,
+      "hatScale": 1,
+      "hatOffsetX": 2,
+      "hatOffsetY": 1.75,
       "hatFlip": false
     },
     "hat_21": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.05,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0.25,
+      "opaqueTop": 17,
+      "opaqueCenter": 11,
+      "hatScale": 0.95,
+      "hatOffsetX": 2.1,
+      "hatOffsetY": 2,
       "hatFlip": false
     },
     "hat_22": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.25,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 0.5,
+      "opaqueTop": 17,
+      "opaqueCenter": 8,
+      "hatScale": 0.95,
+      "hatOffsetX": 4.25,
+      "hatOffsetY": 1.5,
       "hatFlip": false
     },
     "hat_23": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.1,
-      "hatOffsetX": 0.25,
-      "hatOffsetY": 1,
+      "opaqueTop": 17,
+      "opaqueCenter": 8,
+      "hatScale": 0.95,
+      "hatOffsetX": 4.75,
+      "hatOffsetY": 2.25,
       "hatFlip": false
     },
     "hat_24": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.15,
-      "hatOffsetX": 0.25,
+      "opaqueTop": 17,
+      "opaqueCenter": 8,
+      "hatScale": 0.95,
+      "hatOffsetX": 4,
       "hatOffsetY": 1.75,
       "hatFlip": false
     },
     "hat_25": {
-      "opaqueTop": 2,
-      "opaqueCenter": 7.5,
-      "hatScale": 1.2,
-      "hatOffsetX": 0.5,
-      "hatOffsetY": 1.5,
+      "opaqueTop": 17,
+      "opaqueCenter": 8,
+      "hatScale": 0.95,
+      "hatOffsetX": 5,
+      "hatOffsetY": 2.25,
       "hatFlip": false
+    }
+  },
+  "char_mr_circuit": {
+    "hat_25": {
+      "opaqueTop": 13.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_01": {
+      "opaqueTop": 22.5,
+      "opaqueCenter": 15,
+      "hatScale": 1.45,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_02": {
+      "opaqueTop": 23.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.5,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_03": {
+      "opaqueTop": 14.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_04": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.15,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_05": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 15,
+      "hatScale": 1.55,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_06": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.65,
+      "hatOffsetX": 1.5,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_07": {
+      "opaqueTop": 20.5,
+      "opaqueCenter": 15,
+      "hatScale": 1.45,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_08": {
+      "opaqueTop": 17.5,
+      "opaqueCenter": 15,
+      "hatScale": 0.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_09": {
+      "opaqueTop": 24,
+      "opaqueCenter": 17.5,
+      "hatScale": 1.1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_10": {
+      "opaqueTop": 17.5,
+      "opaqueCenter": 15.5,
+      "hatScale": 1.3,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_11": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15,
+      "hatScale": 0.65,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_12": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_13": {
+      "opaqueTop": 11,
+      "opaqueCenter": 15.5,
+      "hatScale": 0.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_14": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 17.5,
+      "hatScale": 0.8,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_15": {
+      "opaqueTop": 12,
+      "opaqueCenter": 17.5,
+      "hatScale": 0.8,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_16": {
+      "opaqueTop": 12,
+      "opaqueCenter": 17.5,
+      "hatScale": 0.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_17": {
+      "opaqueTop": 11.5,
+      "opaqueCenter": 16,
+      "hatScale": 0.85,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_18": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_19": {
+      "opaqueTop": 13,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_20": {
+      "opaqueTop": 13,
+      "opaqueCenter": 16,
+      "hatScale": 0.95,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_21": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_22": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16,
+      "hatScale": 1.05,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_23": {
+      "opaqueTop": 12,
+      "opaqueCenter": 16,
+      "hatScale": 1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
+    },
+    "hat_24": {
+      "opaqueTop": 12.5,
+      "opaqueCenter": 16.5,
+      "hatScale": 1.1,
+      "hatOffsetX": 0,
+      "hatOffsetY": 2.1,
+      "hatFlip": true
     }
   }
 }

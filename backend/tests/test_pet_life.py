@@ -124,7 +124,8 @@ async def test_can_buy_and_equip_room_decor(client):
     headers = auth_headers(tokens)
 
     catalog = await client.get("/shop/items", headers=headers)
-    assert any(item["id"] == "decor_flower_pot" for item in catalog.json()["items"])
+    decor_items = [item for item in catalog.json()["items"] if item["type"] == "decor"]
+    assert {item["id"] for item in decor_items} >= {"decor_flower_pot", "decor_plant_sprout"}
 
     async with SessionLocal() as db:
         pet = await db.scalar(select(Pet).where(Pet.user.has(email="decor@lab.ru")))
@@ -137,7 +138,13 @@ async def test_can_buy_and_equip_room_decor(client):
 
     equipped = await client.post("/shop/equip", json={"item_id": "decor_flower_pot"}, headers=headers)
     assert equipped.status_code == 200, equipped.text
-    assert equipped.json()["equipped"]["decor"] == "decor_flower_pot"
+    assert equipped.json()["equipped"]["decor"] == ["decor_flower_pot"]
+
+    bought_second = await client.post("/shop/buy", json={"item_id": "decor_plant_sprout"}, headers=headers)
+    assert bought_second.status_code == 200, bought_second.text
+    equipped_second = await client.post("/shop/equip", json={"item_id": "decor_plant_sprout"}, headers=headers)
+    assert equipped_second.status_code == 200, equipped_second.text
+    assert set(equipped_second.json()["equipped"]["decor"]) == {"decor_flower_pot", "decor_plant_sprout"}
 
 
 async def test_pet_play_respects_stats(client):

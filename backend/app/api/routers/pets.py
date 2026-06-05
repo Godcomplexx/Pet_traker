@@ -424,6 +424,32 @@ async def shop_equip(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Еду нельзя надеть")
     if data.item_id not in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет не куплен")
+    if item["type"] == "decor":
+        current = equipped.get("decor") or []
+        if isinstance(current, str):
+            current = [current]
+        decor = [str(item_id) for item_id in current if get_item(str(item_id))]
+        if data.item_id in decor:
+            decor = [item_id for item_id in decor if item_id != data.item_id]
+        else:
+            slot = (item.get("data") or {}).get("slot") if isinstance(item.get("data"), dict) else None
+            if slot:
+                decor = [
+                    item_id for item_id in decor
+                    if not (
+                        isinstance((get_item(item_id) or {}).get("data"), dict)
+                        and (get_item(item_id) or {}).get("data", {}).get("slot") == slot
+                    )
+                ]
+            decor.append(data.item_id)
+        if decor:
+            equipped["decor"] = decor
+        else:
+            equipped.pop("decor", None)
+        pet.equipped = equipped
+        await db.commit()
+        await db.refresh(pet)
+        return _to_out(pet)
     # toggle: если уже надет этот предмет — снимаем, иначе надеваем
     if equipped.get(item["type"]) == data.item_id:
         equipped.pop(item["type"], None)

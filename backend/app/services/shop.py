@@ -60,7 +60,11 @@ SHOP_ITEMS: list[dict] = [
     {"id": "bg_candy",    "name": "Конфета",    "type": "bg", "rarity": "epic",   "price": 150, "data": "#6f3d61"},
     {"id": "bg_gold",     "name": "Сокровище",  "type": "bg", "rarity": "legendary", "price": 360, "data": "#6b4b16"},
     # ── декор комнаты ──
-    {"id": "decor_flower_pot", "name": "Цветок", "type": "decor", "rarity": "common", "price": 55, "data": "flower_pot.png"},
+    {"id": "decor_plant_sprout", "name": "Росток", "type": "decor", "rarity": "common", "price": 45, "data": {"file": "plant_sprout.png", "slot": "floor-left"}},
+    {"id": "decor_plant_leafy", "name": "Листья", "type": "decor", "rarity": "common", "price": 55, "data": {"file": "plant_leafy.png", "slot": "floor-right"}},
+    {"id": "decor_flower_pot", "name": "Цветок", "type": "decor", "rarity": "common", "price": 55, "data": {"file": "flower_pot.png", "slot": "floor-right"}},
+    {"id": "decor_plant_orange", "name": "Оранжевый цветок", "type": "decor", "rarity": "rare", "price": 85, "data": {"file": "plant_orange.png", "slot": "shelf-left"}},
+    {"id": "decor_plant_tall", "name": "Высокий цветок", "type": "decor", "rarity": "rare", "price": 95, "data": {"file": "plant_tall.png", "slot": "shelf-right"}},
     # ── еда (расходуется при кормлении питомца) ──
     {"id": "food_banana",  "name": "Банан",      "type": "food", "rarity": "common", "price": 12, "data": {"icon": "food_banana", "hunger": 10, "mood": 1, "energy": 0}},
     {"id": "food_berry",   "name": "Ягоды",      "type": "food", "rarity": "common", "price": 10, "data": {"icon": "food_berry", "hunger": 8, "mood": 3, "energy": 0}},

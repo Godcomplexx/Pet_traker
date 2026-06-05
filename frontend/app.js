@@ -1014,8 +1014,9 @@
   }
 
   function decorAssetSrc(it) {
-    if (it?.type !== 'decor' || typeof it.data !== 'string' || !/\.png$/i.test(it.data)) return '';
-    return `assets/decor/${it.data}`;
+    const file = typeof it?.data === 'string' ? it.data : it?.data?.file;
+    if (it?.type !== 'decor' || typeof file !== 'string' || !/\.png$/i.test(file)) return '';
+    return `assets/decor/${file}`;
   }
 
   function decorImg(it, className = 'decor-icon') {
@@ -1095,17 +1096,19 @@
     const eq = pet.equipped || {};
     const hatItem = eq.hat && SHOP_INDEX[eq.hat];
     const bgItem = eq.bg && SHOP_INDEX[eq.bg];
-    const decorItem = eq.decor && SHOP_INDEX[eq.decor];
+    const decorIds = Array.isArray(eq.decor) ? eq.decor : (eq.decor ? [eq.decor] : []);
+    const decorItems = decorIds.map((id) => SHOP_INDEX[id]).filter((it) => it?.type === 'decor');
     $$('.petscreen').forEach((screen) => {
       screen.querySelector('.pixelpet')?.remove();
       screen.querySelector('.pet-hat')?.remove();
-      screen.querySelector('.pet-decor')?.remove();
+      screen.querySelectorAll('.pet-decor').forEach((el) => el.remove());
       screen.querySelectorAll('.pet-emote.state-emote').forEach((el) => el.remove());
       // фон из экипировки (если есть) — иначе сбрасываем к стилю по умолчанию
       screen.style.background = bgItem ? bgItem.data : '';
-      if (decorItem) {
+      const visibleDecor = screen.classList.contains('pet-room-screen') ? decorItems : [];
+      visibleDecor.forEach((decorItem) => {
         const decor = document.createElement('div');
-        decor.className = 'pet-decor';
+        decor.className = `pet-decor decor-${decorItem.data?.slot || 'floor-right'}`;
         const src = decorAssetSrc(decorItem);
         if (src) {
           const img = document.createElement('img');
@@ -1117,7 +1120,7 @@
           decor.appendChild(iconNode(itemIcon(decorItem), 'lg'));
         }
         screen.appendChild(decor);
-      }
+      });
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
@@ -3086,7 +3089,11 @@
   function inventoryCard(it, compact = false) {
     const pet = state.pet || {};
     const eq = pet.equipped || {};
-    const equipped = it.type === 'character' ? pet.species === it.id : eq[it.type] === it.id;
+    const equipped = it.type === 'character'
+      ? pet.species === it.id
+      : it.type === 'decor'
+        ? (Array.isArray(eq.decor) ? eq.decor.includes(it.id) : eq.decor === it.id)
+        : eq[it.type] === it.id;
     const actionText = it.type === 'character'
       ? (equipped ? 'выбран' : 'выбрать')
       : it.type === 'decor'
