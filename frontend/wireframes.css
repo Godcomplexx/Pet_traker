@@ -445,6 +445,7 @@ a:hover{ color: var(--xp2); }
   display: grid;
   grid-template-columns: var(--sidebar) 1fr;
   min-height: 100vh;
+  min-width: 0;
 }
 [data-density="compact"] #app { grid-template-columns: 210px 1fr; }
 
@@ -790,6 +791,7 @@ a:hover{ color: var(--xp2); }
 .main {
   padding: 28px 32px 64px;
   overflow: auto;
+  min-width: 0;
 }
 [data-density="compact"] .main { padding: 14px 18px 40px; }
 
@@ -815,7 +817,11 @@ a:hover{ color: var(--xp2); }
   color: var(--ink2);
 }
 
-.screen { display: none; animation: fade .18s ease; }
+.screen {
+  display: none;
+  animation: fade .18s ease;
+  min-width: 0;
+}
 .screen.on { display: block; }
 @keyframes fade { from { opacity:0; transform:translateY(4px); } to { opacity:1; } }
 
@@ -942,7 +948,16 @@ small, .sm { font-size: var(--fs-xs); }
 /* ============================================================
    KANBAN BOARD
    ============================================================ */
-.board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 14px; }
+.board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
+  padding-bottom: 14px;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+}
 .colm  { flex: 0 0 224px; display: flex; flex-direction: column; gap: 8px; }
 [data-density="compact"] .colm { flex-basis: 192px; }
 
@@ -997,24 +1012,31 @@ small, .sm { font-size: var(--fs-xs); }
 .board-search { max-width: 240px; }
 
 .kcol {
-  flex: 0 0 240px;
+  flex: 0 0 clamp(196px, 16vw, 232px);
   display: flex;
   flex-direction: column;
   background: rgba(120,135,110,0.07);
   border: 1px solid rgba(255,255,255,0.5);
-  border-radius: 14px;
+  border-radius: 12px;
   max-height: calc(100vh - 220px);
+  min-width: 0;
 }
-[data-density="compact"] .kcol { flex-basis: 208px; }
+[data-density="compact"] .kcol { flex-basis: clamp(184px, 15vw, 208px); }
 .kcol-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 9px 10px;
   font-family: 'Press Start 2P', monospace;
   font-size: var(--fs-xs);
   color: var(--ink2);
   border-bottom: 1px solid rgba(255,255,255,0.5);
+}
+.kcol-head b {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .kcol-cnt {
   margin-left: auto;
@@ -1032,6 +1054,7 @@ small, .sm { font-size: var(--fs-xs); }
   min-height: 60px;
   flex: 1;
   transition: background .12s;
+  min-width: 0;
 }
 .kcol-body.drop-hover {
   background: rgba(160,116,144,0.12);
@@ -1050,14 +1073,15 @@ small, .sm { font-size: var(--fs-xs); }
 .kcard {
   background: var(--paper);
   border: 1px solid rgba(255,255,255,0.65);
-  border-radius: 12px;
-  padding: 10px 11px;
+  border-radius: 10px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 7px;
   cursor: grab;
   box-shadow: 0 2px 8px rgba(100,120,95,0.08);
   transition: box-shadow .14s, transform .08s;
+  min-width: 0;
 }
 .kcard:hover { box-shadow: 0 6px 20px rgba(100,120,95,0.16); }
 .kcard:active { cursor: grabbing; }
@@ -1069,6 +1093,7 @@ small, .sm { font-size: var(--fs-xs); }
   line-height: 1.5;
   color: var(--ink);
   cursor: pointer;
+  overflow-wrap: anywhere;
 }
 .kcard-title:hover { color: var(--accent); }
 .kcard-desc { font-size: var(--fs-xs); color: var(--ink3); line-height: 1.4; }
@@ -1688,6 +1713,26 @@ textarea.input { resize: vertical; min-height: 70px; }
   box-shadow: 0 0 0 3px rgba(184,149,58,0.18) inset, 0 10px 30px rgba(100,120,95,0.16);
 }
 
+.pet-decor {
+  position: absolute;
+  right: 10%;
+  bottom: 12%;
+  width: clamp(34px, 18%, 58px);
+  aspect-ratio: 1;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 4px rgba(35,42,32,0.14));
+}
+.pet-decor-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
 .pet-emote {
   position: absolute;
   top: 12%;
@@ -2097,23 +2142,31 @@ textarea.input { resize: vertical; min-height: 70px; }
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
+  align-items: stretch;
 }
 .dock-bag .shopcard {
   padding: 7px 5px 6px;
   min-height: 66px;
+  justify-content: center;
+  gap: 3px;
+  box-sizing: border-box;
 }
 .dock-bag .shopcard .swatch-prev {
   width: 28px;
   height: 28px;
-  margin-bottom: 3px;
+  margin: 0 auto;
 }
 .dock-bag .shopcard .swatch-prev .ui-icon {
   width: 20px;
   height: 20px;
 }
 .dock-bag .shopcard .hat-icon {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
+}
+.dock-bag .shopcard .decor-icon {
+  width: 24px;
+  height: 24px;
 }
 .dock-bag .shopcard .sm {
   font-size: 7px;
@@ -2121,6 +2174,8 @@ textarea.input { resize: vertical; min-height: 70px; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 100%;
+  margin-top: 0 !important;
 }
 .dock-bag-pager {
   display: flex;
@@ -2187,6 +2242,11 @@ textarea.input { resize: vertical; min-height: 70px; }
   border: 1px dashed var(--border2);
   border-radius: var(--r2);
   background: rgba(255,255,255,0.18);
+  box-sizing: border-box;
+}
+.dock-bag .food-slot.empty,
+.dock-bag .fooditem {
+  min-height: 66px;
 }
 .food-shop-cta {
   min-height: 76px;
@@ -2663,6 +2723,11 @@ textarea.input { resize: vertical; min-height: 70px; }
   cursor: pointer;
   background: rgba(255,255,255,0.30);
   transition: background .12s, border-color .12s, transform .08s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
 }
 .shopcard:hover { background: rgba(255,255,255,0.55); transform: translateY(-2px); }
 .shopcard.owned { border-color: var(--xp); }
@@ -2679,23 +2744,46 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: 36px; height: 36px; margin: 0 auto 6px;
   border-radius: 50%;
   border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
+  display: grid; place-items: center;
   font-size: 20px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .shopcard .swatch-prev.hat-prev {
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.46);
+}
+.shopcard .swatch-prev.decor-prev {
   border-radius: var(--r2);
   background: rgba(255,255,255,0.46);
 }
 .shopcard .swatch-prev .ui-icon {
   width: 24px;
   height: 24px;
+  display: block;
 }
 .shopcard .hat-icon {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: center;
   image-rendering: pixelated;
+  display: block;
+}
+.shopcard .decor-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+  display: block;
+}
+.shopcard .nm,
+.shopcard .rar,
+.shopcard .sm {
+  max-width: 100%;
+  text-align: center;
 }
 .pet-hat .ui-icon {
   width: calc(var(--pet-hat-img-size, 64px) * .55);

@@ -1013,6 +1013,18 @@
       : iconImg(itemIcon(it), it.name, 'lg');
   }
 
+  function decorAssetSrc(it) {
+    if (it?.type !== 'decor' || typeof it.data !== 'string' || !/\.png$/i.test(it.data)) return '';
+    return `assets/decor/${it.data}`;
+  }
+
+  function decorImg(it, className = 'decor-icon') {
+    const src = decorAssetSrc(it);
+    return src
+      ? `<img class="${className}" src="${esc(src)}" alt="${esc(it.name || '')}">`
+      : iconImg(itemIcon(it), it.name, 'lg');
+  }
+
   function emoteImg(name, alt = '') {
     const file = PET_EMOTES[name];
     return file ? `<img class="pet-emote-img" src="assets/emotes/${file}.png" alt="${esc(alt || name)}">` : '';
@@ -1083,12 +1095,29 @@
     const eq = pet.equipped || {};
     const hatItem = eq.hat && SHOP_INDEX[eq.hat];
     const bgItem = eq.bg && SHOP_INDEX[eq.bg];
+    const decorItem = eq.decor && SHOP_INDEX[eq.decor];
     $$('.petscreen').forEach((screen) => {
       screen.querySelector('.pixelpet')?.remove();
       screen.querySelector('.pet-hat')?.remove();
+      screen.querySelector('.pet-decor')?.remove();
       screen.querySelectorAll('.pet-emote.state-emote').forEach((el) => el.remove());
       // фон из экипировки (если есть) — иначе сбрасываем к стилю по умолчанию
       screen.style.background = bgItem ? bgItem.data : '';
+      if (decorItem) {
+        const decor = document.createElement('div');
+        decor.className = 'pet-decor';
+        const src = decorAssetSrc(decorItem);
+        if (src) {
+          const img = document.createElement('img');
+          img.className = 'pet-decor-img';
+          img.src = src;
+          img.alt = decorItem.name || '';
+          decor.appendChild(img);
+        } else {
+          decor.appendChild(iconNode(itemIcon(decorItem), 'lg'));
+        }
+        screen.appendChild(decor);
+      }
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
@@ -1455,6 +1484,24 @@
   }
 
   // глобальные DnD-обработчики (делегирование на document, навешиваются один раз)
+  function canUseColumnWheel(target, deltaY) {
+    const body = target.closest?.('.kcol-body');
+    if (!body || body.scrollHeight <= body.clientHeight + 1) return false;
+    if (deltaY < 0) return body.scrollTop > 0;
+    if (deltaY > 0) return body.scrollTop + body.clientHeight < body.scrollHeight - 1;
+    return false;
+  }
+
+  document.addEventListener('wheel', (e) => {
+    const board = e.target.closest?.('.board');
+    if (!board || board.scrollWidth <= board.clientWidth + 1) return;
+    if (canUseColumnWheel(e.target, e.deltaY)) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (!delta) return;
+    e.preventDefault();
+    board.scrollLeft += delta;
+  }, { passive: false });
+
   let dragCard = null;
   document.addEventListener('dragstart', (e) => {
     const card = e.target.closest('.kcard');
@@ -2989,6 +3036,7 @@
     if (it.type === 'character') return `<div class="character-item-preview">${characterImage(it.id, it.name)}</div>`;
     if (it.type === 'food') return `<div class="swatch-prev food-prev">${iconImg(itemIcon(it), it.name, 'lg')}</div>`;
     if (it.type === 'hat') return `<div class="swatch-prev hat-prev">${hatImg(it)}</div>`;
+    if (it.type === 'decor') return `<div class="swatch-prev decor-prev">${decorImg(it)}</div>`;
     if (it.type === 'bg') return `<div class="swatch-prev" style="background:${it.data};"></div>`;
     return `<div class="swatch-prev" style="background:${it.data};"></div>`; // body/accent
   }
@@ -3039,10 +3087,15 @@
     const pet = state.pet || {};
     const eq = pet.equipped || {};
     const equipped = it.type === 'character' ? pet.species === it.id : eq[it.type] === it.id;
-    return `<div class="shopcard bagitem ${equipped ? 'equipped' : ''}" data-inventory="${it.id}" title="${equipped ? 'Снять' : 'Надеть'}">
+    const actionText = it.type === 'character'
+      ? (equipped ? 'выбран' : 'выбрать')
+      : it.type === 'decor'
+        ? (equipped ? 'стоит' : 'поставить')
+        : (equipped ? 'надето' : 'надеть');
+    return `<div class="shopcard bagitem ${equipped ? 'equipped' : ''}" data-inventory="${it.id}" title="${equipped ? 'Снять' : actionText}">
       ${itemPreview(it)}
       ${compact ? '' : `<div class="nm">${esc(it.name)}</div><div class="rar rar-${it.rarity}">${RARITY_LABEL[it.rarity]}</div>`}
-      <div class="sm" style="margin-top:4px;">${it.type === 'character' ? (equipped ? 'выбран' : 'выбрать') : (equipped ? 'надето' : 'надеть')}</div>
+      <div class="sm" style="margin-top:4px;">${actionText}</div>
     </div>`;
   }
 

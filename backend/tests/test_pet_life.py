@@ -116,6 +116,30 @@ async def test_shop_hides_body_and_accent_items(client):
         assert roll_case()["type"] not in {"body", "accent", "species", "character", "food"}
 
 
+async def test_can_buy_and_equip_room_decor(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "decor@lab.ru")
+    headers = auth_headers(tokens)
+
+    catalog = await client.get("/shop/items", headers=headers)
+    assert any(item["id"] == "decor_flower_pot" for item in catalog.json()["items"])
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="decor@lab.ru")))
+        pet.coins = 100
+        await db.commit()
+
+    bought = await client.post("/shop/buy", json={"item_id": "decor_flower_pot"}, headers=headers)
+    assert bought.status_code == 200, bought.text
+    assert "decor_flower_pot" in bought.json()["inventory"]
+
+    equipped = await client.post("/shop/equip", json={"item_id": "decor_flower_pot"}, headers=headers)
+    assert equipped.status_code == 200, equipped.text
+    assert equipped.json()["equipped"]["decor"] == "decor_flower_pot"
+
+
 async def test_pet_play_respects_stats(client):
     from sqlalchemy import select
     from tests.conftest import auth_headers, register
