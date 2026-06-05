@@ -106,6 +106,25 @@
     String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = (name) =>
     (name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  let hatOverridesLoaded = false;
+
+  async function loadHatPlacementOverrides() {
+    if (hatOverridesLoaded) return;
+    hatOverridesLoaded = true;
+    try {
+      const res = await fetch('hat-placement-overrides.json', { cache: 'no-store' });
+      if (!res.ok) return;
+      const overrides = await res.json();
+      Object.entries(overrides || {}).forEach(([characterId, byHat]) => {
+        const character = CHARACTER_INDEX[characterId];
+        if (!character || !byHat || typeof byHat !== 'object') return;
+        character.hatOverrides = byHat;
+      });
+    } catch {
+      // Optional tuning file; keep catalog defaults if it is unavailable.
+    }
+  }
+
   const formatDuration = (seconds) => {
     const total = Math.max(0, Number(seconds || 0));
     const mins = Math.floor(total / 60);
@@ -498,6 +517,7 @@
 
   // После того как у пользователя есть лаборатория — проверяем питомца.
   async function afterWorkspace() {
+    await loadHatPlacementOverrides();
     const pet = await api.get('/pets/me');
     state.pet = pet;
     state.prevXp = pet.xp;
@@ -1049,26 +1069,28 @@
     if (mode === 'burst') setTimeout(() => bubble.remove(), 1300);
   }
 
-  function petHatConfig(pet) {
-    return CHARACTER_INDEX[pet.species] || null;
+  function petHatConfig(pet, hatItem = null) {
+    const base = CHARACTER_INDEX[pet.species];
+    if (!base) return null;
+    const override = hatItem?.id && base.hatOverrides?.[hatItem.id];
+    return override ? { ...base, ...override } : base;
   }
 
   function fitHatToPet(screen, pet, hat, hatItem = null) {
-    const c = petHatConfig(pet);
+    const c = petHatConfig(pet, hatItem);
     if (!screen || !hat || !c) return;
-    const isDock = screen.id === 'dockPetScreen';
-    const isBig = !isDock && !!screen.closest('.petbig');
-    const uiScale = isDock ? 1.8 : (isBig ? 2.8 : 2.35);
-    const hatSize = isDock ? 52 : (isBig ? 78 : 64);
-    const scale = Number(c.hatScale || 1);
-    const fittedHatSize = hatSize * scale;
     const frameWidth = Number(c.frameWidth || 32);
     const frameHeight = Number(c.frameHeight || 32);
-    const spriteScale = (32 / frameHeight) * uiScale;
-    const spriteHeight = frameHeight * spriteScale;
-    const spriteTop = screen.clientHeight / 2 - spriteHeight / 2;
+    const spriteImg = screen.querySelector('.asset-pet-sprite');
+    const screenBox = screen.getBoundingClientRect();
+    const spriteBox = spriteImg?.getBoundingClientRect();
+    const fallbackScale = screen.id === 'dockPetScreen' ? 1.8 : (screen.closest('.petbig') ? 2.8 : 2.35);
+    const spriteScale = spriteBox?.height ? spriteBox.height / frameHeight : (32 / frameHeight) * fallbackScale;
+    const fittedHatSize = frameHeight * spriteScale * Number(c.hatScale || 1);
+    const spriteTop = spriteBox?.height ? spriteBox.top - screenBox.top : screen.clientHeight / 2 - (frameHeight * spriteScale) / 2;
+    const spriteCenterX = spriteBox?.width ? spriteBox.left - screenBox.left + spriteBox.width / 2 : screen.clientWidth / 2;
     const headTop = spriteTop + Number(c.opaqueTop || 0) * spriteScale;
-    const headX = screen.clientWidth / 2
+    const headX = spriteCenterX
       + (Number(c.opaqueCenter || frameWidth / 2) - frameWidth / 2) * spriteScale;
     const boxHeight = fittedHatSize * 0.72;
     const headOverlap = Math.min(7, 2.5 * spriteScale);
