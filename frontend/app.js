@@ -1146,7 +1146,6 @@
       const sprite = buildPixelPet(pet);
       if (pet.state) sprite.classList.add('state-' + pet.state);
       screen.appendChild(sprite);
-      showPetEmote(screen, stateEmote(pet), 'state');
       // PNG-шапка поверх питомца
       if (hatItem) {
         const hat = document.createElement('div');
