@@ -1095,20 +1095,22 @@
     const boxHeight = fittedHatSize * 0.72;
     const headOverlap = Math.min(7, 2.5 * spriteScale);
     const top = headTop - boxHeight + headOverlap + Number(c.hatOffsetY || 0) * spriteScale;
-    const left = headX + Number(c.hatOffsetX || 0) * spriteScale;
+    const headLeft = headX + Number(c.hatOffsetX || 0) * spriteScale;
     const fit = HAT_IMAGE_FIT[hatItem?.id] || { bottom: 10, center: 0 };
     const flip = c.hatFlip ? -1 : 1;
     const imageShiftY = (Number(fit.bottom || 0) / 30) * fittedHatSize;
     const imageShiftX = (-Number(fit.center || 0) / 30) * fittedHatSize * flip;
+    const left = headLeft - fittedHatSize / 2 + imageShiftX;
+    const hatTop = top + boxHeight - fittedHatSize + imageShiftY;
 
     hat.style.setProperty('--pet-hat-left', `${Math.round(left)}px`);
-    hat.style.setProperty('--pet-hat-top', `${Math.round(top)}px`);
+    hat.style.setProperty('--pet-hat-top', `${Math.round(hatTop)}px`);
     hat.style.setProperty('--pet-hat-scale', '1');
     hat.style.setProperty('--pet-hat-box-w', `${Math.round(fittedHatSize)}px`);
-    hat.style.setProperty('--pet-hat-box-h', `${Math.round(boxHeight)}px`);
+    hat.style.setProperty('--pet-hat-box-h', `${Math.round(fittedHatSize)}px`);
     hat.style.setProperty('--pet-hat-img-size', `${Math.round(fittedHatSize)}px`);
-    hat.style.setProperty('--pet-hat-img-shift-x', `${Math.round(imageShiftX)}px`);
-    hat.style.setProperty('--pet-hat-img-shift-y', `${Math.round(imageShiftY)}px`);
+    hat.style.setProperty('--pet-hat-img-shift-x', '0px');
+    hat.style.setProperty('--pet-hat-img-shift-y', '0px');
     // hatFlip:true зеркалит шапку для персонажей, смотрящих в другую сторону.
     hat.style.setProperty('--pet-hat-flip', String(flip));
   }
@@ -1244,6 +1246,7 @@
     $$('[data-petlevelnext]').forEach((e) => (e.textContent = lvl + 1));
     $$('[data-petfill]').forEach((e) => (e.style.width = into + '%'));
     $$('[data-petnum]').forEach((e) => (e.textContent = `${into}/100`));
+    $$('[data-petlabel]').forEach((e) => (e.textContent = `${into} / 100 XP`));
     const set = (sel, v) => $$(sel).forEach((e) => (e.style.width = v + '%'));
     const num = (sel, v) => $$(sel).forEach((e) => (e.textContent = v));
     set('[data-petmood]', pet.mood); num('[data-petmoodnum]', pet.mood);

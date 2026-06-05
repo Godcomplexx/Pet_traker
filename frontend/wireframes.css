@@ -1825,11 +1825,11 @@ textarea.input { resize: vertical; min-height: 70px; }
   left: var(--pet-hat-left, 50%);
   width: var(--pet-hat-box-w, 58px);
   height: var(--pet-hat-box-h, 42px);
-  transform: translateX(-50%);
+  transform: none;
   transform-origin: center bottom;
   z-index: 5;
   display: grid;
-  place-items: end center;
+  place-items: center;
   pointer-events: none;
   image-rendering: pixelated;
   filter: drop-shadow(0 4px 3px rgba(35,42,32,0.18));
@@ -2725,8 +2725,17 @@ textarea.input { resize: vertical; min-height: 70px; }
   justify-content: center;
   gap: 4px;
   margin-top: 8px;
+  line-height: 1;
 }
-.case-balance .asset-icon { width: 16px; height: 16px; }
+.case-balance .asset-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
 .case-sound-btn {
   width: 42px;
   min-width: 42px;
