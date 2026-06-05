@@ -126,6 +126,18 @@ async def test_can_buy_and_equip_room_decor(client):
     catalog = await client.get("/shop/items", headers=headers)
     decor_items = [item for item in catalog.json()["items"] if item["type"] == "decor"]
     assert {item["id"] for item in decor_items} >= {"decor_flower_pot", "decor_plant_sprout"}
+    assert len(decor_items) >= 14
+    assert {item["data"]["file"] for item in decor_items} >= {
+        "plant_bloom_red.png",
+        "plant_bloom_orchid.png",
+        "plant_bloom_yellow.png",
+        "plant_bloom_small.png",
+        "plant_fern.png",
+        "plant_round.png",
+        "plant_leaf_pot.png",
+        "plant_single_leaf.png",
+        "plant_yellow_pot.png",
+    }
 
     async with SessionLocal() as db:
         pet = await db.scalar(select(Pet).where(Pet.user.has(email="decor@lab.ru")))
