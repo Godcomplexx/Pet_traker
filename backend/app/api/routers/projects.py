@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
@@ -13,10 +13,12 @@ from app.enums import (
     DomainEventType,
     PrivacyLevel,
     ProjectStatus,
+    TaskStatus,
 )
 from app.models import Article, Project, ProjectMember, Task, User, WorkspaceMember
 from app.schemas import (
     ArticleOut,
+    BoardMove,
     ProjectCreate,
     ProjectMemberAdd,
     ProjectMemberOut,
@@ -29,6 +31,60 @@ from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 
 router = APIRouter(tags=["projects"])
+
+
+async def _enrich_projects(db: AsyncSession, projects: list[Project]) -> list[ProjectOut]:
+    """Дополнить проекты счётчиками задач/статей и участниками для карточек доски."""
+    if not projects:
+        return []
+    ids = [p.id for p in projects]
+
+    # задачи: всего и выполнено по проекту
+    task_rows = (
+        await db.execute(
+            select(
+                Task.project_id,
+                func.count(Task.id),
+                func.count(Task.id).filter(Task.status == TaskStatus.DONE),
+            )
+            .where(Task.project_id.in_(ids))
+            .group_by(Task.project_id)
+        )
+    ).all()
+    task_map = {pid: (total, done) for pid, total, done in task_rows}
+
+    # статьи по проекту
+    art_rows = (
+        await db.execute(
+            select(Article.project_id, func.count(Article.id))
+            .where(Article.project_id.in_(ids))
+            .group_by(Article.project_id)
+        )
+    ).all()
+    art_map = {pid: cnt for pid, cnt in art_rows}
+
+    # участники по проекту
+    mem_rows = (
+        await db.execute(
+            select(ProjectMember.project_id, ProjectMember.user_id).where(
+                ProjectMember.project_id.in_(ids)
+            )
+        )
+    ).all()
+    mem_map: dict[str, list[str]] = {}
+    for pid, uid in mem_rows:
+        mem_map.setdefault(pid, []).append(uid)
+
+    out = []
+    for p in projects:
+        total, done = task_map.get(p.id, (0, 0))
+        o = ProjectOut.model_validate(p)
+        o.task_total = total
+        o.task_done = done
+        o.article_count = art_map.get(p.id, 0)
+        o.member_ids = mem_map.get(p.id, [])
+        out.append(o)
+    return out
 
 
 async def _get_project_for_member(db: AsyncSession, project_id: str, user: User) -> Project:
@@ -71,13 +127,79 @@ async def create_project(
 
 @router.get("/workspaces/{workspace_id}/projects", response_model=list[ProjectOut])
 async def list_projects(
-    workspace_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+    workspace_id: str,
+    q: str | None = None,
+    type: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     await require_membership(workspace_id, db, user)
-    rows = await db.scalars(
-        select(Project).where(Project.workspace_id == workspace_id).order_by(Project.created_at.desc())
-    )
-    return rows.all()
+    stmt = select(Project).where(Project.workspace_id == workspace_id)
+    if q:
+        stmt = stmt.where(Project.name.ilike(f"%{q}%"))
+    if type:
+        stmt = stmt.where(Project.type == type)
+    # порядок для канбана: внутри колонки — по position, затем по дате
+    stmt = stmt.order_by(Project.position.asc(), Project.created_at.desc())
+    rows = (await db.scalars(stmt)).all()
+    return await _enrich_projects(db, list(rows))
+
+
+@router.patch("/projects/{project_id}/move", response_model=ProjectOut)
+async def move_project(
+    project_id: str,
+    data: BoardMove,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """DnD на доске: сменить статус (колонку) и/или порядок (position).
+
+    Награда за перевод в DONE начисляется так же, как в /status.
+    """
+    project = await db.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
+    member = await require_membership(project.workspace_id, db, user)
+    if member.role not in WRITE_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+
+    try:
+        new_status = ProjectStatus(data.status)
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
+
+    status_changed = project.status != new_status
+    project.status = new_status
+
+    # пересчёт порядка в целевой колонке по присланному списку id
+    if data.order:
+        for idx, pid in enumerate(data.order):
+            p = await db.get(Project, pid)
+            if p and p.workspace_id == project.workspace_id:
+                p.position = idx
+
+    event_id = None
+    if status_changed:
+        event = await emit_event(
+            db,
+            event_type=DomainEventType.PROJECT_STATUS_CHANGED,
+            actor_id=user.id,
+            entity_type="project",
+            entity_id=project.id,
+            workspace_id=project.workspace_id,
+            privacy_level=PrivacyLevel.WORKSPACE,
+            payload={
+                "status": new_status.value,
+                "activity_text": f"перевёл проект «{project.name}» в {new_status.value}",
+            },
+        )
+        event_id = event.id
+
+    await db.commit()
+    if event_id and new_status == ProjectStatus.DONE:
+        await dispatch_event(event_id)
+    await db.refresh(project)
+    return project
 
 
 @router.get("/projects/{project_id}", response_model=ProjectOut)
@@ -144,7 +266,11 @@ async def project_tasks(
     project_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     await _get_project_for_member(db, project_id, user)
-    rows = await db.scalars(select(Task).where(Task.project_id == project_id))
+    rows = await db.scalars(
+        select(Task).where(Task.project_id == project_id).order_by(
+            Task.position.asc(), Task.created_at.asc()
+        )
+    )
     return rows.all()
 
 

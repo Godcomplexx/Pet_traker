@@ -349,6 +349,16 @@ class ProjectStatusUpdate(BaseModel):
     status: enums.ProjectStatus
 
 
+class BoardMove(BaseModel):
+    """Перемещение карточки на доске: новая колонка (статус) + порядок.
+
+    order — список id карточек в целевой колонке в нужном порядке (включая
+    перемещаемую). Если задан — пересчитываем position по нему.
+    """
+    status: str
+    order: list[str] = Field(default_factory=list)
+
+
 class ProjectOut(ORMModel):
     id: str
     workspace_id: str
@@ -358,7 +368,13 @@ class ProjectOut(ORMModel):
     status: enums.ProjectStatus
     owner_id: str
     deadline: date | None = None
+    position: int = 0
     created_at: datetime
+    # Богатые поля для карточек доски (заполняются в листинге).
+    task_total: int | None = None
+    task_done: int | None = None
+    article_count: int | None = None
+    member_ids: list[str] = Field(default_factory=list)
 
 
 # ── Article ──
@@ -386,7 +402,12 @@ class ArticleOut(ORMModel):
     target_journal: str | None = None
     document_url: str | None = None
     deadline: date | None = None
+    position: int = 0
     created_at: datetime
+    # Богатые поля для карточек доски.
+    task_total: int | None = None
+    task_done: int | None = None
+    member_ids: list[str] = Field(default_factory=list)
 
 
 # ── Task ──
@@ -434,6 +455,7 @@ class TaskOut(ORMModel):
     due_date: date | None = None
     completed_at: datetime | None = None
     completed_by: str | None = None
+    position: int = 0
     created_at: datetime
 
 

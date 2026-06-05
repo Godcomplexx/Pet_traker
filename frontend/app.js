@@ -1375,28 +1375,148 @@
   }
 
   /* ---------------- projects ---------------- */
-  function statusSelect(kind, id, current, statuses) {
-    const opts = statuses.map((s) => `<option ${s === current ? 'selected' : ''}>${s}</option>`).join('');
-    return `<select class="rolepick" data-status="${kind}:${id}">${opts}</select>`;
+  // ── общие хелперы канбана ──
+  const STATUS_LABELS = {
+    IDEA: 'Идея', PLANNING: 'План', ACTIVE: 'В работе', PAUSED: 'Пауза',
+    IN_REVIEW: 'Ревью', DONE: 'Готово', ARCHIVED: 'Архив',
+    WRITING: 'Пишется', INTERNAL_REVIEW: 'Внутр. ревью', REVISION: 'Правки',
+    SUBMITTED: 'Подано', UNDER_REVIEW: 'На ревью', ACCEPTED: 'Принято', PUBLISHED: 'Опубликовано',
+  };
+  const statusLabel = (s) => STATUS_LABELS[s] || s;
+
+  // стопка аватаров исполнителей/участников
+  function avatarStack(ids) {
+    if (!ids || !ids.length) return '';
+    const shown = ids.slice(0, 3);
+    const extra = ids.length - shown.length;
+    const av = shown
+      .map((uid) => `<span class="board-av" title="${esc(memberName(uid))}">${esc(initials(memberName(uid)))}</span>`)
+      .join('');
+    return `<div class="board-avstack">${av}${extra > 0 ? `<span class="board-av more">+${extra}</span>` : ''}</div>`;
+  }
+
+  function progressBar(done, total) {
+    if (!total) return '';
+    const pct = Math.round((done / total) * 100);
+    return `<div class="board-prog"><div class="board-prog-fill" style="width:${pct}%"></div></div>
+      <div class="board-prog-txt">${done}/${total}</div>`;
+  }
+
+  function dueBadge(due) {
+    if (!due) return '';
+    const today = new Date().toISOString().slice(0, 10);
+    const overdue = due < today;
+    return `<span class="board-due ${overdue ? 'overdue' : ''}">${overdue ? '⚠ ' : ''}${due}</span>`;
+  }
+
+  function projectCard(p) {
+    return `<div class="kcard" draggable="true" data-card-id="${p.id}" data-kind="project">
+      <div class="kcard-top">
+        <span class="tag ptype">${p.type}</span>
+        ${dueBadge(p.deadline)}
+      </div>
+      <div class="kcard-title" data-open-project="${p.id}">${esc(p.name)}</div>
+      ${p.description ? `<div class="kcard-desc">${esc(p.description.slice(0, 80))}${p.description.length > 80 ? '…' : ''}</div>` : ''}
+      <div class="kcard-foot">
+        ${progressBar(p.task_done || 0, p.task_total || 0)}
+        ${p.article_count ? `<span class="kcard-meta">📄 ${p.article_count}</span>` : ''}
+        ${avatarStack(p.member_ids)}
+      </div>
+    </div>`;
   }
 
   async function renderProjects() {
-    const projects = await api.get(`/workspaces/${state.wsId}/projects`);
+    // подгружаем участников лаборатории для аватаров
+    if (!state.members || !state.members.length) {
+      state.members = await api.get(`/workspaces/${state.wsId}/members`).catch(() => []);
+    }
+    const q = (state.projectSearch || '').trim();
+    const url = `/workspaces/${state.wsId}/projects${q ? `?q=${encodeURIComponent(q)}` : ''}`;
+    const projects = await api.get(url);
     state.projects = projects;
     const board = $('#projectBoard');
     board.innerHTML = PROJECT_STATUSES.map((st) => {
       const inCol = projects.filter((p) => p.status === st);
-      const cards = inCol
-        .map(
-          (p) => `<div class="acard soft">
-            <div class="row"><span class="tag ptype">${p.type}</span></div>
-            <div class="ttl" data-open-project="${p.id}" style="cursor:pointer;">${esc(p.name)}</div>
-            ${statusSelect('project', p.id, p.status, PROJECT_STATUSES)}
-          </div>`,
-        )
-        .join('');
-      return `<div class="colm"><div class="colhead soft"><b>${st}</b><span class="cnt">${inCol.length}</span></div>${cards}</div>`;
+      const cards = inCol.map(projectCard).join('');
+      return `<div class="kcol" data-status="${st}" data-kind="project">
+        <div class="kcol-head"><b>${statusLabel(st)}</b><span class="kcol-cnt">${inCol.length}</span></div>
+        <div class="kcol-body" data-drop-status="${st}">${cards || '<div class="kcol-empty">пусто</div>'}</div>
+      </div>`;
     }).join('');
+    initBoardDnD(board, 'project');
+  }
+
+  /* ── переиспользуемый DnD для канбан-досок ── */
+  function initBoardDnD(board, kind) {
+    if (!board || board.dataset.dndReady === '1') {
+      // обработчики делегированы на document — навешиваем один раз глобально
+    }
+    board.dataset.dndReady = '1';
+  }
+
+  // глобальные DnD-обработчики (делегирование на document, навешиваются один раз)
+  let dragCard = null;
+  document.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('.kcard');
+    if (!card) return;
+    dragCard = card;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  document.addEventListener('dragend', () => {
+    if (dragCard) dragCard.classList.remove('dragging');
+    dragCard = null;
+    $$('.kcol-body.drop-hover').forEach((el) => el.classList.remove('drop-hover'));
+  });
+  document.addEventListener('dragover', (e) => {
+    const body = e.target.closest('.kcol-body');
+    if (!body || !dragCard) return;
+    e.preventDefault();
+    body.classList.add('drop-hover');
+    // вставляем карточку в нужную позицию (визуально)
+    const after = cardAfterPoint(body, e.clientY);
+    if (after == null) body.appendChild(dragCard);
+    else body.insertBefore(dragCard, after);
+  });
+  document.addEventListener('dragleave', (e) => {
+    const body = e.target.closest('.kcol-body');
+    if (body && !body.contains(e.relatedTarget)) body.classList.remove('drop-hover');
+  });
+  document.addEventListener('drop', async (e) => {
+    const body = e.target.closest('.kcol-body');
+    if (!body || !dragCard) return;
+    e.preventDefault();
+    body.classList.remove('drop-hover');
+    const card = dragCard;
+    const kind = card.dataset.kind;
+    const id = card.dataset.cardId;
+    const newStatus = body.dataset.dropStatus;
+    const order = [...body.querySelectorAll('.kcard')].map((c) => c.dataset.cardId);
+    const empty = body.querySelector('.kcol-empty');
+    if (empty) empty.remove();
+    try {
+      const path = kind === 'project' ? `/projects/${id}/move`
+        : kind === 'article' ? `/articles/${id}/move`
+        : `/tasks/${id}/move`;
+      await api.patch(path, { status: newStatus, order });
+      // обновляем счётчики/состояние без полной перерисовки тяжёлых частей
+      if (kind === 'project') renderProjects();
+      else if (kind === 'article') renderArticles();
+      if (newStatus === 'DONE') { toast('Готово! 🎉', 'xp'); refreshPet(); }
+    } catch (err) {
+      toast(err.message || 'Не удалось переместить', '');
+      if (kind === 'project') renderProjects();
+      else if (kind === 'article') renderArticles();
+    }
+  });
+
+  function cardAfterPoint(body, y) {
+    const cards = [...body.querySelectorAll('.kcard:not(.dragging)')];
+    for (const c of cards) {
+      const box = c.getBoundingClientRect();
+      if (y < box.top + box.height / 2) return c;
+    }
+    return null;
   }
 
   $('#newProjectBtn').addEventListener('click', async () => {
@@ -1416,19 +1536,54 @@
     renderProjects();
   });
 
-  /* ---------------- articles ---------------- */
+  // поиск по доскам (debounce)
+  let projSearchT, artSearchT;
+  $('#projSearch')?.addEventListener('input', (e) => {
+    clearTimeout(projSearchT);
+    state.projectSearch = e.target.value;
+    projSearchT = setTimeout(renderProjects, 250);
+  });
+  $('#artSearch')?.addEventListener('input', (e) => {
+    clearTimeout(artSearchT);
+    state.articleSearch = e.target.value;
+    artSearchT = setTimeout(renderArticles, 250);
+  });
+
+  /* ---------------- articles board ---------------- */
+  function articleCard(a) {
+    return `<div class="kcard" draggable="true" data-card-id="${a.id}" data-kind="article">
+      <div class="kcard-top">
+        ${a.target_journal ? `<span class="tag">${esc(a.target_journal)}</span>` : '<span></span>'}
+        ${dueBadge(a.deadline)}
+      </div>
+      <div class="kcard-title" data-open-article="${a.id}">${esc(a.title)}</div>
+      ${a.description ? `<div class="kcard-desc">${esc(a.description.slice(0, 80))}${a.description.length > 80 ? '…' : ''}</div>` : ''}
+      <div class="kcard-foot">
+        ${progressBar(a.task_done || 0, a.task_total || 0)}
+        ${avatarStack(a.member_ids)}
+      </div>
+    </div>`;
+  }
+
   async function renderArticles() {
-    const articles = await api.get(`/workspaces/${state.wsId}/articles`);
-    $('#articleList').innerHTML = articles.length
-      ? articles
-          .map(
-            (a) => `<div class="card sk2" style="cursor:pointer;" data-open-article="${a.id}"><div class="between">
-              <div><b>${esc(a.title)}</b>${a.target_journal ? ` <span class="mono">· ${esc(a.target_journal)}</span>` : ''}</div>
-              <span class="tag ptype">${a.status}</span>
-            </div></div>`,
-          )
-          .join('')
-      : '<div class="muted sm">Статей пока нет.</div>';
+    if (!state.members || !state.members.length) {
+      state.members = await api.get(`/workspaces/${state.wsId}/members`).catch(() => []);
+    }
+    const q = (state.articleSearch || '').trim();
+    const url = `/workspaces/${state.wsId}/articles${q ? `?q=${encodeURIComponent(q)}` : ''}`;
+    const articles = await api.get(url);
+    state.articles = articles;
+    const board = $('#articleBoard');
+    if (!board) return;
+    board.innerHTML = ARTICLE_STATUSES.map((st) => {
+      const inCol = articles.filter((a) => a.status === st);
+      const cards = inCol.map(articleCard).join('');
+      return `<div class="kcol" data-status="${st}" data-kind="article">
+        <div class="kcol-head"><b>${statusLabel(st)}</b><span class="kcol-cnt">${inCol.length}</span></div>
+        <div class="kcol-body" data-drop-status="${st}">${cards || '<div class="kcol-empty">пусто</div>'}</div>
+      </div>`;
+    }).join('');
+    initBoardDnD(board, 'article');
   }
 
   $('#newArticleBtn').addEventListener('click', async () => {

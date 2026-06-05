@@ -150,6 +150,8 @@ class Project(Base):
     status: Mapped[enums.ProjectStatus] = mapped_column(SAEnum(enums.ProjectStatus), default=enums.ProjectStatus.IDEA)
     owner_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Порядок карточки внутри колонки канбана (меньше = выше).
+    position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 
@@ -183,6 +185,8 @@ class Article(Base):
     target_journal: Mapped[str | None] = mapped_column(String(200), nullable=True)
     document_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Порядок карточки внутри колонки канбана (меньше = выше).
+    position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 
@@ -228,6 +232,8 @@ class Task(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Кто отметил задачу выполненной.
     completed_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    # Порядок карточки внутри колонки канбана (меньше = выше).
+    position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 

@@ -327,7 +327,9 @@
     <!-- ===== PROJECTS ===== -->
     <section class="screen" id="screen-projects">
       <div class="topbar">
-        <div><h1>Проекты</h1><div class="muted sm">направления лаборатории</div></div>
+        <div><h1>Проекты</h1><div class="muted sm">канбан · перетаскивай карточки между колонками</div></div>
+        <div class="grow"></div>
+        <input class="input board-search" id="projSearch" type="search" placeholder="Поиск проекта…">
       </div>
       <div class="card sk" style="margin-bottom:var(--gap);">
         <div class="col" style="gap:10px;">
@@ -358,7 +360,9 @@
     <!-- ===== ARTICLES ===== -->
     <section class="screen" id="screen-articles">
       <div class="topbar">
-        <div><h1>Статьи</h1><div class="muted sm">научные артефакты · publication workflow</div></div>
+        <div><h1>Статьи</h1><div class="muted sm">канбан publication-workflow · перетаскивай карточки</div></div>
+        <div class="grow"></div>
+        <input class="input board-search" id="artSearch" type="search" placeholder="Поиск статьи…">
       </div>
       <div class="card sk" style="margin-bottom:var(--gap);">
         <div class="col" style="gap:10px;">
@@ -373,7 +377,7 @@
           </div>
         </div>
       </div>
-      <div class="col" id="articleList"></div>
+      <div class="board" id="articleBoard"></div>
     </section>
 
     <!-- ===== PROJECT DETAIL ===== -->

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import ELEVATED_ROLES, WRITE_ROLES, get_current_user, require_membership
 from app.core.database import get_db
-from app.enums import ArticleStatus, DomainEventType, PrivacyLevel
+from app.enums import ArticleStatus, DomainEventType, PrivacyLevel, TaskStatus
 from app.models import Article, ArticleMember, Project, Task, User, WorkspaceMember
 from app.schemas import (
     ArticleCreate,
@@ -12,6 +12,7 @@ from app.schemas import (
     ArticleMemberOut,
     ArticleOut,
     ArticleStatusUpdate,
+    BoardMove,
     TaskOut,
 )
 from app.services.dispatch import dispatch_event
@@ -20,6 +21,46 @@ from app.services.events import emit_event
 router = APIRouter(tags=["articles"])
 
 REWARDED_STATUSES = {ArticleStatus.SUBMITTED, ArticleStatus.ACCEPTED, ArticleStatus.PUBLISHED}
+
+
+async def _enrich_articles(db: AsyncSession, articles: list[Article]) -> list[ArticleOut]:
+    """Дополнить статьи счётчиками задач и участниками для карточек доски."""
+    if not articles:
+        return []
+    ids = [a.id for a in articles]
+    task_rows = (
+        await db.execute(
+            select(
+                Task.article_id,
+                func.count(Task.id),
+                func.count(Task.id).filter(Task.status == TaskStatus.DONE),
+            )
+            .where(Task.article_id.in_(ids))
+            .group_by(Task.article_id)
+        )
+    ).all()
+    task_map = {aid: (total, done) for aid, total, done in task_rows}
+
+    mem_rows = (
+        await db.execute(
+            select(ArticleMember.article_id, ArticleMember.user_id).where(
+                ArticleMember.article_id.in_(ids)
+            )
+        )
+    ).all()
+    mem_map: dict[str, list[str]] = {}
+    for aid, uid in mem_rows:
+        mem_map.setdefault(aid, []).append(uid)
+
+    out = []
+    for a in articles:
+        total, done = task_map.get(a.id, (0, 0))
+        o = ArticleOut.model_validate(a)
+        o.task_total = total
+        o.task_done = done
+        o.member_ids = mem_map.get(a.id, [])
+        out.append(o)
+    return out
 
 
 async def _validate_project(db: AsyncSession, workspace_id: str, project_id: str | None) -> None:
@@ -65,13 +106,72 @@ async def create_article(
 
 @router.get("/workspaces/{workspace_id}/articles", response_model=list[ArticleOut])
 async def list_articles(
-    workspace_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+    workspace_id: str,
+    q: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     await require_membership(workspace_id, db, user)
-    rows = await db.scalars(
-        select(Article).where(Article.workspace_id == workspace_id).order_by(Article.created_at.desc())
-    )
-    return rows.all()
+    stmt = select(Article).where(Article.workspace_id == workspace_id)
+    if q:
+        stmt = stmt.where(Article.title.ilike(f"%{q}%"))
+    stmt = stmt.order_by(Article.position.asc(), Article.created_at.desc())
+    rows = (await db.scalars(stmt)).all()
+    return await _enrich_articles(db, list(rows))
+
+
+@router.patch("/articles/{article_id}/move", response_model=ArticleOut)
+async def move_article(
+    article_id: str,
+    data: BoardMove,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """DnD на доске статей: сменить publication-статус (колонку) и/или порядок."""
+    article = await db.get(Article, article_id)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
+    member = await require_membership(article.workspace_id, db, user)
+    if member.role not in WRITE_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+
+    try:
+        new_status = ArticleStatus(data.status)
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
+
+    status_changed = article.status != new_status
+    article.status = new_status
+
+    if data.order:
+        for idx, aid in enumerate(data.order):
+            a = await db.get(Article, aid)
+            if a and a.workspace_id == article.workspace_id:
+                a.position = idx
+
+    event_id = None
+    if status_changed:
+        event = await emit_event(
+            db,
+            event_type=DomainEventType.ARTICLE_STATUS_CHANGED,
+            actor_id=user.id,
+            entity_type="article",
+            entity_id=article.id,
+            workspace_id=article.workspace_id,
+            privacy_level=PrivacyLevel.WORKSPACE,
+            payload={
+                "status": new_status.value,
+                "beneficiary_id": article.owner_id,
+                "activity_text": f"перевёл статью «{article.title}» в {new_status.value}",
+            },
+        )
+        event_id = event.id
+
+    await db.commit()
+    if event_id and new_status in REWARDED_STATUSES:
+        await dispatch_event(event_id)
+    await db.refresh(article)
+    return article
 
 
 @router.get("/articles/{article_id}", response_model=ArticleOut)
@@ -94,7 +194,9 @@ async def article_tasks(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Article not found")
     await require_membership(article.workspace_id, db, user)
     rows = await db.scalars(
-        select(Task).where(Task.article_id == article_id).order_by(Task.created_at.desc())
+        select(Task).where(Task.article_id == article_id).order_by(
+            Task.position.asc(), Task.created_at.asc()
+        )
     )
     return rows.all()
 

@@ -15,7 +15,7 @@ from app.enums import (
     TaskVisibility,
 )
 from app.models import Article, Project, Task, User, WorkspaceMember
-from app.schemas import TaskCreate, TaskOut, TaskUpdate
+from app.schemas import BoardMove, TaskCreate, TaskOut, TaskUpdate
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 from app.services.notifications import notify_assignment
@@ -295,6 +295,84 @@ async def reopen_task(
         payload={"activity_text": None if is_personal else f"переоткрыл задачу «{task.title}»"},
     )
     await db.commit()
+    await db.refresh(task)
+    return task
+
+
+@router.patch("/tasks/{task_id}/move", response_model=TaskOut)
+async def move_task(
+    task_id: str,
+    data: BoardMove,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """DnD задачи: сменить статус (колонку) и/или порядок внутри списка.
+
+    Перевод в DONE проходит через тот же reward-механизм, что и /complete.
+    """
+    task = await db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+
+    member_role = None
+    if task.scope == TaskScope.PERSONAL:
+        if task.owner_id != user.id:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+    else:
+        member = await _assert_member(db, task.workspace_id, user)
+        member_role = member.role
+
+    try:
+        new_status = TaskStatus(data.status)
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
+
+    going_done = new_status == TaskStatus.DONE and task.status != TaskStatus.DONE
+    leaving_done = task.status == TaskStatus.DONE and new_status != TaskStatus.DONE
+
+    if going_done and not _can_complete(task, member_role, user):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Cannot complete this task")
+
+    # порядок внутри целевой колонки
+    if data.order:
+        for idx, tid in enumerate(data.order):
+            t = await db.get(Task, tid)
+            if t is not None:
+                t.position = idx
+
+    event_id = None
+    if going_done:
+        task.status = TaskStatus.DONE
+        task.completed_at = datetime.now(timezone.utc)
+        task.completed_by = user.id
+        before_due = task.due_date is not None and date.today() <= task.due_date
+        is_personal = task.scope == TaskScope.PERSONAL
+        event = await emit_event(
+            db,
+            event_type=DomainEventType.TASK_COMPLETED,
+            actor_id=user.id,
+            entity_type="task",
+            entity_id=task.id,
+            workspace_id=task.workspace_id,
+            privacy_level=PrivacyLevel.PRIVATE if is_personal else PrivacyLevel.WORKSPACE,
+            payload={
+                "scope": task.scope.value,
+                "before_due": before_due,
+                "beneficiary_id": task.assignee_id or user.id,
+                "activity_text": None if is_personal else f"закрыл задачу «{task.title}»",
+            },
+        )
+        event_id = event.id
+    elif leaving_done:
+        task.status = new_status
+        task.completed_at = None
+        task.completed_by = None
+    else:
+        task.status = new_status
+
+    await db.commit()
+    if event_id:
+        await dispatch_event(event_id)
     await db.refresh(task)
     return task
 
