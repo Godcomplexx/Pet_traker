@@ -403,3 +403,18 @@ class ZipScore(Base):
     seconds: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = TS()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class MinesweeperScore(Base):
+    """Best daily Minesweeper result for the workspace leaderboard."""
+    __tablename__ = "minesweeper_scores"
+    __table_args__ = (
+        UniqueConstraint("user_id", "puzzle_date", name="uq_minesweeper_score_user_day"),
+    )
+
+    id: Mapped[str] = PK()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    puzzle_date: Mapped[str] = mapped_column(String(10), index=True)
+    seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = TS()
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

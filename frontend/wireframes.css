@@ -2391,7 +2391,7 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .mini-game-picker {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 .mini-game-choice {
@@ -2626,6 +2626,10 @@ textarea.input { resize: vertical; min-height: 70px; }
   flex-wrap: wrap;
   gap: 8px 12px;
 }
+.zip-card .row {
+  justify-content: center;
+  flex-wrap: wrap;
+}
 .zip-stats {
   width: min(100%, 432px);
   margin: 10px auto 8px;
@@ -2646,6 +2650,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-radius: 18px;
   overflow: hidden;
   background: #8e9690;
+  touch-action: none;
 }
 .zip-cell {
   aspect-ratio: 1;
@@ -2662,6 +2667,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
   font-size: 10px;
   transition: background .12s, box-shadow .12s;
+  touch-action: none;
 }
 .zip-cell:hover {
   background: #eef8f8;
@@ -2691,6 +2697,103 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-radius: 50%;
   background: rgba(255,255,255,0.68);
   display: block;
+}
+
+.minesweeper-card {
+  background: rgba(246, 249, 245, 0.72);
+  border-color: rgba(62, 99, 83, 0.34);
+  padding: 18px;
+}
+.minesweeper-card .between {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.mine-stats {
+  width: min(100%, 432px);
+  margin: 10px auto 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.mine-stats span {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid rgba(23, 37, 28, 0.22);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.45);
+  font-size: 8px;
+}
+.mine-board {
+  width: min(100%, 432px);
+  max-width: 432px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(var(--mine-size, 9), 1fr);
+  border: 2px solid #52685e;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #52685e;
+  box-shadow: 0 12px 24px rgba(23, 37, 28, 0.16);
+}
+.mine-cell {
+  aspect-ratio: 1;
+  border: 0;
+  border-right: 1px solid rgba(82, 104, 94, 0.42);
+  border-bottom: 1px solid rgba(82, 104, 94, 0.42);
+  background: #d8e3dc;
+  color: #14261c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: clamp(9px, 2.7vw, 13px);
+  line-height: 1;
+  user-select: none;
+  transition: background .1s, box-shadow .1s, color .1s;
+}
+.mine-cell:hover {
+  background: #edf4ef;
+}
+.mine-cell.revealed {
+  background: #f7faf8;
+  cursor: default;
+}
+.mine-cell.flagged {
+  color: #7d1748;
+  background: #fff0bd;
+}
+.mine-cell.mine-hit {
+  background: #e67b73;
+  color: #17251c;
+}
+.mine-cell.n1 { color: #1b6fb3; }
+.mine-cell.n2 { color: #32784f; }
+.mine-cell.n3 { color: #a33b36; }
+.mine-cell.n4,
+.mine-cell.n5,
+.mine-cell.n6,
+.mine-cell.n7,
+.mine-cell.n8 { color: #5a3f78; }
+.minesweeper-card .row {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.mine-reset-btn {
+  min-width: 126px;
+}
+
+@media (max-width: 680px) {
+  .mini-game-picker {
+    grid-template-columns: 1fr;
+  }
+  .mine-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .case-card {

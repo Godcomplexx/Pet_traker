@@ -2,7 +2,7 @@
 from datetime import date
 
 from app.api.routers import games
-from app.services import sudoku
+from app.services import minesweeper, sudoku
 from tests.conftest import auth_headers, register
 
 
@@ -233,6 +233,82 @@ async def test_zip_wrong_no_reward(client):
     r = await client.post(
         "/games/zip/solve",
         json={"path": [[0, 0], [0, 1], [0, 2]]},
+        headers=h,
+    )
+    body = r.json()
+    assert body["correct"] is False
+    assert body["coins_awarded"] == 0
+
+
+def test_minesweeper_daily_generation_is_deterministic():
+    d = date(2026, 6, 7)
+    first = minesweeper.daily_board(d)
+    same = minesweeper.daily_board(d)
+    other = minesweeper.daily_board(date(2026, 6, 8))
+
+    assert first["mines"] == same["mines"]
+    assert first["mines"] != other["mines"]
+    assert first["size"] == 9
+    assert first["mine_count"] == 10
+    assert len({tuple(cell) for cell in first["mines"]}) == 10
+
+
+async def test_minesweeper_awards_once_per_day_and_records_best_time(client):
+    tokens = await register(client, "mine-ranked@lab.ru", name="Mine Ranked")
+    h = auth_headers(tokens)
+    ws = (await client.post("/workspaces", json={"name": "Mine Lab"}, headers=h)).json()
+    daily = await client.get("/games/minesweeper/daily", headers=h)
+    body = daily.json()
+    mines = {tuple(cell) for cell in body["mines"]}
+    safe_cells = [
+        [row, col]
+        for row in range(body["size"])
+        for col in range(body["size"])
+        if (row, col) not in mines
+    ]
+    coins_before = (await client.get("/pets/me", headers=h)).json()["coins"]
+
+    first = await client.post(
+        "/games/minesweeper/solve",
+        json={"revealed": safe_cells, "seconds": 90},
+        headers=h,
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["correct"] is True
+    assert first.json()["coins_awarded"] == 55
+    assert first.json()["coins"] == coins_before + 55
+    assert first.json()["best_seconds"] == 90
+
+    faster = await client.post(
+        "/games/minesweeper/solve",
+        json={"revealed": safe_cells, "seconds": 60},
+        headers=h,
+    )
+    assert faster.status_code == 200, faster.text
+    assert faster.json()["coins_awarded"] == 0
+    assert faster.json()["best_seconds"] == 60
+
+    board = await client.get(f"/workspaces/{ws['id']}/minesweeper/leaderboard", headers=h)
+    assert board.status_code == 200, board.text
+    rows = board.json()
+    assert rows == [
+        {
+            "user_id": rows[0]["user_id"],
+            "name": "Mine Ranked",
+            "seconds": 60,
+            "is_me": True,
+        }
+    ]
+
+
+async def test_minesweeper_wrong_no_reward(client):
+    tokens = await register(client, "mine-wrong@lab.ru")
+    h = auth_headers(tokens)
+    daily = await client.get("/games/minesweeper/daily", headers=h)
+    mine = daily.json()["mines"][0]
+    r = await client.post(
+        "/games/minesweeper/solve",
+        json={"revealed": [mine], "seconds": 12},
         headers=h,
     )
     body = r.json()

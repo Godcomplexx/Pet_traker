@@ -657,6 +657,11 @@
             <b>Zip</b>
             <span>соедини точки по порядку</span>
           </button>
+          <button class="mini-game-choice" data-mini-game="minesweeper">
+            <span class="mini-game-ico">9x9</span>
+            <b>Сапёр</b>
+            <span>найди мины и очисти поле</span>
+          </button>
         </div>
         <div class="card sk2 sudoku-card mini-game-panel" id="sudokuGame" hidden>
           <div class="between">
@@ -697,12 +702,33 @@
             <button class="btn sm" id="zipUndo">Отменить</button>
             <button class="btn sm" id="zipHint">Подсказка</button>
             <button class="btn sm" id="zipClear">Очистить</button>
-            <button class="btn sm" id="zipBack">Выбрать игру</button>
           </div>
           <div class="note" id="zipMsg" style="margin-top:8px;"></div>
           <div class="sudoku-leaderboard">
             <h4>Рейтинг лаборатории</h4>
             <div id="zipLeaderboard" class="sudoku-leaderboard-list"></div>
+          </div>
+        </div>
+        <div class="card sk2 minesweeper-card mini-game-panel" id="minesweeperGame" hidden>
+          <div class="between">
+            <h3>Сапёр <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="mineReward">55</span></h3>
+            <span class="chip" id="mineStatus"></span>
+          </div>
+          <div class="muted sm">Открой все безопасные клетки. Правый клик ставит флаг, повторный правый клик снимает его.</div>
+          <div class="mine-stats">
+            <span>Время: <b id="mineTimer">00:00</b></span>
+            <span>Лучшее: <b id="mineBest">—</b></span>
+            <span>Мины: <b id="mineCount">10</b></span>
+            <span>Флаги: <b id="mineFlags">0</b></span>
+          </div>
+          <div id="mineBoard" class="mine-board"></div>
+          <div class="row" style="gap:8px;margin-top:10px;">
+            <button class="btn sm mine-reset-btn" id="mineReset" aria-label="Начать заново">↻ Заново</button>
+          </div>
+          <div class="note" id="mineMsg" style="margin-top:8px;"></div>
+          <div class="sudoku-leaderboard">
+            <h4>Рейтинг лаборатории</h4>
+            <div id="mineLeaderboard" class="sudoku-leaderboard-list"></div>
           </div>
         </div>
         <div class="card sk2 case-card">
