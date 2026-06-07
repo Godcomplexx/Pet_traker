@@ -24,8 +24,6 @@
   <a href="#quick-start-with-docker">Quick Start</a>
   &nbsp;·&nbsp;
   <a href="#api">API</a>
-  &nbsp;·&nbsp;
-  <a href="#render-deployment">Deploy</a>
 </p>
 
 <a id="russian"></a>
@@ -69,7 +67,7 @@ Project / Article / Task mutation
 | Frontend | Vanilla HTML/CSS/JavaScript SPA, Fetch API, localStorage |
 | Static assets | локальные PNG-ассеты персонажей, шапок, еды, декора и emotes; Twemoji CDN fallback для части иконок |
 | Dev / tests | pytest, pytest-asyncio, HTTPX, aiosqlite, Ruff |
-| Infra | Docker, Docker Compose, nginx для локального frontend-контейнера, Render Blueprint |
+| Infra | Docker, Docker Compose, nginx для локального frontend-контейнера |
 
 В репозитории нет `package.json`: основной frontend не использует React/Vite/Webpack и не требует `npm install`.
 
@@ -101,8 +99,7 @@ petpro/
 │   └── hat-tuner.html/js      # development tool for hat placement
 ├── docs/technical-spec.md
 ├── docker-compose.yml
-├── Dockerfile                 # single-image Render deployment
-└── render.yaml                # Render Blueprint
+└── Dockerfile                 # single-image deployment
 ```
 
 ### Быстрый старт через Docker
@@ -220,21 +217,6 @@ ruff check .
 - Самая большая зона поддержки - buildless frontend: `frontend/app.js` и `frontend/wireframes.js` отдаются как компактные статические runtime-файлы без npm-сборки.
 - Frontend активно использует строковый HTML-рендеринг; при развитии проекта стоит постепенно выносить повторяющиеся DOM helpers и санитизацию в отдельные читаемые source-модули.
 
-### Deploy на Render
-
-В репозитории есть `render.yaml` и корневой `Dockerfile` для single-origin деплоя: FastAPI отдает `/api`, `/health` и статический frontend из `FRONTEND_DIR`.
-
-Шаги:
-
-1. Загрузите репозиторий на GitHub.
-2. В Render выберите `New -> Blueprint`.
-3. Подключите репозиторий с `render.yaml`.
-4. Проверьте env-переменные, особенно `JWT_SECRET` и SMTP-настройки.
-
-На free-плане Render в `render.yaml` используется `EVENT_MODE=inline`, чтобы приложение работало без отдельного background worker.
-
----
-
 <a id="english"></a>
 
 ## English Version
@@ -276,7 +258,7 @@ Project / Article / Task mutation
 | Frontend | Vanilla HTML/CSS/JavaScript SPA, Fetch API, localStorage |
 | Static assets | local PNG assets for characters, hats, food, decor, pickups and emotes; Twemoji CDN fallback for some icons |
 | Dev / tests | pytest, pytest-asyncio, HTTPX, aiosqlite, Ruff |
-| Infra | Docker, Docker Compose, nginx for the local frontend container, Render Blueprint |
+| Infra | Docker, Docker Compose, nginx for the local frontend container |
 
 There is no `package.json` in this repository: the main frontend does not use React, Vite, Webpack, or an npm install step.
 
@@ -308,8 +290,7 @@ petpro/
 │   └── hat-tuner.html/js      # development tool for hat placement
 ├── docs/technical-spec.md
 ├── docker-compose.yml
-├── Dockerfile                 # single-image Render deployment
-└── render.yaml                # Render Blueprint
+└── Dockerfile                 # single-image deployment
 ```
 
 ### Quick Start with Docker
@@ -426,16 +407,3 @@ Current repository review snapshot:
 - The backend API is split by routers; shop endpoints live in `backend/app/api/routers/shop.py`, while `app.schemas` remains a compatibility export.
 - The main maintainability risk is the buildless frontend: `frontend/app.js` and `frontend/wireframes.js` are compact static runtime files without an npm build step.
 - The frontend relies heavily on string-based HTML rendering; as the project grows, move repeated DOM helpers and sanitization into readable source modules.
-
-### Render Deployment
-
-The repository includes `render.yaml` and a root `Dockerfile` for single-origin deployment: FastAPI serves `/api`, `/health`, and the static frontend from `FRONTEND_DIR`.
-
-Steps:
-
-1. Push the repository to GitHub.
-2. In Render, choose `New -> Blueprint`.
-3. Connect the repository containing `render.yaml`.
-4. Review environment variables, especially `JWT_SECRET` and SMTP settings.
-
-On Render free tier, `render.yaml` uses `EVENT_MODE=inline` so the application can run without a separate background worker.
