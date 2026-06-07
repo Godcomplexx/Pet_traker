@@ -1,326 +1,441 @@
-# PetPro — Lab Project Tracker with Pet Gamification
+# PetPro
 
-Рабочее пространство для лабораторий и команд разработки: проекты, научные
-статьи, командные и приватные задачи — с игровым питомцем, которого «кормит»
-реально выполненная работа.
+<p align="center">
+  <a href="#russian"><strong>Русский</strong></a>
+  &nbsp;|&nbsp;
+  <a href="#english"><strong>English</strong></a>
+</p>
 
-> Реализация по [техническому заданию](docs/technical-spec.md) (v2.0).
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white">
+  <img alt="Redis" src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+</p>
 
-## Ключевая идея
+<p align="center">
+  <strong>Lab project tracker with task boards, research workflows, team activity, and pet gamification.</strong>
+</p>
 
+<p align="center">
+  <a href="#быстрый-старт-через-docker">Быстрый старт</a>
+  &nbsp;·&nbsp;
+  <a href="#quick-start-with-docker">Quick Start</a>
+  &nbsp;·&nbsp;
+  <a href="#api">API</a>
+  &nbsp;·&nbsp;
+  <a href="#render-deployment">Deploy</a>
+</p>
+
+<a id="russian"></a>
+
+## Русская версия
+
+PetPro - это fullstack-приложение для лабораторий и небольших исследовательских команд: рабочие пространства, проекты, статьи, задачи, комментарии, командная лента, уведомления и игровая мотивация через виртуального питомца.
+
+Ключевая идея проекта: реальные рабочие действия создают domain events, а уже backend начисляет опыт, монеты и события активности. Frontend не начисляет XP напрямую.
+
+```text
+Project / Article / Task mutation
+        -> DomainEvent
+        -> inline handler or Taskiq worker
+        -> Reward, Pet XP/coins, Activity feed, Notifications
 ```
-Project / Article / Task = источник правды
-        ↓ (мутация)
-Domain Event             = факт изменения  (PENDING)
-        ↓ (worker, идемпотентно)
-Reward → Pet XP/level    + Activity Feed (только командные события)
-```
 
-Фронтенд **никогда** не начисляет XP напрямую — все игровые изменения проходят
-через domain events и обработчик (`app/services/events.py`).
+### Возможности
 
-## Стек
+- Регистрация, вход, refresh/logout и опциональное подтверждение email кодом.
+- Рабочие пространства с join-code, ролями участников и приглашениями.
+- Kanban-подход для проектов, статей и задач.
+- Личные и командные задачи, исполнители, дедлайны, комментарии и упоминания.
+- Activity feed и уведомления по задачам, дедлайнам и mentions.
+- Workspace wall: посты, реакции, картинки, жалобы и presence.
+- Виртуальный питомец: XP, уровни, настроение, голод, энергия, ежедневные награды.
+- Игровая экономика: монеты, магазин, еда, шапки, декор, кейсы и инвентарь.
+- Мини-игры: daily Sudoku и Zip с leaderboard.
+- Статический frontend без npm-сборки, который может работать отдельно от API или отдаваться тем же FastAPI-сервисом.
 
-| Слой | Технологии |
-|------|-----------|
-| Backend | FastAPI, SQLAlchemy 2 (async), PostgreSQL 15, Pydantic v2, JWT (python-jose) |
-| Очередь | Redis + Taskiq (асинхронный воркер побочных эффектов) |
-| Frontend | Vanilla HTML/CSS/JS SPA, подключён к API; «бумажный» скетч-стиль |
-| Инфра | Docker Compose (Postgres, Redis) |
+### Технологии и библиотеки
 
-## Структура
+| Слой | Используется |
+| --- | --- |
+| Backend | Python 3.11+, FastAPI, Uvicorn |
+| API / schemas | Pydantic v2, pydantic-settings, pydantic[email] |
+| Database | PostgreSQL 15, SQLAlchemy 2 async ORM, asyncpg, Alembic |
+| Auth | JWT через python-jose[cryptography], bcrypt |
+| Forms / uploads | python-multipart |
+| Background jobs | Redis 7, Taskiq, taskiq-redis, taskiq-fastapi |
+| Frontend | Vanilla HTML/CSS/JavaScript SPA, Fetch API, localStorage |
+| Static assets | локальные PNG-ассеты персонажей, шапок, еды, декора и emotes; Twemoji CDN fallback для части иконок |
+| Dev / tests | pytest, pytest-asyncio, HTTPX, aiosqlite, Ruff |
+| Infra | Docker, Docker Compose, nginx для локального frontend-контейнера, Render Blueprint |
 
-```
+В репозитории нет `package.json`: основной frontend не использует React/Vite/Webpack и не требует `npm install`.
+
+### Структура проекта
+
+```text
 petpro/
-├── backend/            # FastAPI приложение
-│   └── app/
-│       ├── api/routers/   # auth, pets, workspaces, projects, articles, tasks, feed
-│       ├── core/          # config, database, security
-│       ├── services/      # domain events, gamification, dispatch
-│       ├── models.py      # 14 сущностей (spec §11)
-│       ├── enums.py
-│       ├── schemas.py
-│       └── worker.py      # Taskiq broker + task
-├── frontend/           # SPA на API: index.html + api.js + app.js
-│   ├── wireframes.css     # дизайн-система («бумажный» скетч)
-│   └── prototype.html     # исходный кликабельный прототип (референс, mock-данные)
+├── backend/
+│   ├── app/
+│   │   ├── api/routers/       # auth, workspaces, projects, articles, tasks, comments, feed, wall, games, pets, shop
+│   │   ├── core/              # config, database, security
+│   │   ├── services/          # domain logic, events, gamification, email, games
+│   │   ├── main.py            # FastAPI app, CORS, routers, static frontend mount
+│   │   ├── models.py          # SQLAlchemy entities
+│   │   ├── schemas.py         # compatibility exports for Pydantic contracts
+│   │   ├── schemas_core.py    # auth, users, pet, games, workspace, project schemas
+│   │   ├── schemas_work.py    # articles, tasks, comments, notifications, wall schemas
+│   │   └── worker.py          # Taskiq broker/task entrypoint
+│   ├── migrations/            # Alembic migrations
+│   ├── tests/                 # pytest suite
+│   └── pyproject.toml
+├── frontend/
+│   ├── index.html             # main SPA
+│   ├── app.js                 # minified static SPA runtime
+│   ├── api.js                 # API client with JWT refresh
+│   ├── wireframes.js          # minified prototype/runtime helpers
+│   ├── wireframes.css         # visual system
+│   ├── assets/                # characters, hats, decor, food, pickups, emotes
+│   └── hat-tuner.html/js      # development tool for hat placement
 ├── docs/technical-spec.md
-└── docker-compose.yml
+├── docker-compose.yml
+├── Dockerfile                 # single-image Render deployment
+└── render.yaml                # Render Blueprint
 ```
 
-## Быстрый старт — всё в Docker (рекомендуется)
-
-Один command поднимает весь стек: Postgres, Redis, API, воркер и фронтенд.
+### Быстрый старт через Docker
 
 ```bash
 cp .env.example .env
 docker compose up -d --build
 ```
 
-Готово. Сервисы:
+После запуска:
 
-| URL | Что |
-|-----|-----|
-| http://localhost:5500 | Фронтенд (nginx) |
-| http://localhost:8000/docs | Swagger API |
+| URL | Назначение |
+| --- | --- |
+| http://localhost:5500 | Frontend через nginx |
+| http://localhost:8000/docs | Swagger / OpenAPI |
 | http://localhost:8000/health | Healthcheck |
-| localhost:5433 | Postgres (для внешних клиентов) |
+| localhost:5433 | PostgreSQL на host-машине |
+| localhost:6379 | Redis |
 
-Контейнеры: `petpro-postgres`, `petpro-redis`, `petpro-backend`,
-`petpro-worker` (Taskiq), `petpro-frontend`. Миграции (`alembic upgrade head`)
-прогоняются автоматически при старте backend. В Docker-режиме
-`EVENT_MODE=taskiq` — события обрабатывает отдельный воркер.
-
-Полезное:
+Полезные команды:
 
 ```bash
-docker compose logs -f backend worker    # логи
-docker compose ps                         # статус
-docker compose down                       # остановить (данные сохраняются в volumes)
-docker compose down -v                    # остановить и стереть данные
+docker compose ps
+docker compose logs -f backend worker
+docker compose down
+docker compose down -v
 ```
 
-## Запуск без Docker (локальная разработка)
+В Docker Compose `EVENT_MODE=taskiq`, поэтому domain events обрабатывает отдельный `worker`.
+
+### Локальная разработка без полного Docker-стека
+
+Поднимите только PostgreSQL и Redis:
 
 ```bash
-# Инфраструктура (только БД и брокер)
 docker compose up -d postgres redis
+```
 
-# Backend
+Backend:
+
+```bash
 cd backend
-python -m venv .venv; .venv\Scripts\activate     # Windows
+python -m venv .venv
+.venv\Scripts\activate
 pip install -e ".[dev]"
 cp .env.example .env
 alembic upgrade head
-uvicorn app.main:app --reload --port 8000        # Swagger: /docs
+uvicorn app.main:app --reload --port 8000
+```
 
-# Воркер (опционально; иначе EVENT_MODE=inline обрабатывает события в процессе API)
+Worker опционален. Для обычной разработки можно оставить `EVENT_MODE=inline`; для режима очереди:
+
+```bash
+cd backend
 taskiq worker app.worker:broker
-
-# Frontend
-cd ../frontend
-python -m http.server 5500                        # http://localhost:5500
-#   index.html     — приложение (логин → дашборд → задачи → питомец)
-#   prototype.html — исходный прототип-референс на mock-данных
-#   адрес API: window.PETPRO_API (по умолчанию http://localhost:8000/api)
 ```
 
-В режиме разработки `EVENT_MODE=inline` (по умолчанию) — события обрабатываются
-в процессе API, отдельный воркер не нужен. Для масштабирования переключите на
-`taskiq` и поднимите воркер.
+Frontend:
 
-## Деплой в интернет (Render.com)
+```bash
+cd frontend
+python -m http.server 5500
+```
 
-Чтобы другие могли открыть приложение по ссылке **без установки Docker** —
-размещаем его на Render. Они просто заходят в браузере на выданный URL.
+Откройте `http://localhost:5500`. `frontend/api.js` сам выберет `http://localhost:8000/api` для локального static server или `/api`, если frontend отдается тем же origin.
 
-В репозитории уже всё готово:
-- [`Dockerfile`](Dockerfile) (в корне) — единый образ: FastAPI отдаёт и API
-  (`/api`), и статику фронта (`/`) с **одного origin** (без CORS-проблем);
-- [`render.yaml`](render.yaml) — Blueprint: web-сервис + воркер + Postgres + Redis;
-- `DATABASE_URL` в формате `postgres://…` (как у Render) нормализуется автоматически.
+### Конфигурация
 
-**Шаги:**
+Основные переменные:
 
-1. Залить проект на **GitHub** (если ещё нет):
-   ```bash
-   git remote add origin https://github.com/<ты>/<repo>.git
-   git push -u origin main
-   ```
-2. На [render.com](https://render.com) → **New → Blueprint** → выбрать свой
-   репозиторий. Render прочитает `render.yaml` и создаст все 4 ресурса.
-3. Нажать **Apply**. Render соберёт образ, применит миграции (`alembic upgrade head`)
-   и запустит. `JWT_SECRET` сгенерируется, `DATABASE_URL`/`REDIS_URL` подставятся сами.
-4. Готово — открываешь `https://petpro-web.onrender.com` (имя из дашборда) и
-   делишься ссылкой.
+| Переменная | Назначение |
+| --- | --- |
+| `DATABASE_URL` | async SQLAlchemy URL, например `postgresql+asyncpg://...` |
+| `REDIS_URL` | Redis broker URL |
+| `JWT_SECRET` | секрет подписи JWT, обязательно заменить в production |
+| `CORS_ORIGINS` | список origin для браузерных запросов |
+| `EVENT_MODE` | `inline` или `taskiq` |
+| `REQUIRE_EMAIL_VERIFICATION` | требовать код подтверждения email |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | SMTP-настройки |
+| `FRONTEND_DIR` | директория статики, если FastAPI отдает frontend |
 
-**Письма (опционально):** чтобы коды подтверждения приходили реально, в дашборде
-сервиса `petpro-web` → **Environment** задай `SMTP_HOST/SMTP_USER/SMTP_PASSWORD`
-(см. раздел ниже). Без них работает dev-режим (код в логах).
+Если SMTP не настроен, dev-код подтверждения пишется в backend-логи и возвращается в dev-ответе.
 
-> На бесплатном плане Render сервис «засыпает» после ~15 мин простоя и
-> просыпается за ~30 сек при первом заходе — нормально для демо.
+### API
 
-## Регистрация и подтверждение email
+Все бизнес-роуты подключены под `/api`.
 
-Флоу: **регистрация → код на почту → подтверждение → вход**.
+| Группа | Примеры |
+| --- | --- |
+| Auth | `/api/auth/register`, `/api/auth/verify`, `/api/auth/login`, `/api/auth/refresh`, `/api/auth/me` |
+| Workspaces | `/api/workspaces`, `/api/workspaces/join`, `/api/workspaces/{id}/members` |
+| Projects | `/api/workspaces/{id}/projects`, `/api/projects/{id}`, `/api/projects/{id}/status` |
+| Articles | `/api/workspaces/{id}/articles`, `/api/articles/{id}`, `/api/articles/{id}/members` |
+| Tasks | `/api/tasks`, `/api/tasks/{id}/complete`, `/api/me/tasks`, `/api/me/tasks/personal` |
+| Comments | comments for projects, articles and tasks |
+| Feed | `/api/workspaces/{id}/activity`, `/api/notifications` |
+| Wall | `/api/workspaces/{id}/wall`, reactions, reports, presence |
+| Pets / shop | `/api/pets/me`, `/api/shop/items`, `/api/shop/buy`, `/api/shop/equip` |
+| Games | `/api/games/sudoku/daily`, `/api/games/sudoku/solve`, `/api/games/zip/daily`, `/api/games/zip/solve` |
 
-1. `POST /auth/register` — создаёт **неподтверждённый** аккаунт, генерирует
-   6-значный код и отправляет письмо.
-2. `POST /auth/verify {email, code}` — проверяет код, активирует аккаунт, выдаёт токены.
-3. `POST /auth/resend-code {email}` — отправить код повторно.
-4. До подтверждения `POST /auth/login` возвращает `403`.
+Полная интерактивная документация доступна в Swagger: `http://localhost:8000/docs`.
 
-**Отправка письма** ([app/services/email.py](backend/app/services/email.py)):
-- **Dev-режим (по умолчанию)** — `SMTP_HOST` пуст: письмо не уходит, код пишется
-  в логи backend и возвращается в ответе (`dev_code`) + показывается на экране.
-  Работает сразу, без настройки.
-- **Реальные письма** — заполните `SMTP_*` в `backend/.env`. Для Gmail нужен
-  app-password (https://myaccount.google.com/apppasswords, требует 2FA):
-  ```env
-  SMTP_HOST=smtp.gmail.com
-  SMTP_PORT=587
-  SMTP_USER=you@gmail.com
-  SMTP_PASSWORD=<app-password>
-  ```
-  Тот же код полетит настоящим письмом — менять ничего больше не нужно.
-
-Отключить подтверждение вовсе: `REQUIRE_EMAIL_VERIFICATION=false`.
-
-> **Где хранятся данные:** всё в вашем PostgreSQL (контейнер `petpro-postgres`,
-> volume `petpro_postgres_data`). Пароли — только в виде bcrypt-хеша.
-
-## Онбординг нового пользователя
-
-После входа пользователь проходит шаги, пока не готов к работе:
-
-1. **Лаборатория** — нет ни одной → «создать свою» или «войти по коду».
-2. **Создание питомца** — если питомец ещё не настроен (`customized=false`),
-   открывается экран с живым превью пиксельного спрайта: имя, **вид**
-   (капибара/кот/пёс/лягушка/аксолотль) и **цвета** (тело + акцент). Сохранение —
-   `PUT /pets/me`. После этого — дашборд.
-
-Внешность хранится в БД (`pets.species/body_color/accent_color`), спрайт рисуется
-CSS-сеткой 10×9 без картинок — одинаково в сайдбаре, на дашборде, в Team Room.
-
-## Свои иконки и рисунки
-
-Временные UI-иконки берутся из `frontend/assets/custom-icons` с fallback на CDN.
-Чтобы заменить их своими рисунками, положите файл с нужным именем в
-[`frontend/assets/custom-icons`](frontend/assets/custom-icons/README.md), например
-`coin.svg`, `game.svg`, `apple.svg`, `cat.svg`. Сначала ищется `.svg`, затем `.png`,
-и только если локального файла нет — используется временная картинка из интернета.
-
-## Стена и рюкзак
-
-- Стена workspace работает как общий чат-лента. Новые сообщения показываются
-  отдельным бейджем рядом с пунктом "Стена"; общий раздел "Уведомления" не
-  засоряется постами со стены.
-- Стена автоматически очищает посты старше 24 часов при открытии или создании
-  нового поста. В UI сверху есть предупреждение об этом.
-- На сообщения можно ставить реакции: 👍 👎 ❤️ 😂 🎉 👀 🔥. Повторный клик по своей
-  реакции снимает ее.
-- На чужое сообщение можно пожаловаться. Сейчас жалоба сразу удаляет сообщение
-  со Стены для всех участников workspace.
-- К посту можно прикрепить картинку `png`, `jpg`, `webp` или `gif`; фронтенд
-  ограничивает файл до 500 KB, backend принимает data URL до 700 KB. Картинку
-  можно выбрать файлом или вставить из буфера через `Ctrl+V` на экране Стены.
-  Для GIF также поддерживается вставка `https`-ссылки из буфера.
-- В Комнате игр магазин разделен на вкладки каталога: все предметы, цвета, шапки
-  и фоны. Каталог нужен для покупки.
-- Купленные или выигранные из кейсов предметы лежат отдельно в Рюкзаке. Клик по
-  предмету в рюкзаке надевает или снимает его.
-- Краткий рюкзак также показан справа под питомцем, чтобы сразу видеть найденные
-  предметы.
-- На Стене блок "Питомцы на Стене" показывает только тех участников, у кого
-  прямо сейчас открыт экран Стены. Фронтенд отправляет heartbeat, а backend
-  убирает неактивных через короткий таймаут, поэтому закрытая вкладка исчезает
-  из общего пространства автоматически.
-
-## Питомец как тамагочи
-
-Питомец «живёт» во времени ([app/services/pet.py](backend/app/services/pet.py)):
-
-- **Decay** — без заботы сытость/энергия/настроение постепенно падают
-  (≈4/3/2 ед. в час). Считается лениво при каждом чтении `/pets/me` по
-  `stats_updated_at`, плюс фоновый часовой тик воркера (`tick_pets`).
-- **Забота = работа** — закрытие задачи кормит, бодрит и радует питомца;
-  публикация статьи / завершение проекта дают больший прирост (milestone).
-- **Состояние** (`state`) выводится из показателей: `happy / ok / sad /
-  hungry / sleepy` + подпись `state_label`. Фронт показывает эмодзи, меняет
-  анимацию спрайта (прыгает/дрожит/спит/грустит) и подсказывает поработать.
-- XP/level по-прежнему меняет **только** бэкенд через награды (FR-PET-4) —
-  пользователь не управляет показателями напрямую.
-
-## XP и монеты
-
-XP начисляется только через domain events: роут создаёт событие, обработчик
-`app/services/events.py` считает награду через `app/services/gamification.py`,
-создаёт запись `Reward`, обновляет питомца и помечает событие как обработанное.
-Повторная обработка того же события не удваивает награду: есть защита по
-`source_event_id + user_id + reward_type`, а повторное закрытие уже закрытой
-задачи является no-op.
-
-| Действие | Кому начисляется | XP | Условия |
-|---|---:|---:|---|
-| Закрыть личную задачу | исполнитель задачи, иначе тот, кто закрыл | 5 XP | Личное событие, не попадает в общий activity feed |
-| Закрыть командную/проектную задачу | исполнитель задачи, иначе тот, кто закрыл | 10 XP | Командное событие попадает в activity feed |
-| Закрыть задачу до дедлайна или в день дедлайна | тот же получатель | +5 XP | Бонус добавляется к личной или командной награде, если у задачи есть `due_date` и `today <= due_date` |
-| Перевести проект в `DONE` | пользователь, который сменил статус | 50 XP | Награда есть только за статус `DONE` |
-| Перевести статью в `SUBMITTED` | владелец статьи | 50 XP | Другие статусы без награды, кроме указанных ниже |
-| Перевести статью в `ACCEPTED` | владелец статьи | 100 XP |  |
-| Перевести статью в `PUBLISHED` | владелец статьи | 150 XP |  |
-| Добавить командный комментарий | автор комментария | 1 XP | Не больше 5 наград за комментарии за последние 24 часа на пользователя |
-| Переоткрыть задачу, создать сущность, написать на Стене, купить/надеть предмет | никто | 0 XP | Эти действия не дают XP |
-
-Уровень считается просто: `level = floor(total_xp / 100) + 1`. Например,
-0-99 XP = 1 уровень, 100-199 XP = 2 уровень, 200-299 XP = 3 уровень.
-
-Монеты (`pets.coins`) начисляются отдельно от XP:
-
-| Действие | Монеты | Где |
-|---|---:|---|
-| Повысить уровень питомца | +10 за каждый новый уровень | Любая XP-награда |
-| Покормить питомца едой из рюкзака | 0 | Комната игр, расходует 1 предмет еды из `pets.food_inventory` |
-| Погладить питомца | +25 | Комната игр |
-| Поиграть в мячик | +25 | Комната игр |
-| Тестовая кнопка `Тест +100 монет` | +100 | Комната игр, чтобы быстро проверять магазин и кейсы |
-
-Статусы влияют на игры:
-
-- мячик требует минимум `12` энергии и сытость выше `10`;
-- кормление требует купленную еду: кнопка `Покормить` подсвечивает полку еды, а клик по продукту списывает 1 штуку;
-- если сытость `95+`, питомец уже сыт и кормление не начисляется;
-- если сытость `5` или меньше, сначала нужно покормить, а не гладить;
-- если энергия `5` или меньше, питомец спит без сил и не реагирует на поглаживание.
-
-Монеты тратятся в Комнате игр: покупка предметов списывает цену предмета,
-открытие кейса стоит `50` монет, а дубликат из кейса возвращает часть стоимости
-предмета: `max(5, price // 4)`.
-
-## Тесты
+### Тесты и качество
 
 ```bash
 cd backend
-pytest                # 29 тестов: auth/verify, питомец+тамагочи, права, награды, приватность
+pytest
+ruff check .
 ```
 
-## Роли
+Краткий review snapshot по текущему репозиторию:
 
-Workspace: `OWNER · ADMIN · PROJECT_LEAD · EDITOR · MEMBER · VIEWER`
+- Backend покрыт pytest-набором в `backend/tests`.
+- Backend API разделен по роутерам; shop endpoints вынесены в `backend/app/api/routers/shop.py`, а `app.schemas` сохранен как совместимый export.
+- Самая большая зона поддержки - buildless frontend: `frontend/app.js` и `frontend/wireframes.js` отдаются как компактные статические runtime-файлы без npm-сборки.
+- Frontend активно использует строковый HTML-рендеринг; при развитии проекта стоит постепенно выносить повторяющиеся DOM helpers и санитизацию в отдельные читаемые source-модули.
 
-## Порты и частые проблемы
+### Deploy на Render
 
-- **Postgres публикуется на хосте как `5433`** (контейнер внутри — 5432), чтобы не
-  конфликтовать с локально установленным PostgreSQL на 5432. `DATABASE_URL` в
-  `backend/.env` указывает на `localhost:5433`.
-- Если видите `password authentication failed` / asyncpg `connection was closed in
-  the middle of operation` на `5432` — порт занят нативным PostgreSQL; используйте
-  `5433` (как настроено) или остановите службу `postgresql-x64-*`.
-- `[WinError 10048] address already in use` для `:8000` — остановите прошлый
-  процесс `uvicorn` (включая «висящий» reloader) и запустите заново.
-- После первого `docker compose up -d` дождитесь, пока Postgres станет `healthy`
-  (`docker compose ps`), и только потом запускайте `alembic`/`uvicorn`.
+В репозитории есть `render.yaml` и корневой `Dockerfile` для single-origin деплоя: FastAPI отдает `/api`, `/health` и статический frontend из `FRONTEND_DIR`.
 
-## Миграции (Alembic)
+Шаги:
+
+1. Загрузите репозиторий на GitHub.
+2. В Render выберите `New -> Blueprint`.
+3. Подключите репозиторий с `render.yaml`.
+4. Проверьте env-переменные, особенно `JWT_SECRET` и SMTP-настройки.
+
+На free-плане Render в `render.yaml` используется `EVENT_MODE=inline`, чтобы приложение работало без отдельного background worker.
+
+---
+
+<a id="english"></a>
+
+## English Version
+
+PetPro is a fullstack application for labs and small research teams: workspaces, projects, articles, tasks, comments, team activity, notifications, and pet-based gamification.
+
+The core design rule is simple: real work creates domain events, and the backend turns those events into rewards, pet XP, coins, feed items, and notifications. The frontend does not grant XP directly.
+
+```text
+Project / Article / Task mutation
+        -> DomainEvent
+        -> inline handler or Taskiq worker
+        -> Reward, Pet XP/coins, Activity feed, Notifications
+```
+
+### Features
+
+- Registration, login, refresh/logout, and optional email verification by code.
+- Workspaces with join codes, member roles, and invitations.
+- Kanban-style projects, articles, and tasks.
+- Personal and team tasks with assignees, deadlines, comments, and mentions.
+- Activity feed and notifications for assignments, deadlines, and mentions.
+- Workspace wall with posts, reactions, images, reports, and presence.
+- Virtual pet with XP, levels, mood, hunger, energy, and daily rewards.
+- Game economy: coins, shop, food, hats, decor, cases, and inventory.
+- Daily Sudoku and Zip games with leaderboards.
+- Static frontend that can run separately from the API or be served by the FastAPI service.
+
+### Tech Stack and Libraries
+
+| Layer | Used |
+| --- | --- |
+| Backend | Python 3.11+, FastAPI, Uvicorn |
+| API / schemas | Pydantic v2, pydantic-settings, pydantic[email] |
+| Database | PostgreSQL 15, SQLAlchemy 2 async ORM, asyncpg, Alembic |
+| Auth | JWT with python-jose[cryptography], bcrypt |
+| Forms / uploads | python-multipart |
+| Background jobs | Redis 7, Taskiq, taskiq-redis, taskiq-fastapi |
+| Frontend | Vanilla HTML/CSS/JavaScript SPA, Fetch API, localStorage |
+| Static assets | local PNG assets for characters, hats, food, decor, pickups and emotes; Twemoji CDN fallback for some icons |
+| Dev / tests | pytest, pytest-asyncio, HTTPX, aiosqlite, Ruff |
+| Infra | Docker, Docker Compose, nginx for the local frontend container, Render Blueprint |
+
+There is no `package.json` in this repository: the main frontend does not use React, Vite, Webpack, or an npm install step.
+
+### Project Structure
+
+```text
+petpro/
+├── backend/
+│   ├── app/
+│   │   ├── api/routers/       # auth, workspaces, projects, articles, tasks, comments, feed, wall, games, pets, shop
+│   │   ├── core/              # config, database, security
+│   │   ├── services/          # domain logic, events, gamification, email, games
+│   │   ├── main.py            # FastAPI app, CORS, routers, static frontend mount
+│   │   ├── models.py          # SQLAlchemy entities
+│   │   ├── schemas.py         # compatibility exports for Pydantic contracts
+│   │   ├── schemas_core.py    # auth, users, pet, games, workspace, project schemas
+│   │   ├── schemas_work.py    # articles, tasks, comments, notifications, wall schemas
+│   │   └── worker.py          # Taskiq broker/task entrypoint
+│   ├── migrations/            # Alembic migrations
+│   ├── tests/                 # pytest suite
+│   └── pyproject.toml
+├── frontend/
+│   ├── index.html             # main SPA
+│   ├── app.js                 # minified static SPA runtime
+│   ├── api.js                 # API client with JWT refresh
+│   ├── wireframes.js          # minified prototype/runtime helpers
+│   ├── wireframes.css         # visual system
+│   ├── assets/                # characters, hats, decor, food, pickups, emotes
+│   └── hat-tuner.html/js      # development tool for hat placement
+├── docs/technical-spec.md
+├── docker-compose.yml
+├── Dockerfile                 # single-image Render deployment
+└── render.yaml                # Render Blueprint
+```
+
+### Quick Start with Docker
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+Available services:
+
+| URL | Purpose |
+| --- | --- |
+| http://localhost:5500 | Frontend through nginx |
+| http://localhost:8000/docs | Swagger / OpenAPI |
+| http://localhost:8000/health | Healthcheck |
+| localhost:5433 | PostgreSQL on the host |
+| localhost:6379 | Redis |
+
+Useful commands:
+
+```bash
+docker compose ps
+docker compose logs -f backend worker
+docker compose down
+docker compose down -v
+```
+
+Docker Compose uses `EVENT_MODE=taskiq`, so domain events are processed by the separate `worker` service.
+
+### Local Development
+
+Start only PostgreSQL and Redis:
+
+```bash
+docker compose up -d postgres redis
+```
+
+Backend:
 
 ```bash
 cd backend
-alembic upgrade head                       # применить
-alembic revision --autogenerate -m "..."   # новая миграция по изменениям моделей
-alembic downgrade -1                        # откатить
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e ".[dev]"
+cp .env.example .env
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 ```
 
-В dev-режиме (`ENV != production`) схема также создаётся автоматически при старте
-приложения — для prod используйте только миграции.
+The worker is optional for local work. Keep `EVENT_MODE=inline` for the simple path, or run the queue worker:
 
-## Статус
+```bash
+cd backend
+taskiq worker app.worker:broker
+```
 
-✅ Реализовано: auth + питомец, workspaces + участники, проекты со статусами,
-статьи с publication-workflow, универсальные/личные задачи, комментарии +
-mentions, domain events → награды → XP питомца (идемпотентно, с дневным лимитом
-на комментарии), activity feed, Team Room, уведомления (назначение, упоминание,
-дедлайн-воркер), Alembic-миграции. Покрыто тестами (11 passed).
+Frontend:
 
-🚧 Дальше: подключение прототипа фронтенда к реальному API, e2e-проверки в
-Postgres, метрики/observability (счётчики PENDING/FAILED событий).
+```bash
+cd frontend
+python -m http.server 5500
+```
+
+Open `http://localhost:5500`. `frontend/api.js` automatically uses `http://localhost:8000/api` for the local static server and `/api` when frontend and backend share one origin.
+
+### Configuration
+
+Important environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | async SQLAlchemy URL, for example `postgresql+asyncpg://...` |
+| `REDIS_URL` | Redis broker URL |
+| `JWT_SECRET` | JWT signing secret; replace it in production |
+| `CORS_ORIGINS` | browser origins allowed to call the API |
+| `EVENT_MODE` | `inline` or `taskiq` |
+| `REQUIRE_EMAIL_VERIFICATION` | require email confirmation before login |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | SMTP settings |
+| `FRONTEND_DIR` | static frontend directory when served by FastAPI |
+
+If SMTP is not configured, the dev verification code is written to backend logs and returned in the development response.
+
+### API
+
+All business routes are mounted under `/api`.
+
+| Group | Examples |
+| --- | --- |
+| Auth | `/api/auth/register`, `/api/auth/verify`, `/api/auth/login`, `/api/auth/refresh`, `/api/auth/me` |
+| Workspaces | `/api/workspaces`, `/api/workspaces/join`, `/api/workspaces/{id}/members` |
+| Projects | `/api/workspaces/{id}/projects`, `/api/projects/{id}`, `/api/projects/{id}/status` |
+| Articles | `/api/workspaces/{id}/articles`, `/api/articles/{id}`, `/api/articles/{id}/members` |
+| Tasks | `/api/tasks`, `/api/tasks/{id}/complete`, `/api/me/tasks`, `/api/me/tasks/personal` |
+| Comments | comments for projects, articles, and tasks |
+| Feed | `/api/workspaces/{id}/activity`, `/api/notifications` |
+| Wall | `/api/workspaces/{id}/wall`, reactions, reports, presence |
+| Pets / shop | `/api/pets/me`, `/api/shop/items`, `/api/shop/buy`, `/api/shop/equip` |
+| Games | `/api/games/sudoku/daily`, `/api/games/sudoku/solve`, `/api/games/zip/daily`, `/api/games/zip/solve` |
+
+The full interactive API reference is available at `http://localhost:8000/docs`.
+
+### Tests and Quality
+
+```bash
+cd backend
+pytest
+ruff check .
+```
+
+Current repository review snapshot:
+
+- The backend has a pytest suite in `backend/tests`.
+- The backend API is split by routers; shop endpoints live in `backend/app/api/routers/shop.py`, while `app.schemas` remains a compatibility export.
+- The main maintainability risk is the buildless frontend: `frontend/app.js` and `frontend/wireframes.js` are compact static runtime files without an npm build step.
+- The frontend relies heavily on string-based HTML rendering; as the project grows, move repeated DOM helpers and sanitization into readable source modules.
+
+### Render Deployment
+
+The repository includes `render.yaml` and a root `Dockerfile` for single-origin deployment: FastAPI serves `/api`, `/health`, and the static frontend from `FRONTEND_DIR`.
+
+Steps:
+
+1. Push the repository to GitHub.
+2. In Render, choose `New -> Blueprint`.
+3. Connect the repository containing `render.yaml`.
+4. Review environment variables, especially `JWT_SECRET` and SMTP settings.
+
+On Render free tier, `render.yaml` uses `EVENT_MODE=inline` so the application can run without a separate background worker.

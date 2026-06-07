@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import math
 import json
+import logging
 import re
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger(__name__)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,29 +29,44 @@ TEXT = (78, 84, 78, 255)
 HAT_FIT = {"bottom": 11, "center": 0.5}
 
 
+def _catalog_source(text: str) -> str:
+    match = re.search(r"const CHARACTER_CATALOG = \[(.*?)\];", text, re.S)
+    if match:
+        return match.group(1)
+    match = re.search(
+        r"\w+=\[(\{id:\"char_.*?\})\],\w+=Object\.fromEntries\(\w+\.map",
+        text,
+        re.S,
+    )
+    if match:
+        return match.group(1)
+    raise RuntimeError("CHARACTER_CATALOG was not found in app.js")
+
+
+def _parse_catalog_value(token: str) -> object:
+    if token in {"true", "!0"}:
+        return True
+    if token in {"false", "!1"}:
+        return False
+    try:
+        return float(token) if "." in token else int(token)
+    except ValueError:
+        return token
+
+
 def read_catalog() -> list[dict[str, object]]:
     text = APP_JS.read_text(encoding="utf-8")
-    match = re.search(r"const CHARACTER_CATALOG = \[(.*?)\];", text, re.S)
-    if not match:
-        raise RuntimeError("CHARACTER_CATALOG was not found in app.js")
+    source = _catalog_source(text)
 
     catalog: list[dict[str, object]] = []
-    for raw in re.finditer(r"\{([^{}]+)\}", match.group(1)):
+    for raw in re.finditer(r"\{([^{}]+)\}", source):
         item: dict[str, object] = {}
-        for key, value, quoted in re.findall(
-            r"(\w+):\s*(?:'([^']*)'|(true|false|-?\d+(?:\.\d+)?))",
+        for key, double_quoted, single_quoted, raw_value in re.findall(
+            r"(\w+):\s*(?:\"([^\"]*)\"|'([^']*)'|(!0|!1|true|false|-?(?:\d+(?:\.\d*)?|\.\d+)))",
             raw.group(1),
         ):
-            token = value or quoted
-            if token == "true":
-                item[key] = True
-            elif token == "false":
-                item[key] = False
-            else:
-                try:
-                    item[key] = float(token) if "." in token else int(token)
-                except ValueError:
-                    item[key] = token
+            token = double_quoted or single_quoted or raw_value
+            item[key] = token if double_quoted or single_quoted else _parse_catalog_value(token)
         if item.get("file"):
             catalog.append(item)
     return catalog
@@ -78,8 +96,8 @@ def load_font(size: int) -> ImageFont.ImageFont:
     for name in ("arial.ttf", "DejaVuSans.ttf"):
         try:
             return ImageFont.truetype(name, size)
-        except OSError:
-            pass
+        except OSError as exc:
+            logger.debug("Font probe failed for %s: %s", name, exc)
     return ImageFont.load_default()
 
 

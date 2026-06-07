@@ -9,11 +9,13 @@ Revises:
 Create Date: 2026-05-30
 """
 from typing import Sequence, Union
+from importlib import import_module
 
 from alembic import op
 
-from app import models  # noqa: F401  (register tables)
 from app.core.database import Base
+
+import_module("app.models")
 
 revision: str = "0001_initial"
 down_revision: Union[str, None] = None

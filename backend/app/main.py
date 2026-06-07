@@ -17,6 +17,7 @@ from app.api.routers import (
     games,
     pets,
     projects,
+    shop,
     tasks,
     wall,
     workspaces,
@@ -84,7 +85,7 @@ async def health():
     return {"status": "ok"}
 
 
-for r in (auth, pets, workspaces, projects, articles, tasks, comments, feed, wall, games):
+for r in (auth, pets, shop, workspaces, projects, articles, tasks, comments, feed, wall, games):
     app.include_router(r.router, prefix="/api")
 
 

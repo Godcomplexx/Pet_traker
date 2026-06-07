@@ -1,6 +1,7 @@
 """Domain-event emission + idempotent processing (spec §11.14, §15, §18)."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select
@@ -18,26 +19,32 @@ from app.services.gamification import level_of, reward_for_event
 from app.services.pet import reward_care
 
 
+@dataclass(frozen=True)
+class DomainEventInput:
+    event_type: DomainEventType
+    actor_id: str
+    entity_type: str
+    entity_id: str
+    workspace_id: str | None
+    privacy_level: PrivacyLevel
+    payload: dict | None = None
+
+
 async def emit_event(
     db: AsyncSession,
-    *,
-    event_type: DomainEventType,
-    actor_id: str,
-    entity_type: str,
-    entity_id: str,
-    workspace_id: str | None,
-    privacy_level: PrivacyLevel,
-    payload: dict | None = None,
+    options: DomainEventInput | None = None,
+    **event_kwargs,
 ) -> DomainEvent:
     """Create a PENDING domain event. Flushed (not committed) so it shares the caller's txn."""
+    data = options or DomainEventInput(**event_kwargs)
     event = DomainEvent(
-        event_type=event_type,
-        actor_id=actor_id,
-        entity_type=entity_type,
-        entity_id=entity_id,
-        workspace_id=workspace_id,
-        privacy_level=privacy_level,
-        payload=payload or {},
+        event_type=data.event_type,
+        actor_id=data.actor_id,
+        entity_type=data.entity_type,
+        entity_id=data.entity_id,
+        workspace_id=data.workspace_id,
+        privacy_level=data.privacy_level,
+        payload=data.payload or {},
         status=EventStatus.PENDING,
     )
     db.add(event)

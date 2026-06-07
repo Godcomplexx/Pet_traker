@@ -4,6 +4,28 @@
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
+  function sanitizeHtml(html) {
+    const doc = new DOMParser().parseFromString(String(html ?? ""), "text/html");
+    doc.querySelectorAll("script, iframe, object, embed, link, meta").forEach((node) => node.remove());
+    doc.querySelectorAll("*").forEach((node) => {
+      [...node.attributes].forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim();
+        if (name.startsWith("on")) {
+          node.removeAttribute(attr.name);
+        } else if ((name === "href" || name === "src") && /^javascript:/i.test(value)) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    return [...doc.body.childNodes];
+  }
+
+  function setSafeHtml(target, html) {
+    if (!target) return;
+    target.replaceChildren(...sanitizeHtml(html));
+  }
+
   const controls = ["opaqueTop", "opaqueCenter", "hatScale", "hatOffsetX", "hatOffsetY"];
   const state = {
     catalog: [],
@@ -17,16 +39,18 @@
   };
 
   function parseCatalog(text) {
-    const match = text.match(/const CHARACTER_CATALOG = \[([\s\S]*?)\];/);
+    const match = text.match(/const CHARACTER_CATALOG = \[([\s\S]*?)\];/)
+      || text.match(/\w+=\[(\{id:"char_[\s\S]*?\})\],\w+=Object\.fromEntries\(\w+\.map/);
     if (!match) throw new Error("CHARACTER_CATALOG not found");
     return [...match[1].matchAll(/\{([^{}]+)\}/g)].map((entry) => {
       const item = {};
-      for (const pair of entry[1].matchAll(/(\w+):\s*(?:'([^']*)'|(true|false|-?\d+(?:\.\d+)?))/g)) {
+      for (const pair of entry[1].matchAll(/(\w+):\s*(?:"([^"]*)"|'([^']*)'|(!0|!1|true|false|-?(?:\d+(?:\.\d*)?|\.\d+)))/g)) {
         const key = pair[1];
-        const token = pair[2] || pair[3];
-        if (token === "true") item[key] = true;
-        else if (token === "false") item[key] = false;
+        const token = pair[2] || pair[3] || pair[4];
+        if (token === "true" || token === "!0") item[key] = true;
+        else if (token === "false" || token === "!1") item[key] = false;
         else if (/^-?\d+(\.\d+)?$/.test(token)) item[key] = Number(token);
+        else if (/^-?\.\d+$/.test(token)) item[key] = Number(token);
         else item[key] = token;
       }
       return item;
@@ -34,10 +58,8 @@
   }
 
   function parseHatFit(text) {
-    const match = text.match(/const HAT_IMAGE_FIT = \{([\s\S]*?)\};/);
     const fit = {};
-    if (!match) return fit;
-    for (const entry of match[1].matchAll(/(hat_\d+):\s*\{\s*bottom:\s*(-?\d+(?:\.\d+)?),\s*center:\s*(-?\d+(?:\.\d+)?)\s*\}/g)) {
+    for (const entry of text.matchAll(/(hat_\d+):\s*\{\s*bottom:\s*(-?(?:\d+(?:\.\d*)?|\.\d+)),\s*center:\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*\}/g)) {
       fit[entry[1]] = { bottom: Number(entry[2]), center: Number(entry[3]) };
     }
     return fit;
@@ -94,21 +116,21 @@
       const label = `${item.id} ${item.name} ${item.file}`.toLowerCase();
       return !query || label.includes(query);
     });
-    list.innerHTML = filtered.map((item) => `
+    setSafeHtml(list, filtered.map((item) => `
       <button class="item" data-id="${item.id}" data-on="${item.id === state.characterId}">
         <span class="thumb"><img src="assets/characters/${item.file}" alt=""></span>
         <span class="name">${item.file.replace(".png", "")}</span>
       </button>
-    `).join("");
+    `).join(""));
     $("#characterCount").textContent = String(state.catalog.length);
   }
 
   function renderHats() {
-    $("#hatList").innerHTML = state.hats.map((id) => `
+    setSafeHtml($("#hatList"), state.hats.map((id) => `
       <button class="hat" data-id="${id}" data-on="${id === state.hatId}" title="${id}">
         <img src="assets/hats/${id}.png" alt="">
       </button>
-    `).join("");
+    `).join(""));
     $("#hatName").textContent = state.hatId;
   }
 
@@ -134,14 +156,7 @@
     return promise;
   }
 
-  async function drawPreview() {
-    const character = getCharacter();
-    if (!character || !state.draft) return;
-
-    const canvas = $("#preview");
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function drawPreviewGrid(ctx, canvas) {
     ctx.fillStyle = "#f0f4ee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#b9c4b4";
@@ -158,7 +173,9 @@
       ctx.lineTo(canvas.width, y);
       ctx.stroke();
     }
+  }
 
+  function previewGeometry(canvas, character) {
     const frameWidth = Number(character.frameWidth || 32);
     const frameHeight = Number(character.frameHeight || 32);
     const spriteScale = 176 / frameHeight;
@@ -167,22 +184,6 @@
     const spriteCenterX = canvas.width / 2;
     const spriteTop = canvas.height / 2 - spriteHeight / 2 + 28;
     const spriteLeft = spriteCenterX - spriteWidth / 2;
-
-    const sprite = await loadImage(`assets/characters/${character.file}`);
-    const hat = await loadImage(`assets/hats/${state.hatId}.png`);
-
-    ctx.drawImage(
-      sprite,
-      0,
-      0,
-      frameWidth,
-      frameHeight,
-      Math.round(spriteLeft),
-      Math.round(spriteTop),
-      Math.round(spriteWidth),
-      Math.round(spriteHeight),
-    );
-
     const fittedHatSize = 176 * Number(state.draft.hatScale || 1);
     const boxHeight = fittedHatSize * 0.72;
     const headTop = spriteTop + Number(state.draft.opaqueTop || 0) * spriteScale;
@@ -197,31 +198,64 @@
     const imageShiftX = (-Number(fit.center || 0) / 30) * fittedHatSize * flip;
     const left = headX - fittedHatSize / 2 + imageShiftX;
     const hatTop = top + boxHeight - fittedHatSize + imageShiftY;
+    return {
+      frameWidth, frameHeight, spriteWidth, spriteHeight, spriteLeft, spriteTop,
+      fittedHatSize, headX, headTop, left, hatTop, flip,
+    };
+  }
 
+  function drawHat(ctx, hat, geo) {
     ctx.save();
-    if (flip === -1) {
-      ctx.translate(Math.round(left + fittedHatSize / 2), 0);
+    if (geo.flip === -1) {
+      ctx.translate(Math.round(geo.left + geo.fittedHatSize / 2), 0);
       ctx.scale(-1, 1);
       ctx.drawImage(
         hat,
-        Math.round(-fittedHatSize / 2),
-        Math.round(hatTop),
-        Math.round(fittedHatSize),
-        Math.round(fittedHatSize),
+        Math.round(-geo.fittedHatSize / 2),
+        Math.round(geo.hatTop),
+        Math.round(geo.fittedHatSize),
+        Math.round(geo.fittedHatSize),
       );
     } else {
       ctx.drawImage(
         hat,
-        Math.round(left),
-        Math.round(hatTop),
-        Math.round(fittedHatSize),
-        Math.round(fittedHatSize),
+        Math.round(geo.left),
+        Math.round(geo.hatTop),
+        Math.round(geo.fittedHatSize),
+        Math.round(geo.fittedHatSize),
       );
     }
     ctx.restore();
+  }
+
+  async function drawPreview() {
+    const character = getCharacter();
+    if (!character || !state.draft) return;
+
+    const canvas = $("#preview");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPreviewGrid(ctx, canvas);
+
+    const geo = previewGeometry(canvas, character);
+    const sprite = await loadImage(`assets/characters/${character.file}`);
+    const hat = await loadImage(`assets/hats/${state.hatId}.png`);
+    ctx.drawImage(
+      sprite,
+      0,
+      0,
+      geo.frameWidth,
+      geo.frameHeight,
+      Math.round(geo.spriteLeft),
+      Math.round(geo.spriteTop),
+      Math.round(geo.spriteWidth),
+      Math.round(geo.spriteHeight),
+    );
+    drawHat(ctx, hat, geo);
 
     ctx.fillStyle = "rgba(47,125,70,.8)";
-    ctx.fillRect(Math.round(headX) - 2, Math.round(headTop) - 2, 5, 5);
+    ctx.fillRect(Math.round(geo.headX) - 2, Math.round(geo.headTop) - 2, 5, 5);
 
     $("#currentTitle").textContent = `${character.file.replace(".png", "")} + ${state.hatId}`;
     $("#currentMeta").textContent = `top ${formatNumber(state.draft.opaqueTop)} cx ${formatNumber(state.draft.opaqueCenter)} flip ${state.draft.hatFlip ? "Y" : "N"}`;
