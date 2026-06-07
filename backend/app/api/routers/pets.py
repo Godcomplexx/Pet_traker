@@ -104,7 +104,7 @@ def _consume_food(pet: Pet, item_id: str) -> None:
     food = dict(pet.food_inventory or {})
     current = int(food.get(item_id, 0))
     if current <= 0:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Food item is not in backpack")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Этой еды нет в рюкзаке")
     if current == 1:
         food.pop(item_id, None)
     else:

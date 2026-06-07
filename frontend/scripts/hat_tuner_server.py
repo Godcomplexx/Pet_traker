@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES_PATH = ROOT / "hat-placement-overrides.json"
+REVIEW_PATH = ROOT / "character-animation-review.json"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -19,16 +20,29 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self) -> None:
-        if self.path.split("?", 1)[0] == "/hat-placement-overrides.json" and not OVERRIDES_PATH.exists():
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.end_headers()
-            self.wfile.write(b"{}")
+        request_path = self.path.split("?", 1)[0]
+        if request_path == "/hat-placement-overrides.json" and not OVERRIDES_PATH.exists():
+            self.send_json({})
+            return
+        if request_path == "/character-animation-review.json" and not REVIEW_PATH.exists():
+            self.send_json({})
             return
         super().do_GET()
 
+    def send_json(self, data: dict) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
+
     def do_POST(self) -> None:
-        if self.path.split("?", 1)[0] != "/save-hat-overrides":
+        request_path = self.path.split("?", 1)[0]
+        targets = {
+            "/save-hat-overrides": OVERRIDES_PATH,
+            "/save-character-animation-review": REVIEW_PATH,
+        }
+        target_path = targets.get(request_path)
+        if target_path is None:
             self.send_error(404)
             return
 
@@ -36,8 +50,8 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             data = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(data, dict):
-                raise ValueError("Overrides payload must be an object")
-            OVERRIDES_PATH.write_text(
+                raise ValueError("Payload must be an object")
+            target_path.write_text(
                 json.dumps(data, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
@@ -51,7 +65,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.end_headers()
-        self.wfile.write(json.dumps({"ok": True, "path": str(OVERRIDES_PATH)}).encode("utf-8"))
+        self.wfile.write(json.dumps({"ok": True, "path": str(target_path)}).encode("utf-8"))
 
 
 def main() -> None:
@@ -61,8 +75,8 @@ def main() -> None:
     args = parser.parse_args()
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
-    url = f"http://{args.host}:{args.port}/hat-tuner.html"
-    print(url, flush=True)
+    print(f"http://{args.host}:{args.port}/hat-tuner.html", flush=True)
+    print(f"http://{args.host}:{args.port}/character-animation-review.html", flush=True)
     server.serve_forever()
 
 

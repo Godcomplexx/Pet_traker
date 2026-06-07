@@ -1929,7 +1929,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   transform: scale(calc(var(--sprite-base-scale, 1) * var(--sprite-ui-scale, 1.7)));
   transform-origin: center;
   filter: drop-shadow(0 7px 5px rgba(42,50,38,0.16));
-  animation: sprite-play 1.05s steps(var(--sprite-frames)) infinite;
+  animation: sprite-play var(--sprite-duration, 1.05s) steps(var(--sprite-frames)) infinite;
 }
 .asset-pet-sprite[data-static="1"] {
   animation: none;

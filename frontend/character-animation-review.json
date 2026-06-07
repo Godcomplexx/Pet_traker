@@ -1,0 +1,373 @@
+{
+  "char_agent_mike": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:34.637Z"
+    }
+  },
+  "char_angie": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:38.171Z"
+    }
+  },
+  "char_armand": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:40.446Z"
+    }
+  },
+  "char_ballooney": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:42.826Z"
+    }
+  },
+  "char_barry_cherry": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:46.286Z"
+    }
+  },
+  "char_big_red": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:49.458Z"
+    }
+  },
+  "char_blankey": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:51.514Z"
+    }
+  },
+  "char_blocky_bub": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:53.776Z"
+    }
+  },
+  "char_bub": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:10:56.452Z"
+    }
+  },
+  "char_bumpy_the_robot": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:14.769Z"
+    }
+  },
+  "char_bushly": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:16.473Z"
+    }
+  },
+  "char_chi_chi_the_bird": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:18.681Z"
+    }
+  },
+  "char_daikon": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:21.697Z"
+    }
+  },
+  "char_devo_the_devil": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:24.261Z"
+    }
+  },
+  "char_diver_the_fish": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:27.971Z"
+    }
+  },
+  "char_fairy": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:30.467Z"
+    }
+  },
+  "char_geralt": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:32.383Z"
+    }
+  },
+  "char_gloppy_slime": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:34.849Z"
+    }
+  },
+  "char_grizzly": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:36.997Z"
+    }
+  },
+  "char_gum_bot": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:38.845Z"
+    }
+  },
+  "char_hermie": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:40.963Z"
+    }
+  },
+  "char_jumpy_lumpy": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:43.026Z"
+    }
+  },
+  "char_lil_wiz": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:45.161Z"
+    }
+  },
+  "char_martian_red": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:46.983Z"
+    }
+  },
+  "char_moe_scotty": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:50.056Z"
+    }
+  },
+  "char_mr_chomps": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:53.084Z"
+    }
+  },
+  "char_mr_circuit": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:55.212Z"
+    }
+  },
+  "char_mr_man": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:57.796Z"
+    }
+  },
+  "char_mr_mochi": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:11:59.474Z"
+    }
+  },
+  "char_octi": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:01.756Z"
+    }
+  },
+  "char_onion_lad": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:03.876Z"
+    }
+  },
+  "char_orange": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:05.728Z"
+    }
+  },
+  "char_orc": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:08.968Z"
+    }
+  },
+  "char_orchid_owl": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:10.790Z"
+    }
+  },
+  "char_penguin": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:12.328Z"
+    }
+  },
+  "char_percy": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:14.102Z"
+    }
+  },
+  "char_pokey_bub": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:15.750Z"
+    }
+  },
+  "char_roach": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:17.904Z"
+    }
+  },
+  "char_robo_pumpkin": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:19.790Z"
+    }
+  },
+  "char_robo_retro": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:22.795Z"
+    }
+  },
+  "char_robo_totem": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:24.459Z"
+    }
+  },
+  "char_robot_j5": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:26.077Z"
+    }
+  },
+  "char_robot_walky": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:27.577Z"
+    }
+  },
+  "char_rocket_cherry": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:29.311Z"
+    }
+  },
+  "char_rolling_nero": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:32.275Z"
+    }
+  },
+  "char_skeleton": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:35.445Z"
+    }
+  },
+  "char_snip_snap_crab": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:37.323Z"
+    }
+  },
+  "char_spikey_bub": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:12:38.757Z"
+    }
+  },
+  "char_squirmy_wormy": {
+    "hat_01": {
+      "status": "bad",
+      "note": "тв слишком уходит вниз тут червяк в сторону двиаеться",
+      "updatedAt": "2026-06-07T10:13:16.376Z"
+    }
+  },
+  "char_toggle": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:13:19.814Z"
+    }
+  },
+  "char_twiggy": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:13:23.600Z"
+    }
+  },
+  "char_vessa": {
+    "hat_01": {
+      "status": "ok",
+      "note": "",
+      "updatedAt": "2026-06-07T10:13:26.719Z"
+    }
+  },
+  "char_wispy_fire": {
+    "hat_01": {
+      "status": "bad",
+      "note": "можно как то замедлить его анимцию",
+      "updatedAt": "2026-06-07T10:13:41.461Z"
+    }
+  }
+}

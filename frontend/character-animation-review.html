@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Character Animation Review</title>
+  <style>
+    :root {
+      --bg: #eef4ee;
+      --panel: #fff;
+      --line: #c5d0c2;
+      --ink: #233021;
+      --muted: #697765;
+      --ok: #2f7d46;
+      --bad: #a74768;
+      --warn: #9a7a2d;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 Arial, sans-serif; }
+    button, input, textarea { font: inherit; }
+    .app { display: grid; grid-template-columns: 300px minmax(420px, 1fr) 320px; min-height: 100vh; }
+    aside, main { min-width: 0; border-right: 1px solid var(--line); }
+    header { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.58); }
+    h1, h2 { margin: 0; font-size: 16px; }
+    .muted { color: var(--muted); }
+    .list { height: calc(100vh - 52px); overflow: auto; padding: 10px; }
+    .search { width: 100%; height: 34px; padding: 0 10px; margin-bottom: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); outline: 0; }
+    .items { display: grid; gap: 7px; }
+    .item { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; min-width: 0; min-height: 56px; padding: 6px 8px; border: 1px solid var(--line); background: rgba(255,255,255,.55); color: inherit; text-align: left; cursor: pointer; }
+    .item[data-on="true"] { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); background: #f8fcf6; }
+    .item img { width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+    .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+    .file { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
+    .vote-dot { width: 18px; height: 18px; border: 1px solid var(--line); border-radius: 50%; background: #fff; }
+    .vote-dot.ok { border-color: var(--ok); background: var(--ok); }
+    .vote-dot.bad { border-color: var(--bad); background: var(--bad); }
+    .preview { display: grid; grid-template-rows: 52px 1fr auto; min-height: 100vh; }
+    .stage { display: grid; place-items: center; padding: 24px; overflow: hidden; }
+    .stage-box { width: min(100%, 720px); min-height: 420px; display: grid; place-items: center; border: 1px solid var(--line); background: linear-gradient(#edf2f3 0 49%, #dfe9df 49% 100%); box-shadow: 0 20px 40px rgba(45,58,43,.08); overflow: hidden; }
+    .combo { position: relative; width: 260px; height: 220px; }
+    .sprite { position: absolute; left: 50%; top: 50%; width: calc(var(--frame-w) * 1px); height: calc(var(--frame-h) * 1px); background-image: var(--sprite-url); background-repeat: no-repeat; background-size: auto 100%; background-position-x: calc(-1px * var(--frame-w) * var(--frame)); image-rendering: pixelated; transform: translate(-50%, -50%) scale(var(--zoom)); transform-origin: center; filter: drop-shadow(0 10px 7px rgba(42,50,38,.18)); }
+    .hat-img { position: absolute; width: var(--hat-size); height: var(--hat-size); left: var(--hat-left); top: var(--hat-top); object-fit: contain; object-position: center bottom; image-rendering: pixelated; transform: scaleX(var(--hat-flip)); transform-origin: center bottom; filter: drop-shadow(0 6px 4px rgba(42,50,38,.18)); pointer-events: none; }
+    .frame-strip { border-top: 1px solid var(--line); padding: 12px; background: rgba(255,255,255,.48); overflow: auto; }
+    .frames { display: flex; gap: 10px; min-height: 80px; }
+    .frame { width: 72px; height: 72px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid var(--line); background: #f8fbf6; cursor: pointer; }
+    .frame[data-on="true"] { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
+    .mini-combo { position: relative; width: 64px; height: 64px; }
+    .frame-sprite { position: absolute; left: 50%; top: 58%; width: calc(var(--frame-w) * 1px); height: calc(var(--frame-h) * 1px); background-image: var(--sprite-url); background-repeat: no-repeat; background-size: auto 100%; background-position-x: calc(-1px * var(--frame-w) * var(--frame)); image-rendering: pixelated; transform: translate(-50%, -50%) scale(var(--thumb-zoom)); }
+    .frame-hat { position: absolute; width: var(--hat-size); height: var(--hat-size); left: var(--hat-left); top: var(--hat-top); object-fit: contain; object-position: center bottom; image-rendering: pixelated; transform: scaleX(var(--hat-flip)); transform-origin: center bottom; }
+    .controls { min-height: 100vh; background: rgba(255,255,255,.58); }
+    .control-body { padding: 14px; }
+    .meta { display: grid; gap: 7px; padding: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.58); font-size: 12px; }
+    .toolbar, .vote-actions, .save-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .toolbar { grid-template-columns: repeat(3, 1fr); }
+    .btn { height: 36px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
+    .btn.ok { border-color: var(--ok); background: var(--ok); color: #fff; }
+    .btn.bad { border-color: var(--bad); background: var(--bad); color: #fff; }
+    .btn.warn { border-color: var(--warn); }
+    textarea { width: 100%; min-height: 130px; margin-top: 12px; padding: 9px; resize: vertical; border: 1px solid var(--line); color: var(--ink); background: #fff; }
+    .status { min-height: 22px; margin-top: 10px; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .stat { padding: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.6); text-align: center; }
+    .hats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 12px; }
+    .hat-option { height: 48px; display: grid; place-items: center; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+    .hat-option[data-on="true"] { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
+    .hat-option img { width: 36px; height: 36px; object-fit: contain; image-rendering: pixelated; }
+    @media (max-width: 1020px) {
+      .app { grid-template-columns: 1fr; }
+      aside, main { border-right: 0; border-bottom: 1px solid var(--line); }
+      .list, .controls, .preview { min-height: auto; height: auto; }
+      .list { max-height: 420px; }
+      .stage-box { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <header><h1>Персонажи</h1><span class="muted" id="count"></span></header>
+      <div class="list">
+        <input class="search" id="search" placeholder="поиск" />
+        <div class="items" id="items"></div>
+      </div>
+    </aside>
+
+    <main class="preview">
+      <header><h1 id="title">Hat Animation Review</h1><span class="muted" id="progress"></span></header>
+      <section class="stage">
+        <div class="stage-box">
+          <div class="combo" id="combo">
+            <div class="sprite" id="sprite"></div>
+            <img class="hat-img" id="hat" alt="">
+          </div>
+        </div>
+      </section>
+      <section class="frame-strip"><div class="frames" id="frames"></div></section>
+    </main>
+
+    <aside class="controls">
+      <header><h2>Проверка</h2><span class="muted" id="voteLabel">не проверено</span></header>
+      <div class="control-body">
+        <div class="meta" id="meta"></div>
+        <div class="hats" id="hats"></div>
+        <div class="toolbar">
+          <button class="btn" id="prev">Назад</button>
+          <button class="btn" id="play">Пауза</button>
+          <button class="btn" id="next">Дальше</button>
+        </div>
+        <div class="vote-actions">
+          <button class="btn ok" id="markOk">Правильно</button>
+          <button class="btn bad" id="markBad">Неправильно</button>
+        </div>
+        <textarea id="note" placeholder="заметка: что именно поправить"></textarea>
+        <div class="save-actions">
+          <button class="btn warn" id="clearVote">Сбросить</button>
+          <button class="btn" id="saveFile">Записать JSON</button>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="status" id="status"></div>
+      </div>
+    </aside>
+  </div>
+  <script src="character-animation-review.js"></script>
+</body>
+</html>

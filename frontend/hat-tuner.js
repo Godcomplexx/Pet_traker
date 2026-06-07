@@ -2,8 +2,6 @@
   "use strict";
 
   const $ = (selector) => document.querySelector(selector);
-  const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-
   function sanitizeHtml(html) {
     const doc = new DOMParser().parseFromString(String(html ?? ""), "text/html");
     doc.querySelectorAll("script, iframe, object, embed, link, meta").forEach((node) => node.remove());
@@ -118,11 +116,27 @@
     });
     setSafeHtml(list, filtered.map((item) => `
       <button class="item" data-id="${item.id}" data-on="${item.id === state.characterId}">
-        <span class="thumb"><img src="assets/characters/${item.file}" alt=""></span>
+        <span class="thumb"><canvas width="220" height="180" data-thumb="${item.id}"></canvas></span>
         <span class="name">${item.file.replace(".png", "")}</span>
       </button>
     `).join(""));
     $("#characterCount").textContent = String(state.catalog.length);
+    drawCharacterThumbs();
+  }
+
+  function drawCharacterThumbs() {
+    $("#characterList").querySelectorAll("[data-thumb]").forEach(async (canvas) => {
+      const character = state.catalog.find((item) => item.id === canvas.dataset.thumb);
+      if (!character) return; const draft = state.draft;
+      state.draft = getBaseDraft(character);
+      const geo = previewGeometry(canvas, character);
+      state.draft = draft;
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const [sprite, hat] = await Promise.all([loadImage(`assets/characters/${character.file}`), loadImage(`assets/hats/${state.hatId}.png`)]);
+      ctx.drawImage(sprite, 0, 0, geo.frameWidth, geo.frameHeight, Math.round(geo.spriteLeft), Math.round(geo.spriteTop), Math.round(geo.spriteWidth), Math.round(geo.spriteHeight));
+      drawHat(ctx, hat, geo);
+    });
   }
 
   function renderHats() {
@@ -272,6 +286,7 @@
   function selectHat(id) {
     state.hatId = id;
     state.draft = getBaseDraft();
+    renderCharacters();
     renderHats();
     syncControls();
     drawPreview();
@@ -283,6 +298,7 @@
     state.overrides[character.id] = state.overrides[character.id] || {};
     state.overrides[character.id][state.hatId] = slimDraft(state.draft);
     refreshOutput();
+    drawCharacterThumbs();
     setStatus(`Сохранено: ${character.file.replace(".png", "")} / ${state.hatId}`);
   }
 
@@ -294,6 +310,7 @@
     state.draft = getBaseDraft();
     syncControls();
     refreshOutput();
+    drawCharacterThumbs();
     drawPreview();
     setStatus("Настройка пары сброшена");
   }
