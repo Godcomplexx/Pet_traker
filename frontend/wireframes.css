@@ -2713,20 +2713,19 @@ textarea.input { resize: vertical; min-height: 70px; }
 .mine-stats {
   width: min(100%, 432px);
   margin: 10px auto 8px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: 9px;
 }
 .mine-stats span {
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  border: 1px solid rgba(23, 37, 28, 0.22);
-  border-radius: var(--r2);
-  background: rgba(255,255,255,0.45);
-  font-size: 8px;
+  min-height: 0;
+  display: inline;
+  border: 0;
+  background: transparent;
+  font-size: inherit;
 }
 .mine-board {
   width: min(100%, 432px);
