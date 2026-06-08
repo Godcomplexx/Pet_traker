@@ -672,11 +672,13 @@
           <div class="sudoku-stats">
             <span>Время: <b id="sudokuTimer">00:00</b></span>
             <span>Лучшее: <b id="sudokuBest">—</b></span>
+            <span>Подсказки: <b id="sudokuHints">3/3</b></span>
           </div>
           <div id="sudokuBoard" class="sudoku-board"></div>
           <div class="sudoku-pad" id="sudokuPad"></div>
           <div class="row" style="gap:8px;margin-top:10px;">
             <button class="btn primary" id="sudokuCheck">Проверить</button>
+            <button class="btn sm" id="sudokuHint">? Подсказка</button>
             <button class="btn sm" id="sudokuReset">Очистить</button>
           </div>
           <div class="note" id="sudokuMsg" style="margin-top:8px;"></div>
@@ -714,7 +716,7 @@
             <h3>Сапёр <span class="asset-icon" data-icon="coin" data-label="монеты"></span> <span id="mineReward">55</span></h3>
             <span class="chip" id="mineStatus"></span>
           </div>
-          <div class="muted sm">Открой все безопасные клетки. Правый клик ставит флаг, повторный правый клик снимает его.</div>
+          <div class="muted sm">Открой безопасные клетки и отмечай мины флагами.</div>
           <div class="mine-stats">
             <span>Время: <b id="mineTimer">00:00</b></span>
             <span>Лучшее: <b id="mineBest">—</b></span>
