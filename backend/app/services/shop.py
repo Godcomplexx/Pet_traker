@@ -74,6 +74,8 @@ SHOP_ITEMS: list[dict] = [
     {"id": "decor_plant_tall", "name": "Высокий цветок", "type": "decor", "rarity": "rare", "price": 95, "data": {"file": "plant_tall.png", "slot": "shelf-right"}},
     {"id": "decor_plant_single_leaf", "name": "Листок", "type": "decor", "rarity": "rare", "price": 80, "data": {"file": "plant_single_leaf.png", "slot": "shelf-left"}},
     {"id": "decor_plant_yellow_pot", "name": "Солнечный цветок", "type": "decor", "rarity": "rare", "price": 90, "data": {"file": "plant_yellow_pot.png", "slot": "shelf-right"}},
+    {"id": "decor_floor_lamp", "name": "Торшер", "type": "decor", "rarity": "rare", "price": 95, "data": {"file": "decor_floor_lamp.png", "slot": "floor-right", "kind": "light"}},
+    {"id": "decor_wall_light", "name": "Настенный свет", "type": "decor", "rarity": "epic", "price": 130, "data": {"file": "decor_wall_light.png", "slot": "shelf-left", "kind": "light"}},
     # ── еда (расходуется при кормлении питомца) ──
     {"id": "food_banana",  "name": "Банан",      "type": "food", "rarity": "common", "price": 12, "data": {"icon": "food_banana", "hunger": 10, "mood": 1, "energy": 0}},
     {"id": "food_berry",   "name": "Ягоды",      "type": "food", "rarity": "common", "price": 10, "data": {"icon": "food_berry", "hunger": 8, "mood": 3, "energy": 0}},

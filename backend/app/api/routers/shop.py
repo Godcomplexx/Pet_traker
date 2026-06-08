@@ -40,6 +40,28 @@ def _item_slot(item_id: str) -> str | None:
     return str(slot) if slot else None
 
 
+def _decor_list(value) -> list[str]:
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        return []
+    return [
+        str(item_id)
+        for item_id in value
+        if get_item(str(item_id)) and get_item(str(item_id))["type"] == "decor"
+    ]
+
+
+def _decor_slots(value) -> dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    return {
+        str(item_id): str(slot)
+        for item_id, slot in value.items()
+        if slot in {"floor-left", "floor-right", "shelf-left", "shelf-right"}
+    }
+
+
 @router.get("/shop/items")
 async def shop_items(user: User = Depends(get_current_user)):
     """Каталог магазина (статичный, из кода)."""
@@ -126,24 +148,43 @@ async def shop_equip(
     if data.item_id not in (pet.inventory or []):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет не куплен")
     if item["type"] == "decor":
-        current = equipped.get("decor") or []
-        if isinstance(current, str):
-            current = [current]
-        decor = [str(item_id) for item_id in current if get_item(str(item_id))]
-        if data.item_id in decor:
+        decor = _decor_list(equipped.get("decor"))
+        decor_slots = _decor_slots(equipped.get("decor_slots"))
+        if data.slot:
+            target_slot = data.slot
+            for item_id in list(decor):
+                if item_id != data.item_id and decor_slots.get(item_id, _item_slot(item_id)) == target_slot:
+                    decor.remove(item_id)
+                    decor_slots.pop(item_id, None)
+            if data.item_id not in decor:
+                decor.append(data.item_id)
+            for item_id, slot in list(decor_slots.items()):
+                if item_id == data.item_id or slot == target_slot:
+                    decor_slots.pop(item_id, None)
+            decor_slots[data.item_id] = target_slot
+        elif data.item_id in decor:
             decor = [item_id for item_id in decor if item_id != data.item_id]
+            decor_slots.pop(data.item_id, None)
         else:
             slot = (item.get("data") or {}).get("slot") if isinstance(item.get("data"), dict) else None
             if slot:
                 decor = [
                     item_id for item_id in decor
-                    if _item_slot(item_id) != slot
+                    if decor_slots.get(item_id, _item_slot(item_id)) != slot
                 ]
+                decor_slots = {
+                    item_id: item_slot
+                    for item_id, item_slot in decor_slots.items()
+                    if item_id in decor and item_slot != slot
+                }
+                decor_slots[data.item_id] = str(slot)
             decor.append(data.item_id)
         if decor:
             equipped["decor"] = decor
+            equipped["decor_slots"] = {item_id: slot for item_id, slot in decor_slots.items() if item_id in decor}
         else:
             equipped.pop("decor", None)
+            equipped.pop("decor_slots", None)
         pet.equipped = equipped
         await db.commit()
         await db.refresh(pet)

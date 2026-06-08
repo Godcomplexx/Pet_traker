@@ -1743,6 +1743,24 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-top: 1px solid rgba(255,255,255,0.55);
   pointer-events: none;
 }
+.pet-room-screen::after {
+  content: '';
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  top: 42%;
+  height: clamp(62px, 10vw, 92px);
+  background: url('assets/decor/wooden_table.png') center / contain no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 12px 10px rgba(52,62,42,0.16));
+  pointer-events: none;
+  z-index: 2;
+}
+.pet-room-screen.room-has-light {
+  background-image:
+    radial-gradient(circle at 72% 31%, rgba(255,224,132,0.34), transparent 24%),
+    radial-gradient(circle at 24% 40%, rgba(255,224,132,0.22), transparent 20%);
+}
 #screen-pet .pet-room-screen .pixelpet.asset-pet {
   width: clamp(128px, 20%, 190px);
   --sprite-ui-scale: 4.2;
@@ -1788,6 +1806,50 @@ textarea.input { resize: vertical; min-height: 70px; }
   right: 23%;
   bottom: 42%;
   width: clamp(44px, 6vw, 70px);
+}
+.pet-room-screen .pet-decor.decor-light {
+  filter:
+    drop-shadow(0 4px 4px rgba(35,42,32,0.14))
+    drop-shadow(0 0 14px rgba(255,219,112,0.62));
+}
+.pet-room-screen .pet-decor.decor-light::before {
+  content: '';
+  position: absolute;
+  inset: -70%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,230,142,0.36), rgba(255,230,142,0.00) 62%);
+  z-index: -1;
+}
+
+.room-decor-card {
+  gap: 6px;
+}
+.decor-slot-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+  margin-top: 6px;
+}
+.decor-slot-actions button {
+  min-height: 28px;
+  padding: 5px 6px;
+  border: 1px solid rgba(90,105,86,0.22);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.58);
+  color: var(--ink);
+  font-size: var(--fs-xs);
+  line-height: 1.15;
+  cursor: pointer;
+}
+.decor-slot-actions button.on {
+  border-color: rgba(184,149,58,0.64);
+  background: rgba(245,224,151,0.54);
+  color: var(--ink);
+}
+.decor-slot-actions button.danger {
+  grid-column: 1 / -1;
+  color: #7a3f3f;
 }
 
 .pet-emote {

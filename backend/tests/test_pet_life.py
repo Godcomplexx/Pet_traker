@@ -126,8 +126,9 @@ async def test_can_buy_and_equip_room_decor(client):
     catalog = await client.get("/shop/items", headers=headers)
     decor_items = [item for item in catalog.json()["items"] if item["type"] == "decor"]
     assert {item["id"] for item in decor_items} >= {"decor_flower_pot", "decor_plant_sprout"}
-    assert len(decor_items) >= 14
-    assert {item["data"]["file"] for item in decor_items} >= {
+    assert {item["id"] for item in decor_items} >= {"decor_floor_lamp", "decor_wall_light"}
+    assert len(decor_items) >= 16
+    assert {item["data"]["file"] for item in decor_items if "file" in item["data"]} >= {
         "plant_bloom_red.png",
         "plant_bloom_orchid.png",
         "plant_bloom_yellow.png",
@@ -137,6 +138,8 @@ async def test_can_buy_and_equip_room_decor(client):
         "plant_leaf_pot.png",
         "plant_single_leaf.png",
         "plant_yellow_pot.png",
+        "decor_floor_lamp.png",
+        "decor_wall_light.png",
     }
 
     async with SessionLocal() as db:
@@ -157,6 +160,57 @@ async def test_can_buy_and_equip_room_decor(client):
     equipped_second = await client.post("/shop/equip", json={"item_id": "decor_plant_sprout"}, headers=headers)
     assert equipped_second.status_code == 200, equipped_second.text
     assert set(equipped_second.json()["equipped"]["decor"]) == {"decor_flower_pot", "decor_plant_sprout"}
+
+
+async def test_can_place_room_decor_on_custom_slots(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "decor-slots@lab.ru")
+    headers = auth_headers(tokens)
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="decor-slots@lab.ru")))
+        pet.coins = 500
+        await db.commit()
+
+    for item_id in ("decor_flower_pot", "decor_plant_sprout", "decor_floor_lamp"):
+        bought = await client.post("/shop/buy", json={"item_id": item_id}, headers=headers)
+        assert bought.status_code == 200, bought.text
+
+    shelf = await client.post(
+        "/shop/equip",
+        json={"item_id": "decor_flower_pot", "slot": "shelf-left"},
+        headers=headers,
+    )
+    assert shelf.status_code == 200, shelf.text
+    body = shelf.json()
+    assert body["equipped"]["decor"] == ["decor_flower_pot"]
+    assert body["equipped"]["decor_slots"]["decor_flower_pot"] == "shelf-left"
+
+    replaced = await client.post(
+        "/shop/equip",
+        json={"item_id": "decor_plant_sprout", "slot": "shelf-left"},
+        headers=headers,
+    )
+    assert replaced.status_code == 200, replaced.text
+    body = replaced.json()
+    assert body["equipped"]["decor"] == ["decor_plant_sprout"]
+    assert body["equipped"]["decor_slots"] == {"decor_plant_sprout": "shelf-left"}
+
+    floor = await client.post(
+        "/shop/equip",
+        json={"item_id": "decor_floor_lamp", "slot": "floor-right"},
+        headers=headers,
+    )
+    assert floor.status_code == 200, floor.text
+    body = floor.json()
+    assert set(body["equipped"]["decor"]) == {"decor_plant_sprout", "decor_floor_lamp"}
+    assert body["equipped"]["decor_slots"]["decor_floor_lamp"] == "floor-right"
+
+    removed = await client.post("/shop/equip", json={"item_id": "decor_plant_sprout"}, headers=headers)
+    assert removed.status_code == 200, removed.text
+    assert removed.json()["equipped"]["decor"] == ["decor_floor_lamp"]
 
 
 async def test_pet_play_respects_stats(client):

@@ -195,6 +195,8 @@ class ShopBuyIn(BaseModel):
 class EquipIn(BaseModel):
     # item_id или null чтобы снять предмет данного типа
     item_id: str | None = None
+    # Для декора комнаты: куда поставить предмет.
+    slot: str | None = Field(default=None, pattern="^(floor-left|floor-right|shelf-left|shelf-right)$")
 
 
 class CaseOpenOut(BaseModel):
