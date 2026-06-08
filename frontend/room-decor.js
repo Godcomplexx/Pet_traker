@@ -16,15 +16,7 @@
   let busy = false;
   let observer = null;
   let syncTimer = null;
-
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"]/g, (ch) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-    }[ch]));
-  }
+  let drag = null;
 
   function equippedDecor() {
     const equipped = pet?.equipped || {};
@@ -33,12 +25,19 @@
     const slots = equipped.decor_slots && typeof equipped.decor_slots === 'object'
       ? equipped.decor_slots
       : {};
+    const positions = equipped.decor_positions && typeof equipped.decor_positions === 'object'
+      ? equipped.decor_positions
+      : {};
     return ids
       .map((id) => {
         const item = catalog[id];
         if (!item || item.type !== 'decor') return null;
         const slot = slots[id] || item.data?.slot || 'floor-right';
-        return { id, item, slot };
+        const savedPosition = positions[id];
+        const x = Number(savedPosition?.x);
+        const y = Number(savedPosition?.y);
+        const position = Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+        return { id, item, slot, position };
       })
       .filter(Boolean);
   }
@@ -49,17 +48,42 @@
     return `assets/decor/${data.icon || item.id}.png`;
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function pointerPosition(event, screen) {
+    const box = screen.getBoundingClientRect();
+    return {
+      x: clamp(((event.clientX - box.left) / box.width) * 100, 3, 97),
+      y: clamp(((event.clientY - box.top) / box.height) * 100, 4, 96),
+    };
+  }
+
+  function applyFreePosition(node, position) {
+    node.classList.add('decor-free');
+    node.classList.remove('decor-floor-left', 'decor-floor-right', 'decor-shelf-left', 'decor-shelf-right');
+    node.style.setProperty('--decor-x', `${position.x}%`);
+    node.style.setProperty('--decor-y', `${position.y}%`);
+  }
+
   function renderRoom() {
     if (!pet) return;
     qsa('.pet-room-screen').forEach((screen) => {
       qsa('.pet-decor', screen).forEach((node) => node.remove());
       const decor = equippedDecor();
       screen.classList.toggle('room-has-light', decor.some(({ item }) => item.data?.kind === 'light'));
-      decor.forEach(({ item, slot }) => {
+      decor.forEach(({ id, item, slot, position }) => {
         const node = document.createElement('div');
-        node.className = `pet-decor decor-${slot} ${item.data?.kind === 'light' ? 'decor-light' : ''}`;
+        node.className = `pet-decor ${item.data?.kind === 'light' ? 'decor-light' : ''}`;
         node.dataset.roomDecorOverlay = '1';
+        node.dataset.roomDecorId = id;
         node.title = item.name || '';
+        if (position) {
+          applyFreePosition(node, position);
+        } else {
+          node.classList.add(`decor-${slot}`);
+        }
 
         const img = document.createElement('img');
         img.className = 'pet-decor-img';
@@ -76,11 +100,22 @@
     const wrap = document.createElement('div');
     wrap.className = 'decor-slot-actions';
     wrap.dataset.roomItem = item.id;
-    wrap.innerHTML = Object.entries(SLOTS).map(([slot, label]) => (
-      `<button class="${placed?.slot === slot ? 'on' : ''}" type="button" data-room-slot="${slot}">${escapeHtml(label)}</button>`
-    )).join('') + (placed
-      ? '<button class="danger" type="button" data-room-remove="1">Снять</button>'
-      : '');
+    Object.entries(SLOTS).forEach(([slot, label]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.roomSlot = slot;
+      button.textContent = label;
+      button.classList.toggle('on', placed?.slot === slot);
+      wrap.appendChild(button);
+    });
+    if (placed) {
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'danger';
+      remove.dataset.roomRemove = '1';
+      remove.textContent = 'Снять';
+      wrap.appendChild(remove);
+    }
     card.appendChild(wrap);
   }
 
@@ -99,7 +134,7 @@
     busy = true;
     observer?.disconnect();
     try {
-      renderRoom();
+      if (!drag) renderRoom();
       decorateInventory();
     } finally {
       busy = false;
@@ -134,6 +169,15 @@
     paint();
   }
 
+  async function saveDecorPosition(itemId, position) {
+    pet = await api.post('/shop/decor-position', {
+      item_id: itemId,
+      x: position.x,
+      y: position.y,
+    });
+    paint();
+  }
+
   document.addEventListener('click', async (event) => {
     const action = event.target.closest('[data-room-slot], [data-room-remove]');
     if (!action) return;
@@ -148,6 +192,54 @@
       const msg = qs('#playMsg');
       if (msg) msg.textContent = err.message || 'Не удалось переставить предмет.';
     }
+  }, true);
+
+  document.addEventListener('pointerdown', (event) => {
+    const node = event.target.closest('.pet-room-screen .pet-decor[data-room-decor-id]');
+    if (!node || !api?.isAuthed?.()) return;
+    const screen = node.closest('.pet-room-screen');
+    if (!screen) return;
+    event.preventDefault();
+    event.stopPropagation();
+    drag = {
+      itemId: node.dataset.roomDecorId,
+      node,
+      screen,
+      pointerId: event.pointerId,
+      position: pointerPosition(event, screen),
+    };
+    node.classList.add('is-dragging');
+    node.setPointerCapture?.(event.pointerId);
+    applyFreePosition(node, drag.position);
+  }, true);
+
+  document.addEventListener('pointermove', (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    event.preventDefault();
+    drag.position = pointerPosition(event, drag.screen);
+    applyFreePosition(drag.node, drag.position);
+  }, true);
+
+  document.addEventListener('pointerup', async (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    event.preventDefault();
+    const finished = drag;
+    drag = null;
+    finished.node.classList.remove('is-dragging');
+    try {
+      await saveDecorPosition(finished.itemId, finished.position);
+    } catch (err) {
+      const msg = qs('#playMsg');
+      if (msg) msg.textContent = err.message || 'Не удалось сохранить положение предмета.';
+      scheduleSync();
+    }
+  }, true);
+
+  document.addEventListener('pointercancel', (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    drag.node.classList.remove('is-dragging');
+    drag = null;
+    scheduleSync();
   }, true);
 
   document.addEventListener('click', (event) => {

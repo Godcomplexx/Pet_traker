@@ -106,6 +106,9 @@ class PetOut(ORMModel):
     mood: int
     hunger: int
     energy: int
+    is_dead: bool = False
+    died_at: datetime | None = None
+    neglect_started_at: datetime | None = None
     coins: int = 0
     daily_claimed_on: date | None = None
     sudoku_completed_on: date | None = None
@@ -197,6 +200,12 @@ class EquipIn(BaseModel):
     item_id: str | None = None
     # Для декора комнаты: куда поставить предмет.
     slot: str | None = Field(default=None, pattern="^(floor-left|floor-right|shelf-left|shelf-right)$")
+
+
+class DecorPositionIn(BaseModel):
+    item_id: str
+    x: float = Field(ge=0, le=100)
+    y: float = Field(ge=0, le=100)
 
 
 class CaseOpenOut(BaseModel):

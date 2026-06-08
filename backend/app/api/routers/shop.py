@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
 from app.models import Pet, User, WorkspaceMember
-from app.schemas import CaseOpenOut, EquipIn, PetOut, ShopBuyIn
+from app.schemas import CaseOpenOut, DecorPositionIn, EquipIn, PetOut, ShopBuyIn
 from app.services.pet import apply_decay, pet_state, state_label
 from app.services.shop import CASE_PRICE, SHOP_ITEMS, get_item, roll_case
 
@@ -60,6 +60,25 @@ def _decor_slots(value) -> dict[str, str]:
         for item_id, slot in value.items()
         if slot in {"floor-left", "floor-right", "shelf-left", "shelf-right"}
     }
+
+
+def _decor_positions(value) -> dict[str, dict[str, float]]:
+    if not isinstance(value, dict):
+        return {}
+    positions: dict[str, dict[str, float]] = {}
+    for item_id, position in value.items():
+        if not isinstance(position, dict):
+            continue
+        try:
+            x = float(position.get("x"))
+            y = float(position.get("y"))
+        except (TypeError, ValueError):
+            continue
+        positions[str(item_id)] = {
+            "x": max(0.0, min(100.0, x)),
+            "y": max(0.0, min(100.0, y)),
+        }
+    return positions
 
 
 @router.get("/shop/items")
@@ -150,12 +169,14 @@ async def shop_equip(
     if item["type"] == "decor":
         decor = _decor_list(equipped.get("decor"))
         decor_slots = _decor_slots(equipped.get("decor_slots"))
+        decor_positions = _decor_positions(equipped.get("decor_positions"))
         if data.slot:
             target_slot = data.slot
             for item_id in list(decor):
                 if item_id != data.item_id and decor_slots.get(item_id, _item_slot(item_id)) == target_slot:
                     decor.remove(item_id)
                     decor_slots.pop(item_id, None)
+                    decor_positions.pop(item_id, None)
             if data.item_id not in decor:
                 decor.append(data.item_id)
             for item_id, slot in list(decor_slots.items()):
@@ -165,6 +186,7 @@ async def shop_equip(
         elif data.item_id in decor:
             decor = [item_id for item_id in decor if item_id != data.item_id]
             decor_slots.pop(data.item_id, None)
+            decor_positions.pop(data.item_id, None)
         else:
             slot = (item.get("data") or {}).get("slot") if isinstance(item.get("data"), dict) else None
             if slot:
@@ -177,14 +199,29 @@ async def shop_equip(
                     for item_id, item_slot in decor_slots.items()
                     if item_id in decor and item_slot != slot
                 }
+                decor_positions = {
+                    item_id: position
+                    for item_id, position in decor_positions.items()
+                    if item_id in decor
+                }
                 decor_slots[data.item_id] = str(slot)
             decor.append(data.item_id)
         if decor:
             equipped["decor"] = decor
             equipped["decor_slots"] = {item_id: slot for item_id, slot in decor_slots.items() if item_id in decor}
+            positions = {
+                item_id: position
+                for item_id, position in decor_positions.items()
+                if item_id in decor
+            }
+            if positions:
+                equipped["decor_positions"] = positions
+            else:
+                equipped.pop("decor_positions", None)
         else:
             equipped.pop("decor", None)
             equipped.pop("decor_slots", None)
+            equipped.pop("decor_positions", None)
         pet.equipped = equipped
         await db.commit()
         await db.refresh(pet)
@@ -194,6 +231,36 @@ async def shop_equip(
         equipped.pop(item["type"], None)
     else:
         equipped[item["type"]] = data.item_id
+    pet.equipped = equipped
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
+
+@router.post("/shop/decor-position", response_model=PetOut)
+async def shop_decor_position(
+    data: DecorPositionIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    item = get_item(data.item_id)
+    if item is None or item["type"] != "decor":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Предмет декора не найден")
+    if data.item_id not in (pet.inventory or []):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмета нет в рюкзаке")
+
+    equipped = dict(pet.equipped or {})
+    decor = _decor_list(equipped.get("decor"))
+    if data.item_id not in decor:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Предмет еще не поставлен в комнату")
+
+    positions = _decor_positions(equipped.get("decor_positions"))
+    positions[data.item_id] = {"x": round(data.x, 2), "y": round(data.y, 2)}
+    equipped["decor_positions"] = {
+        item_id: position
+        for item_id, position in positions.items()
+        if item_id in decor
+    }
     pet.equipped = equipped
     await db.commit()
     await db.refresh(pet)

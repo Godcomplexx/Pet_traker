@@ -19,7 +19,7 @@ from app.schemas import (
     SudokuScoreOut,
     ZipScoreOut,
 )
-from app.services.pet import apply_decay, pet_state, state_label
+from app.services.pet import apply_decay, pet_state, revive_pet, state_label
 from app.services.shop import get_item
 from app.services import sudoku as sudoku_svc
 
@@ -159,6 +159,8 @@ async def play_with_pet(
 ):
     pet = await _get_pet(db, user.id)
     apply_decay(pet)
+    if pet.is_dead:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец умер. Сначала оживи его.")
     handler = PLAY_ACTIONS.get(data.action)
     if handler is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown action")
@@ -167,6 +169,19 @@ async def play_with_pet(
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)
+
+
+@router.post("/pets/me/revive", response_model=PetOut)
+async def revive_my_pet(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    if not pet.is_dead:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Питомец жив")
+    revive_pet(pet)
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
 
 @router.post("/pets/me/daily", response_model=CoinRewardOut)
 async def claim_daily_coins(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
@@ -250,7 +265,8 @@ async def solve_sudoku(
         pet.sudoku_completed_on = today
         awarded = SUDOKU_REWARD_COINS
         pet.coins = (pet.coins or 0) + awarded
-        pet.mood = min(100, pet.mood + 4)
+        if not pet.is_dead:
+            pet.mood = min(100, pet.mood + 4)
 
     # Рейтинг: сохраняем лучшее (минимальное) время за день.
     best = await _my_best(db, user.id, day)

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import secrets
 
+from app.services.catalog_assets import accessory_shop_items, decor_item_shop_items
 from app.services.characters import character_shop_items
 
 CASE_EXCLUDED_TYPES = {"food", "body", "accent", "species", "character"}
@@ -85,7 +86,7 @@ SHOP_ITEMS: list[dict] = [
     {"id": "food_rice",    "name": "Рис",        "type": "food", "rarity": "rare", "price": 25, "data": {"icon": "food_rice", "hunger": 18, "mood": 2, "energy": 0}},
     {"id": "food_cupcake", "name": "Кекс",       "type": "food", "rarity": "epic", "price": 34, "data": {"icon": "food_cupcake", "hunger": 16, "mood": 8, "energy": 0}},
     {"id": "food_ramen",   "name": "Рамен",      "type": "food", "rarity": "epic", "price": 45, "data": {"icon": "food_ramen", "hunger": 28, "mood": 4, "energy": 2}},
-] + character_shop_items()
+] + decor_item_shop_items() + accessory_shop_items() + character_shop_items()
 
 ITEMS_BY_ID = {it["id"]: it for it in SHOP_ITEMS}
 

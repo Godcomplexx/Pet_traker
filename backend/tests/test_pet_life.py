@@ -213,6 +213,47 @@ async def test_can_place_room_decor_on_custom_slots(client):
     assert removed.json()["equipped"]["decor"] == ["decor_floor_lamp"]
 
 
+async def test_can_drag_room_decor_to_free_position(client):
+    from sqlalchemy import select
+    from tests.conftest import auth_headers, register
+
+    tokens = await register(client, "decor-drag@lab.ru")
+    headers = auth_headers(tokens)
+
+    async with SessionLocal() as db:
+        pet = await db.scalar(select(Pet).where(Pet.user.has(email="decor-drag@lab.ru")))
+        pet.coins = 200
+        await db.commit()
+
+    for item_id in ("decor_flower_pot", "decor_floor_lamp"):
+        bought = await client.post("/shop/buy", json={"item_id": item_id}, headers=headers)
+        assert bought.status_code == 200, bought.text
+
+    not_placed = await client.post(
+        "/shop/decor-position",
+        json={"item_id": "decor_floor_lamp", "x": 44.5, "y": 70.25},
+        headers=headers,
+    )
+    assert not_placed.status_code == 400
+
+    equipped = await client.post("/shop/equip", json={"item_id": "decor_flower_pot"}, headers=headers)
+    assert equipped.status_code == 200, equipped.text
+
+    moved = await client.post(
+        "/shop/decor-position",
+        json={"item_id": "decor_flower_pot", "x": 44.5, "y": 70.25},
+        headers=headers,
+    )
+    assert moved.status_code == 200, moved.text
+    assert moved.json()["equipped"]["decor_positions"] == {
+        "decor_flower_pot": {"x": 44.5, "y": 70.25}
+    }
+
+    removed = await client.post("/shop/equip", json={"item_id": "decor_flower_pot"}, headers=headers)
+    assert removed.status_code == 200, removed.text
+    assert "decor_positions" not in removed.json()["equipped"]
+
+
 async def test_pet_play_respects_stats(client):
     from sqlalchemy import select
     from tests.conftest import auth_headers, register

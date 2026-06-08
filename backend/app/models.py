@@ -91,6 +91,9 @@ class Pet(Base):
     mood: Mapped[int] = mapped_column(Integer, default=80)
     hunger: Mapped[int] = mapped_column(Integer, default=70)
     energy: Mapped[int] = mapped_column(Integer, default=80)
+    is_dead: Mapped[bool] = mapped_column(Boolean, default=False)
+    died_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    neglect_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Игровая экономика: монеты + инвентарь купленных/выпавших предметов (список id).
     coins: Mapped[int] = mapped_column(Integer, default=0)
     daily_claimed_on: Mapped[date | None] = mapped_column(Date, nullable=True)
