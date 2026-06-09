@@ -1,0 +1,62 @@
+{
+  "char_agent_mike": {
+    "accessory_bunan_black": {
+      "scale": 0.24,
+      "anchorX": 0.54,
+      "anchorY": 0.7,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_maru_black": {
+      "scale": 0.32,
+      "anchorX": 0.53,
+      "anchorY": 0.68,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_tsuyome_black": {
+      "scale": 0.28,
+      "anchorX": 0.54,
+      "anchorY": 0.7,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_yasashime_black": {
+      "scale": 0.31,
+      "anchorX": 0.54,
+      "anchorY": 0.68,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  },
+  "char_angie": {
+    "accessory_yasashime_black": {
+      "scale": 0.4,
+      "anchorX": 0.52,
+      "anchorY": 0.71,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_tsuyome_black": {
+      "scale": 0.4,
+      "anchorX": 0.52,
+      "anchorY": 0.76,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_maru_black": {
+      "scale": 0.38,
+      "anchorX": 0.52,
+      "anchorY": 0.74,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "accessory_bunan_black": {
+      "scale": 0.36,
+      "anchorX": 0.51,
+      "anchorY": 0.73,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  }
+}

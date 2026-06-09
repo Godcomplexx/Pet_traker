@@ -11,6 +11,8 @@
   let observer = null;
   let syncTimer = null;
   let tracking = false;
+  let accessoryOverrides = {};
+  let accessoryOverridesLoaded = false;
 
   function accessoryIcon(item) {
     const file = item?.data?.file || item?.data;
@@ -21,6 +23,12 @@
     const itemId = pet?.equipped?.accessory;
     const item = itemId ? catalog[itemId] : null;
     return item?.type === 'accessory' ? item : null;
+  }
+
+  function placementData(item) {
+    const data = item?.data || {};
+    const override = accessoryOverrides?.[pet?.species]?.[item?.id] || {};
+    return { ...data, ...override };
   }
 
   function decorateCard(card, item) {
@@ -54,12 +62,12 @@
     const petBox = petNode.getBoundingClientRect();
     if (!screenBox.width || !petBox.width) return;
 
-    const data = item.data || {};
+    const data = placementData(item);
     const scale = Number(data.scale || 0.5);
-    const anchorX = Number(data.anchor_x || 0.5);
-    const anchorY = Number(data.anchor_y || 0.46);
-    const offsetX = Number(data.offset_x || 0);
-    const offsetY = Number(data.offset_y || 0);
+    const anchorX = Number(data.anchorX ?? data.anchor_x ?? 0.5);
+    const anchorY = Number(data.anchorY ?? data.anchor_y ?? 0.46);
+    const offsetX = Number(data.offsetX ?? data.offset_x ?? 0);
+    const offsetY = Number(data.offsetY ?? data.offset_y ?? 0);
     const width = Math.max(20, petBox.width * scale);
     const left = petBox.left - screenBox.left + petBox.width * anchorX + offsetX;
     const top = petBox.top - screenBox.top + petBox.height * anchorY + offsetY;
@@ -128,12 +136,21 @@
   async function sync() {
     if (!api?.isAuthed?.()) return;
     try {
-      const [nextPet, shop] = await Promise.all([
+      const [nextPet, shop, overrides] = await Promise.all([
         api.get('/pets/me'),
         Object.keys(catalog).length ? Promise.resolve(null) : api.get('/shop/items'),
+        accessoryOverridesLoaded
+          ? Promise.resolve(null)
+          : fetch('accessory-placement-overrides.json', { cache: 'no-store' })
+            .then((response) => (response.ok ? response.json() : {}))
+            .catch(() => ({})),
       ]);
       pet = nextPet;
       if (shop?.items) catalog = Object.fromEntries(shop.items.map((item) => [item.id, item]));
+      if (overrides) {
+        accessoryOverrides = overrides;
+        accessoryOverridesLoaded = true;
+      }
       render();
     } catch {
       // The base app owns visible auth and network errors.

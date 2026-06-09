@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES_PATH = ROOT / "hat-placement-overrides.json"
+ACCESSORY_OVERRIDES_PATH = ROOT / "accessory-placement-overrides.json"
 REVIEW_PATH = ROOT / "character-animation-review.json"
 
 
@@ -22,6 +23,9 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         request_path = self.path.split("?", 1)[0]
         if request_path == "/hat-placement-overrides.json" and not OVERRIDES_PATH.exists():
+            self.send_json({})
+            return
+        if request_path == "/accessory-placement-overrides.json" and not ACCESSORY_OVERRIDES_PATH.exists():
             self.send_json({})
             return
         if request_path == "/character-animation-review.json" and not REVIEW_PATH.exists():
@@ -39,6 +43,7 @@ class Handler(SimpleHTTPRequestHandler):
         request_path = self.path.split("?", 1)[0]
         targets = {
             "/save-hat-overrides": OVERRIDES_PATH,
+            "/save-accessory-overrides": ACCESSORY_OVERRIDES_PATH,
             "/save-character-animation-review": REVIEW_PATH,
         }
         target_path = targets.get(request_path)
