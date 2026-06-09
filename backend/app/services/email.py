@@ -12,7 +12,7 @@ from email.message import EmailMessage
 
 from app.core.config import settings
 
-logger = logging.getLogger("petpro.email")
+logger = logging.getLogger("labmate.email")
 
 
 def _send_smtp(to: str, subject: str, body: str) -> None:
@@ -51,10 +51,10 @@ def send_email(to: str, subject: str, body: str) -> bool:
 
 
 def send_verification_code(to: str, code: str) -> bool:
-    subject = "PetPro — код подтверждения"
+    subject = "LabMate — код подтверждения"
     body = (
         f"Здравствуйте!\n\n"
-        f"Ваш код подтверждения регистрации в PetPro: {code}\n\n"
+        f"Ваш код подтверждения регистрации в LabMate: {code}\n\n"
         f"Код действует {settings.verification_code_ttl_minutes} минут. "
         f"Если вы не регистрировались — просто проигнорируйте это письмо.\n"
     )

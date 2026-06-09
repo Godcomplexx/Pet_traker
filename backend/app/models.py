@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for all PetPro entities (see spec §11)."""
+"""SQLAlchemy ORM models for all LabMate entities (see spec §11)."""
 from __future__ import annotations
 
 import secrets

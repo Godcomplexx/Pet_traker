@@ -1,4 +1,4 @@
-# PetPro
+# LabMate
 
 <p align="center">
   <a href="#russian"><strong>Русский</strong></a>
@@ -30,7 +30,7 @@
 
 ## Русская версия
 
-PetPro - это fullstack-приложение для лабораторий и небольших исследовательских команд: рабочие пространства, проекты, статьи, задачи, комментарии, командная лента, уведомления и игровая мотивация через виртуального питомца.
+LabMate - это fullstack-приложение для лабораторий и небольших исследовательских команд: рабочие пространства, проекты, статьи, задачи, комментарии, командная лента, уведомления и игровая мотивация через виртуального питомца.
 
 Ключевая идея проекта: реальные рабочие действия создают domain events, а уже backend начисляет опыт, монеты и события активности. Frontend не начисляет XP напрямую.
 
@@ -74,7 +74,7 @@ Project / Article / Task mutation
 ### Структура проекта
 
 ```text
-petpro/
+labmate/
 ├── backend/
 │   ├── app/
 │   │   ├── api/routers/       # auth, workspaces, projects, articles, tasks, comments, feed, wall, games, pets, shop
@@ -221,7 +221,7 @@ ruff check .
 
 ## English Version
 
-PetPro is a fullstack application for labs and small research teams: workspaces, projects, articles, tasks, comments, team activity, notifications, and pet-based gamification.
+LabMate is a fullstack application for labs and small research teams: workspaces, projects, articles, tasks, comments, team activity, notifications, and pet-based gamification.
 
 The core design rule is simple: real work creates domain events, and the backend turns those events into rewards, pet XP, coins, feed items, and notifications. The frontend does not grant XP directly.
 
@@ -265,7 +265,7 @@ There is no `package.json` in this repository: the main frontend does not use Re
 ### Project Structure
 
 ```text
-petpro/
+labmate/
 ├── backend/
 │   ├── app/
 │   │   ├── api/routers/       # auth, workspaces, projects, articles, tasks, comments, feed, wall, games, pets, shop

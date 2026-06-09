@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessory Preview</title>
+  <style>
+    :root {
+      --bg: #eef4ed;
+      --panel: #fbfdf9;
+      --line: #b9c5b4;
+      --ink: #203020;
+      --muted: #607060;
+      --accent: #2f7d46;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 13px/1.4 Arial, sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) repeat(7, auto);
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(238, 244, 237, .94);
+      backdrop-filter: blur(10px);
+    }
+    label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    input, select, button {
+      height: 32px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: 0 9px;
+      font: inherit;
+    }
+    input[type="number"] {
+      width: 74px;
+    }
+    button {
+      cursor: pointer;
+    }
+    .primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+    .wrap {
+      padding: 12px;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .45);
+      padding: 8px;
+    }
+    .card canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1.16 / 1;
+      border: 1px solid rgba(185, 197, 180, .8);
+      background: #f5f8f2;
+      image-rendering: pixelated;
+    }
+    .name {
+      margin-top: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    @media (max-width: 980px) {
+      header {
+        position: static;
+        grid-template-columns: 1fr 1fr;
+      }
+      input[type="number"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <label>
+      Search
+      <input id="search" placeholder="character name" />
+    </label>
+    <label>
+      Accessory
+      <select id="accessory"></select>
+    </label>
+    <label>
+      Scale
+      <input id="scale" type="number" min="0.1" max="1.4" step="0.01" />
+    </label>
+    <label>
+      Anchor X
+      <input id="anchorX" type="number" min="0" max="1" step="0.01" />
+    </label>
+    <label>
+      Anchor Y
+      <input id="anchorY" type="number" min="0" max="1" step="0.01" />
+    </label>
+    <label>
+      Offset X
+      <input id="offsetX" type="number" min="-80" max="80" step="1" />
+    </label>
+    <label>
+      Offset Y
+      <input id="offsetY" type="number" min="-80" max="80" step="1" />
+    </label>
+    <button id="reset" class="primary" type="button">Reset</button>
+  </header>
+
+  <main class="wrap">
+    <div class="meta">
+      <span id="count"></span>
+      <span>Canvas preview uses the same global accessory anchors as the app.</span>
+    </div>
+    <section class="grid" id="grid"></section>
+  </main>
+
+  <script src="accessory-preview.js"></script>
+</body>
+</html>

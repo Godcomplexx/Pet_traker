@@ -51,7 +51,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
-      MAIL_FROM: ${MAIL_FROM:-PetPro <noreply@petpro.app>}
+      MAIL_FROM: ${MAIL_FROM:-LabMate <noreply@labmate.app>}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:

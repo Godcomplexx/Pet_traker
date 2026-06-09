@@ -1,4 +1,4 @@
-/* PetPro API client — thin fetch wrapper with JWT + refresh. */
+/* LabMate API client — thin fetch wrapper with JWT + refresh. */
 (function () {
   'use strict';
 

@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_use_tls: bool = True
-    mail_from: str = "PetPro <noreply@petpro.app>"
+    mail_from: str = "LabMate <noreply@labmate.app>"
 
     @property
     def smtp_enabled(self) -> bool:

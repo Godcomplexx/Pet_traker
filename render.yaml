@@ -1,4 +1,4 @@
-# Render Blueprint — поднимает весь PetPro: API+фронт, Postgres, Redis (free-план).
+# Render Blueprint — поднимает весь LabMate: API+фронт, Postgres, Redis (free-план).
 # Подключи репозиторий на render.com → New → Blueprint → выбери этот файл.
 databases:
   - name: petpro-db
@@ -52,7 +52,7 @@ services:
       - key: SMTP_PASSWORD
         sync: false
       - key: MAIL_FROM
-        value: PetPro <noreply@petpro.app>
+        value: LabMate <noreply@labmate.app>
 
   # ПРИМЕЧАНИЕ: на free-плане Render фоновые workers недоступны, поэтому
   # обработка событий идёт inline в веб-сервисе (EVENT_MODE=inline выше).

@@ -38,7 +38,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="PetPro API",
+    title="LabMate API",
     description="Lab Project Tracker with Pet Gamification",
     version="0.1.0",
     lifespan=lifespan,

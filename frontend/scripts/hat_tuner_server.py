@@ -77,6 +77,7 @@ def main() -> None:
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"http://{args.host}:{args.port}/hat-tuner.html", flush=True)
     print(f"http://{args.host}:{args.port}/character-animation-review.html", flush=True)
+    print(f"http://{args.host}:{args.port}/accessory-preview.html", flush=True)
     server.serve_forever()
 
 
