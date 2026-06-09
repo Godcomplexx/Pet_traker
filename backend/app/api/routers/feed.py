@@ -58,7 +58,11 @@ async def team_room(
                 )
             )
         ).all()
-        pets = (await db.scalars(select(Pet).where(Pet.user_id.in_(member_ids)))).all()
+        pets = (
+            await db.scalars(
+                select(Pet).where(Pet.user_id.in_(member_ids)).order_by(Pet.user_id)
+            )
+        ).all()
     else:
         member_ids = []
         pets = []

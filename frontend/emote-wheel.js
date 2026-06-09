@@ -38,6 +38,7 @@
   let workspaceId = null;
   let rpsPanel = null;
   let rpsTimer = null;
+  let teamDecorTimer = null;
 
   function group(id, label, icon, entries) {
     return { id, label, icon, entries };
@@ -52,11 +53,12 @@
   }
 
   function emoteImg(index, className = '') {
-    const img = document.createElement('img');
-    img.src = emotePath(index);
-    img.alt = `emote ${index}`;
-    img.className = `pipoya-emote-img ${className}`.trim();
-    return img;
+    const emote = document.createElement('span');
+    emote.setAttribute('role', 'img');
+    emote.setAttribute('aria-label', `emote ${index}`);
+    emote.className = `pipoya-emote-img ${className}`.trim();
+    emote.style.setProperty('--pipoya-url', `url('${emotePath(index)}')`);
+    return emote;
   }
 
   function closeMenu() {
@@ -89,7 +91,7 @@
     const screen = host.closest('.petscreen, .team-pet, .team-playground') || host;
     const burst = document.createElement('div');
     burst.className = 'pet-emote burst pipoya-burst';
-    burst.appendChild(emoteImg(index, 'pet-emote-img'));
+    burst.appendChild(emoteImg(index, 'pet-emote-img is-animated'));
     screen.appendChild(burst);
     setTimeout(() => burst.remove(), 1400);
   }
@@ -117,19 +119,38 @@
     return pets;
   }
 
-  function blobToDataUrl(blob) {
+  function scheduleTeamDecor() {
+    clearTimeout(teamDecorTimer);
+    teamDecorTimer = setTimeout(() => decorateTeamPets().catch(() => {}), 160);
+  }
+
+  function blobToImage(blob) {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ''));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('emote image decode failed'));
+      };
+      img.src = url;
     });
   }
 
   async function emoteDataUrl(index) {
     const response = await fetch(emotePath(index));
     if (!response.ok) throw new Error('emote asset not found');
-    return blobToDataUrl(await response.blob());
+    const img = await blobToImage(await response.blob());
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, 32, 32, 0, 0, 32, 32);
+    return canvas.toDataURL('image/png');
   }
 
   function prependLocalWallPost(text, imageData) {
@@ -170,20 +191,36 @@
     const selected = RPS[key];
     if (!selected) return;
     closeMenu();
-    showBurst(target, selected.index);
     const wsId = await getWorkspaceId();
     let opponentId = target.dataset.userId;
     if (!opponentId) {
       await decorateTeamPets();
       opponentId = target.dataset.userId;
     }
-    if (!wsId || !opponentId || !api?.post) return;
-    await api.post(`/workspaces/${wsId}/rps`, {
-      opponent_id: opponentId,
-      choice: key,
-    });
-    showRpsNotice(`Вызов отправлен: ${teamPetName(target)}`);
-    refreshRpsPanel();
+    const meId = await currentUserId();
+    if (!wsId || !api?.post) {
+      showRpsNotice('Стена еще не готова для игры');
+      return;
+    }
+    if (!opponentId) {
+      showRpsNotice('Не удалось определить игрока. Обновите стену.');
+      return;
+    }
+    if (meId && String(opponentId) === String(meId)) {
+      showRpsNotice('Нужно выбрать питомца другого участника');
+      return;
+    }
+    try {
+      await api.post(`/workspaces/${wsId}/rps`, {
+        opponent_id: opponentId,
+        choice: key,
+      });
+      showBurst(target, selected.index);
+      showRpsNotice(`Вызов отправлен: ${teamPetName(target)}`);
+      refreshRpsPanel();
+    } catch (err) {
+      showRpsNotice(err?.message || 'Не удалось отправить вызов');
+    }
   }
 
   async function chooseRpsResponse(challenge, key) {
@@ -245,8 +282,8 @@
       button.classList.add('emote-rps');
       button.title = selected.label;
       button.textContent = selected.short;
-      button.addEventListener('click', () => inviteRps(target, entry.action).catch(() => {
-        showRpsNotice('Не удалось отправить вызов');
+      button.addEventListener('click', () => inviteRps(target, entry.action).catch((err) => {
+        showRpsNotice(err?.message || 'Не удалось отправить вызов');
       }));
       return button;
     }
@@ -320,8 +357,8 @@
       button.title = RPS[key].label;
       button.textContent = RPS[key].short;
       setRadialPosition(button, index, 3, 86);
-      button.addEventListener('click', () => chooseRpsResponse(challenge, key).catch(() => {
-        showRpsNotice('Не удалось сделать ход');
+      button.addEventListener('click', () => chooseRpsResponse(challenge, key).catch((err) => {
+        showRpsNotice(err?.message || 'Не удалось сделать ход');
       }));
       itemRing.appendChild(button);
     });
@@ -444,12 +481,22 @@
   window.addEventListener('resize', closeMenu);
   document.addEventListener('scroll', closeMenu, true);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) refreshRpsPanel();
+    if (!document.hidden) {
+      scheduleTeamDecor();
+      refreshRpsPanel();
+    }
   });
+  const playground = document.getElementById('teamPlayground');
+  if (playground) {
+    new MutationObserver(scheduleTeamDecor).observe(playground, { childList: true, subtree: true });
+  }
   setTimeout(() => {
     decorateTeamPets().catch(() => {});
     refreshRpsPanel();
     rpsTimer = setInterval(refreshRpsPanel, 12000);
   }, 1200);
-  window.addEventListener('beforeunload', () => clearInterval(rpsTimer));
+  window.addEventListener('beforeunload', () => {
+    clearInterval(rpsTimer);
+    clearTimeout(teamDecorTimer);
+  });
 })();

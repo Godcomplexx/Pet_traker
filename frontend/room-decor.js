@@ -4,7 +4,8 @@
   const api = window.api;
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const TABLE_DEFAULT_POSITION = { x: 50, y: 72 };
+  const TABLE_FLOOR_Y = 78;
+  const TABLE_DEFAULT_POSITION = { x: 50, y: TABLE_FLOOR_Y };
   const SLOTS = {
     'floor-left': 'Пол слева',
     'floor-right': 'Пол справа',
@@ -28,9 +29,8 @@
       const raw = localStorage.getItem(tableStorageKey());
       const saved = raw ? JSON.parse(raw) : null;
       const x = Number(saved?.x);
-      const y = Number(saved?.y);
-      if (Number.isFinite(x) && Number.isFinite(y)) {
-        return { x: clamp(x, 18, 82), y: clamp(y, 62, 86) };
+      if (Number.isFinite(x)) {
+        return { x: clamp(x, 18, 82), y: TABLE_FLOOR_Y };
       }
     } catch {
       // Invalid saved room furniture state should not break the pet screen.
@@ -92,7 +92,7 @@
     const position = pointerPosition(event, screen);
     return {
       x: clamp(position.x, 18, 82),
-      y: clamp(position.y, 62, 86),
+      y: TABLE_FLOOR_Y,
     };
   }
 
@@ -105,7 +105,7 @@
 
   function tableSurfacePosition() {
     const table = readTablePosition();
-    return { x: table.x, y: table.y - 11 };
+    return { x: table.x, y: table.y - 12 };
   }
 
   function isOnTableSurface(item, position) {
@@ -115,7 +115,7 @@
     return (
       Math.abs(position.x - table.x) <= 25
       && position.y >= surface.y - 8
-      && position.y <= table.y + 8
+      && position.y <= surface.y + 12
     );
   }
 
