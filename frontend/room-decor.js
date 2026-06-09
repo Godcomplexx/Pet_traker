@@ -4,6 +4,7 @@
   const api = window.api;
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const TABLE_DEFAULT_POSITION = { x: 50, y: 72 };
   const SLOTS = {
     'floor-left': 'Пол слева',
     'floor-right': 'Пол справа',
@@ -17,6 +18,33 @@
   let observer = null;
   let syncTimer = null;
   let drag = null;
+
+  function tableStorageKey() {
+    return `petpro_room_table_position:${pet?.id || 'default'}`;
+  }
+
+  function readTablePosition() {
+    try {
+      const raw = localStorage.getItem(tableStorageKey());
+      const saved = raw ? JSON.parse(raw) : null;
+      const x = Number(saved?.x);
+      const y = Number(saved?.y);
+      if (Number.isFinite(x) && Number.isFinite(y)) {
+        return { x: clamp(x, 18, 82), y: clamp(y, 62, 86) };
+      }
+    } catch {
+      // Invalid saved room furniture state should not break the pet screen.
+    }
+    return { ...TABLE_DEFAULT_POSITION };
+  }
+
+  function saveTablePosition(position) {
+    try {
+      localStorage.setItem(tableStorageKey(), JSON.stringify(position));
+    } catch {
+      // Dragging still works for the current session if storage is unavailable.
+    }
+  }
 
   function equippedDecor() {
     const equipped = pet?.equipped || {};
@@ -60,9 +88,76 @@
     };
   }
 
-  function applyFreePosition(node, position) {
+  function tablePointerPosition(event, screen) {
+    const position = pointerPosition(event, screen);
+    return {
+      x: clamp(position.x, 18, 82),
+      y: clamp(position.y, 62, 86),
+    };
+  }
+
+  function isPlantDecor(item) {
+    const data = item?.data || {};
+    const file = String(data.file || data.icon || item?.id || '').toLowerCase();
+    const name = String(item?.name || '').toLowerCase();
+    return /(^|[/_-])(plant|flower)|flower|plant/.test(`${file} ${name}`);
+  }
+
+  function tableSurfacePosition() {
+    const table = readTablePosition();
+    return { x: table.x, y: table.y - 11 };
+  }
+
+  function isOnTableSurface(item, position) {
+    if (!isPlantDecor(item) || !position) return false;
+    const table = readTablePosition();
+    const surface = tableSurfacePosition();
+    return (
+      Math.abs(position.x - table.x) <= 25
+      && position.y >= surface.y - 8
+      && position.y <= table.y + 8
+    );
+  }
+
+  function snapToTableSurface(item, position) {
+    if (!isOnTableSurface(item, position)) return position;
+    const table = readTablePosition();
+    const surface = tableSurfacePosition();
+    return {
+      x: clamp(position.x, table.x - 20, table.x + 20),
+      y: surface.y,
+    };
+  }
+
+  function applyTablePosition(screen, position) {
+    screen.style.setProperty('--room-table-x', `${position.x}%`);
+    screen.style.setProperty('--room-table-y', `${position.y}%`);
+    const table = screen.querySelector('.pet-room-table');
+    if (table) {
+      table.style.setProperty('--room-table-x', `${position.x}%`);
+      table.style.setProperty('--room-table-y', `${position.y}%`);
+    }
+  }
+
+  function ensureRoomTable(screen) {
+    let table = screen.querySelector('.pet-room-table');
+    if (table) return table;
+    table = document.createElement('div');
+    table.className = 'pet-room-table';
+    table.dataset.roomTable = '1';
+    table.title = 'Table';
+    const img = document.createElement('img');
+    img.src = 'assets/decor/wooden_table.png';
+    img.alt = 'Table';
+    table.appendChild(img);
+    screen.appendChild(table);
+    return table;
+  }
+
+  function applyFreePosition(node, position, item) {
     node.classList.add('decor-free');
     node.classList.remove('decor-floor-left', 'decor-floor-right', 'decor-shelf-left', 'decor-shelf-right');
+    node.classList.toggle('decor-on-table', isOnTableSurface(item, position));
     node.style.setProperty('--decor-x', `${position.x}%`);
     node.style.setProperty('--decor-y', `${position.y}%`);
   }
@@ -71,6 +166,8 @@
     if (!pet) return;
     qsa('.pet-room-screen').forEach((screen) => {
       qsa('.pet-decor', screen).forEach((node) => node.remove());
+      ensureRoomTable(screen);
+      applyTablePosition(screen, readTablePosition());
       const decor = equippedDecor();
       screen.classList.toggle('room-has-light', decor.some(({ item }) => item.data?.kind === 'light'));
       decor.forEach(({ id, item, slot, position }) => {
@@ -80,9 +177,10 @@
         node.dataset.roomDecorId = id;
         node.title = item.name || '';
         if (position) {
-          applyFreePosition(node, position);
+          applyFreePosition(node, position, item);
         } else {
           node.classList.add(`decor-${slot}`);
+          node.classList.toggle('decor-on-table', slot.startsWith('shelf-') && isPlantDecor(item));
         }
 
         const img = document.createElement('img');
@@ -195,6 +293,25 @@
   }, true);
 
   document.addEventListener('pointerdown', (event) => {
+    const table = event.target.closest('.pet-room-screen .pet-room-table');
+    if (table) {
+      const screen = table.closest('.pet-room-screen');
+      if (!screen) return;
+      event.preventDefault();
+      event.stopPropagation();
+      drag = {
+        type: 'table',
+        node: table,
+        screen,
+        pointerId: event.pointerId,
+        position: tablePointerPosition(event, screen),
+      };
+      table.classList.add('is-dragging');
+      table.setPointerCapture?.(event.pointerId);
+      applyTablePosition(screen, drag.position);
+      return;
+    }
+
     const node = event.target.closest('.pet-room-screen .pet-decor[data-room-decor-id]');
     if (!node || !api?.isAuthed?.()) return;
     const screen = node.closest('.pet-room-screen');
@@ -202,7 +319,9 @@
     event.preventDefault();
     event.stopPropagation();
     drag = {
+      type: 'decor',
       itemId: node.dataset.roomDecorId,
+      item: catalog[node.dataset.roomDecorId],
       node,
       screen,
       pointerId: event.pointerId,
@@ -210,14 +329,19 @@
     };
     node.classList.add('is-dragging');
     node.setPointerCapture?.(event.pointerId);
-    applyFreePosition(node, drag.position);
+    applyFreePosition(node, drag.position, drag.item);
   }, true);
 
   document.addEventListener('pointermove', (event) => {
     if (!drag || event.pointerId !== drag.pointerId) return;
     event.preventDefault();
+    if (drag.type === 'table') {
+      drag.position = tablePointerPosition(event, drag.screen);
+      qsa('.pet-room-screen').forEach((screen) => applyTablePosition(screen, drag.position));
+      return;
+    }
     drag.position = pointerPosition(event, drag.screen);
-    applyFreePosition(drag.node, drag.position);
+    applyFreePosition(drag.node, drag.position, drag.item);
   }, true);
 
   document.addEventListener('pointerup', async (event) => {
@@ -226,7 +350,13 @@
     const finished = drag;
     drag = null;
     finished.node.classList.remove('is-dragging');
+    if (finished.type === 'table') {
+      saveTablePosition(finished.position);
+      paint();
+      return;
+    }
     try {
+      finished.position = snapToTableSurface(finished.item, finished.position);
       await saveDecorPosition(finished.itemId, finished.position);
     } catch (err) {
       const msg = qs('#playMsg');
@@ -238,6 +368,9 @@
   document.addEventListener('pointercancel', (event) => {
     if (!drag || event.pointerId !== drag.pointerId) return;
     drag.node.classList.remove('is-dragging');
+    if (drag.type === 'table') {
+      qsa('.pet-room-screen').forEach((screen) => applyTablePosition(screen, readTablePosition()));
+    }
     drag = null;
     scheduleSync();
   }, true);

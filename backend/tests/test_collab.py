@@ -121,12 +121,60 @@ async def test_wall_presence_controls_team_room_pets(client):
     online = (await client.get(f"/workspaces/{ws['id']}/team-room", headers=ho)).json()
     assert online["online_count"] == 1
     assert len(online["pets"]) == 1
+    assert online["pets"][0]["user_id"]
 
     leave = await client.delete(f"/workspaces/{ws['id']}/wall/presence", headers=hb)
     assert leave.status_code == 204
 
     empty_again = (await client.get(f"/workspaces/{ws['id']}/team-room", headers=ho)).json()
     assert empty_again["pets"] == []
+
+
+async def test_wall_rps_challenge_notifies_and_rewards_winner(client):
+    ws, ho, hb, owner, bob = await _workspace_with_member(client)
+    bob_me = (await client.get("/auth/me", headers=hb)).json()
+
+    invite = await client.post(
+        f"/workspaces/{ws['id']}/rps",
+        json={"opponent_id": bob_me["id"], "choice": "rock"},
+        headers=ho,
+    )
+    assert invite.status_code == 201, invite.text
+    challenge = invite.json()
+    assert challenge["status"] == "pending"
+    assert challenge["challenger_choice"] == "rock"
+
+    bob_notifs = (await client.get("/notifications", headers=hb)).json()
+    assert any(
+        n["entity_type"] == "rps_challenge" and n["entity_id"] == challenge["id"]
+        for n in bob_notifs
+    )
+
+    accepted = await client.post(
+        f"/rps/challenges/{challenge['id']}/respond",
+        json={"accept": True},
+        headers=hb,
+    )
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()["status"] == "accepted"
+
+    finish = await client.post(
+        f"/rps/challenges/{challenge['id']}/choice",
+        json={"choice": "scissors"},
+        headers=hb,
+    )
+    assert finish.status_code == 200, finish.text
+    body = finish.json()
+    assert body["status"] == "completed"
+    assert body["winner_id"] == (await client.get("/auth/me", headers=ho)).json()["id"]
+
+    owner_pet = (await client.get("/pets/me", headers=ho)).json()
+    bob_pet = (await client.get("/pets/me", headers=hb)).json()
+    assert owner_pet["coins"] == 5
+    assert bob_pet["coins"] == 0
+
+    wall = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
+    assert any("Камень-ножницы-бумага" in post["text"] and "+5" in post["text"] for post in wall)
 
 
 async def test_mention_of_self_or_outsider_does_not_notify(client):

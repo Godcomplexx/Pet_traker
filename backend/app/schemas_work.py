@@ -178,3 +178,31 @@ class WallPostOut(BaseModel):
     reactions: dict[str, int] = Field(default_factory=dict)
     my_reactions: list[str] = Field(default_factory=list)
     created_at: datetime
+
+
+class RpsInviteIn(BaseModel):
+    opponent_id: str
+    choice: str = Field(pattern="^(rock|paper|scissors)$")
+
+
+class RpsRespondIn(BaseModel):
+    accept: bool
+
+
+class RpsChoiceIn(BaseModel):
+    choice: str = Field(pattern="^(rock|paper|scissors)$")
+
+
+class RpsChallengeOut(ORMModel):
+    id: str
+    workspace_id: str
+    challenger_id: str
+    opponent_id: str
+    status: str
+    challenger_choice: str | None = None
+    opponent_choice: str | None = None
+    winner_id: str | None = None
+    reward_awarded: bool = False
+    created_at: datetime
+    responded_at: datetime | None = None
+    completed_at: datetime | None = None

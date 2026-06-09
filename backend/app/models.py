@@ -362,6 +362,23 @@ class WallPresence(Base):
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
+class RpsChallenge(Base):
+    __tablename__ = "rps_challenges"
+
+    id: Mapped[str] = PK()
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    challenger_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    opponent_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    status: Mapped[str] = mapped_column(String(24), default="pending", index=True)
+    challenger_choice: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    opponent_choice: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    winner_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reward_awarded: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = TS()
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 class DailyGameCompletion(Base):
     """A user's once-per-day completion for a rewarded mini-game."""
     __tablename__ = "daily_game_completions"

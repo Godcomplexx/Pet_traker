@@ -7,12 +7,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, require_membership
 from app.core.database import get_db
-from app.models import User, WallPost, WallPresence, WallReaction
-from app.schemas import WallPostCreate, WallPostOut, WallReactionIn
+from app.enums import NotificationType
+from app.models import Notification, Pet, RpsChallenge, User, WallPost, WallPresence, WallReaction, WorkspaceMember
+from app.schemas import (
+    RpsChallengeOut,
+    RpsChoiceIn,
+    RpsInviteIn,
+    RpsRespondIn,
+    WallPostCreate,
+    WallPostOut,
+    WallReactionIn,
+)
 
 router = APIRouter(tags=["wall"])
 WALL_TTL = timedelta(hours=24)
 PRESENCE_TTL = timedelta(seconds=75)
+RPS_REWARD = 5
+RPS_CHOICES = {"rock": "Камень", "paper": "Бумага", "scissors": "Ножницы"}
+RPS_BEATS = {"rock": "scissors", "scissors": "paper", "paper": "rock"}
 
 
 async def _cleanup_wall(db: AsyncSession, workspace_id: str) -> None:
@@ -31,6 +43,61 @@ async def _cleanup_presence(db: AsyncSession, workspace_id: str) -> None:
         .where(WallPresence.workspace_id == workspace_id, WallPresence.last_seen_at < cutoff)
         .execution_options(synchronize_session=False)
     )
+
+
+async def _member_exists(db: AsyncSession, workspace_id: str, user_id: str) -> bool:
+    row = await db.scalar(
+        select(WorkspaceMember).where(
+            WorkspaceMember.workspace_id == workspace_id,
+            WorkspaceMember.user_id == user_id,
+        )
+    )
+    return row is not None
+
+
+async def _user_name(db: AsyncSession, user_id: str) -> str:
+    user = await db.get(User, user_id)
+    return (user and (user.display_name or user.email)) or user_id[:8]
+
+
+def _rps_winner(challenger_id: str, opponent_id: str, challenger_choice: str, opponent_choice: str) -> str | None:
+    if challenger_choice == opponent_choice:
+        return None
+    if RPS_BEATS[challenger_choice] == opponent_choice:
+        return challenger_id
+    return opponent_id
+
+
+async def _finish_rps_if_ready(db: AsyncSession, challenge: RpsChallenge) -> None:
+    if challenge.status != "accepted" or not challenge.challenger_choice or not challenge.opponent_choice:
+        return
+    winner_id = _rps_winner(
+        challenge.challenger_id,
+        challenge.opponent_id,
+        challenge.challenger_choice,
+        challenge.opponent_choice,
+    )
+    challenge.winner_id = winner_id
+    challenge.status = "draw" if winner_id is None else "completed"
+    challenge.completed_at = datetime.now(timezone.utc)
+
+    challenger_name = await _user_name(db, challenge.challenger_id)
+    opponent_name = await _user_name(db, challenge.opponent_id)
+    if winner_id and not challenge.reward_awarded:
+        pet = await db.scalar(select(Pet).where(Pet.user_id == winner_id))
+        if pet is not None:
+            pet.coins = int(pet.coins or 0) + RPS_REWARD
+        challenge.reward_awarded = True
+    winner_text = "ничья" if winner_id is None else f"победил {await _user_name(db, winner_id)} (+{RPS_REWARD} монет)"
+    db.add(WallPost(
+        workspace_id=challenge.workspace_id,
+        author_id=challenge.challenger_id,
+        text=(
+            "Камень-ножницы-бумага: "
+            f"{challenger_name} выбрал {RPS_CHOICES[challenge.challenger_choice]}, "
+            f"{opponent_name} выбрал {RPS_CHOICES[challenge.opponent_choice]} - {winner_text}."
+        ),
+    ))
 
 
 async def _reaction_maps(
@@ -79,6 +146,110 @@ def _wall_out(
         my_reactions=(mine or {}).get(post.id, []),
         created_at=post.created_at,
     )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/rps",
+    response_model=RpsChallengeOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_rps_challenge(
+    workspace_id: str,
+    data: RpsInviteIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await require_membership(workspace_id, db, user)
+    if data.opponent_id == user.id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Нельзя вызвать самого себя")
+    if not await _member_exists(db, workspace_id, data.opponent_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Участник не найден")
+    challenge = RpsChallenge(
+        workspace_id=workspace_id,
+        challenger_id=user.id,
+        opponent_id=data.opponent_id,
+        challenger_choice=data.choice,
+    )
+    db.add(challenge)
+    await db.flush()
+    db.add(Notification(
+        user_id=data.opponent_id,
+        workspace_id=workspace_id,
+        type=NotificationType.MENTION,
+        title="Вызов: камень-ножницы-бумага",
+        body=f"{user.display_name or user.email} предлагает сыграть на стене",
+        entity_type="rps_challenge",
+        entity_id=challenge.id,
+    ))
+    db.add(WallPost(
+        workspace_id=workspace_id,
+        author_id=user.id,
+        text=f"{user.display_name or user.email} предложил сыграть в камень-ножницы-бумага.",
+    ))
+    await db.commit()
+    await db.refresh(challenge)
+    return challenge
+
+
+@router.get("/rps/challenges", response_model=list[RpsChallengeOut])
+async def my_rps_challenges(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await db.scalars(
+        select(RpsChallenge)
+        .where((RpsChallenge.challenger_id == user.id) | (RpsChallenge.opponent_id == user.id))
+        .where(RpsChallenge.status.in_(["pending", "accepted"]))
+        .order_by(RpsChallenge.created_at.desc())
+    )
+    return rows.all()
+
+
+@router.post("/rps/challenges/{challenge_id}/respond", response_model=RpsChallengeOut)
+async def respond_rps_challenge(
+    challenge_id: str,
+    data: RpsRespondIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    challenge = await db.get(RpsChallenge, challenge_id)
+    if challenge is None or challenge.opponent_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Вызов не найден")
+    if challenge.status != "pending":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "На этот вызов уже ответили")
+    challenge.status = "accepted" if data.accept else "declined"
+    challenge.responded_at = datetime.now(timezone.utc)
+    if not data.accept:
+        db.add(WallPost(
+            workspace_id=challenge.workspace_id,
+            author_id=user.id,
+            text=f"{user.display_name or user.email} отказался от игры в камень-ножницы-бумага.",
+        ))
+    await db.commit()
+    await db.refresh(challenge)
+    return challenge
+
+
+@router.post("/rps/challenges/{challenge_id}/choice", response_model=RpsChallengeOut)
+async def choose_rps(
+    challenge_id: str,
+    data: RpsChoiceIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    challenge = await db.get(RpsChallenge, challenge_id)
+    if challenge is None or user.id not in {challenge.challenger_id, challenge.opponent_id}:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Вызов не найден")
+    if challenge.status != "accepted":
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Игра ещё не принята")
+    if user.id == challenge.challenger_id:
+        challenge.challenger_choice = data.choice
+    else:
+        challenge.opponent_choice = data.choice
+    await _finish_rps_if_ready(db, challenge)
+    await db.commit()
+    await db.refresh(challenge)
+    return challenge
 
 
 @router.get("/workspaces/{workspace_id}/wall", response_model=list[WallPostOut])

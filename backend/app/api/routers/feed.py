@@ -71,8 +71,13 @@ async def team_room(
         )
     ).all()
     # Team Room exposes pets + public activity only — no personal task data (FR §16.7).
+    pets_out = []
+    for pet in pets:
+        data = PetOut.model_validate(pet).model_dump()
+        data["user_id"] = pet.user_id
+        pets_out.append(data)
     return {
-        "pets": [PetOut.model_validate(p).model_dump() for p in pets],
+        "pets": pets_out,
         "online_count": len(member_ids),
         "activity": [ActivityOut.model_validate(a).model_dump() for a in activity],
     }
