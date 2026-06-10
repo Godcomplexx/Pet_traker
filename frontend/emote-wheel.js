@@ -279,7 +279,7 @@
     const label = document.createElement('span');
     label.textContent = category.label;
     button.appendChild(label);
-    setRadialPosition(button, index, total, 122);
+    setRadialPosition(button, index, total, 114);
     button.addEventListener('click', () => selectCategory(category.id));
     return button;
   }
@@ -288,7 +288,7 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'emote-node emote-choice';
-    setRadialPosition(button, index, total, 72);
+    setRadialPosition(button, index, total, 66);
 
     if (typeof entry === 'object' && entry.action) {
       const selected = RPS[entry.action];
@@ -328,6 +328,25 @@
     const itemRing = document.createElement('div');
     itemRing.className = 'emote-item-ring';
     root.appendChild(itemRing);
+
+    function selectCategoryAtPoint(event) {
+      if (event.target.closest('.emote-choice, .emote-wheel-center')) return;
+      const box = root.getBoundingClientRect();
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      const dx = event.clientX - cx;
+      const dy = event.clientY - cy;
+      const distance = Math.hypot(dx, dy);
+      if (distance < box.width * 0.30 || distance > box.width * 0.50) return;
+      const degrees = (Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360;
+      const index = Math.round(degrees / (360 / categories.length)) % categories.length;
+      active = categories[index].id;
+      event.preventDefault();
+      event.stopPropagation();
+      render();
+    }
+
+    root.addEventListener('click', selectCategoryAtPoint, true);
 
     function render() {
       const selected = categories.find((category) => category.id === active) || categories[0];

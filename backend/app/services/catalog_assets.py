@@ -103,6 +103,66 @@ ROOM_DECOR_FILES = (
     "wood.png",
 )
 
+FOOD_ASSET_RARITIES = {
+    "banana.png": "common",
+    "bean.png": "common",
+    "berry.png": "common",
+    "carrot.png": "common",
+    "corn.png": "common",
+    "egg.png": "common",
+    "herbs.png": "common",
+    "lemon.png": "common",
+    "nut.png": "common",
+    "oats.png": "common",
+    "potato.png": "common",
+    "seed.png": "common",
+    "sugar.png": "common",
+    "water.png": "common",
+    "wheat.png": "common",
+    "batter.png": "rare",
+    "beast_meat.png": "rare",
+    "butter.png": "rare",
+    "cinnamon.png": "rare",
+    "clam.png": "rare",
+    "coconut.png": "rare",
+    "coffee_beans.png": "rare",
+    "crab.png": "rare",
+    "dough.png": "rare",
+    "fish.png": "rare",
+    "flour.png": "rare",
+    "melon.png": "rare",
+    "milk.png": "rare",
+    "octopus.png": "rare",
+    "rice_bowl.png": "rare",
+    "salt.png": "rare",
+    "sugarcane.png": "rare",
+    "teabag.png": "rare",
+    "vanilla.png": "rare",
+    "chocolate_bar.png": "epic",
+    "cupcake.png": "epic",
+    "fruit_salad.png": "epic",
+    "hard_candy.png": "epic",
+    "ice_cream.png": "epic",
+    "pie.png": "epic",
+    "ramen.png": "epic",
+    "stew.png": "epic",
+    "tropical_juice.png": "epic",
+}
+
+FOOD_HUNGER_BY_RARITY = {
+    "common": 12,
+    "rare": 24,
+    "epic": 38,
+    "legendary": 55,
+}
+
+FOOD_PRICE_BY_RARITY = {
+    "common": 14,
+    "rare": 28,
+    "epic": 48,
+    "legendary": 80,
+}
+
 ACCESSORY_ITEMS = (
     ("accessory_bunan_black", "Bunan Black", "bunan_black_64.png", 0.5, 0.46),
     ("accessory_maru_black", "Maru Black", "maru_black_64.png", 0.46, 0.45),
@@ -126,6 +186,26 @@ def decor_item_shop_items() -> list[dict]:
             "data": {"file": f"items/{file_name}"},
         }
         for file_name in ROOM_DECOR_FILES
+        if file_name not in FOOD_ASSET_RARITIES
+    ]
+
+
+def food_asset_shop_items() -> list[dict]:
+    return [
+        {
+            "id": f"food_item_{file_name.removesuffix('.png')}",
+            "name": _title_from_file(file_name),
+            "type": "food",
+            "rarity": rarity,
+            "price": FOOD_PRICE_BY_RARITY[rarity],
+            "data": {
+                "file": f"items/{file_name}",
+                "hunger": FOOD_HUNGER_BY_RARITY[rarity],
+                "mood": 1 if rarity == "common" else 2 if rarity == "rare" else 4,
+                "energy": 0 if rarity == "common" else 1 if rarity == "rare" else 2,
+            },
+        }
+        for file_name, rarity in FOOD_ASSET_RARITIES.items()
     ]
 
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import secrets
 
-from app.services.catalog_assets import accessory_shop_items, decor_item_shop_items
+from app.services.catalog_assets import accessory_shop_items, decor_item_shop_items, food_asset_shop_items
 from app.services.characters import character_shop_items
 
 CASE_EXCLUDED_TYPES = {"food", "body", "accent", "species", "character"}
@@ -78,15 +78,15 @@ SHOP_ITEMS: list[dict] = [
     {"id": "decor_floor_lamp", "name": "Торшер", "type": "decor", "rarity": "rare", "price": 95, "data": {"file": "decor_floor_lamp.png", "slot": "floor-right", "kind": "light"}},
     {"id": "decor_wall_light", "name": "Настенный свет", "type": "decor", "rarity": "epic", "price": 130, "data": {"file": "decor_wall_light.png", "slot": "shelf-left", "kind": "light"}},
     # ── еда (расходуется при кормлении питомца) ──
-    {"id": "food_banana",  "name": "Банан",      "type": "food", "rarity": "common", "price": 12, "data": {"icon": "food_banana", "hunger": 10, "mood": 1, "energy": 0}},
-    {"id": "food_berry",   "name": "Ягоды",      "type": "food", "rarity": "common", "price": 10, "data": {"icon": "food_berry", "hunger": 8, "mood": 3, "energy": 0}},
+    {"id": "food_banana",  "name": "Банан",      "type": "food", "rarity": "common", "price": 12, "data": {"icon": "food_banana", "hunger": 12, "mood": 1, "energy": 0}},
+    {"id": "food_berry",   "name": "Ягоды",      "type": "food", "rarity": "common", "price": 10, "data": {"icon": "food_berry", "hunger": 12, "mood": 3, "energy": 0}},
     {"id": "food_carrot",  "name": "Морковь",    "type": "food", "rarity": "common", "price": 14, "data": {"icon": "food_carrot", "hunger": 12, "mood": 1, "energy": 0}},
-    {"id": "food_milk",    "name": "Молоко",     "type": "food", "rarity": "rare", "price": 20, "data": {"icon": "food_milk", "hunger": 14, "mood": 1, "energy": 4}},
-    {"id": "food_fish",    "name": "Рыба",       "type": "food", "rarity": "rare", "price": 24, "data": {"icon": "food_fish", "hunger": 20, "mood": 1, "energy": 2}},
-    {"id": "food_rice",    "name": "Рис",        "type": "food", "rarity": "rare", "price": 25, "data": {"icon": "food_rice", "hunger": 18, "mood": 2, "energy": 0}},
-    {"id": "food_cupcake", "name": "Кекс",       "type": "food", "rarity": "epic", "price": 34, "data": {"icon": "food_cupcake", "hunger": 16, "mood": 8, "energy": 0}},
-    {"id": "food_ramen",   "name": "Рамен",      "type": "food", "rarity": "epic", "price": 45, "data": {"icon": "food_ramen", "hunger": 28, "mood": 4, "energy": 2}},
-] + decor_item_shop_items() + accessory_shop_items() + character_shop_items()
+    {"id": "food_milk",    "name": "Молоко",     "type": "food", "rarity": "rare", "price": 22, "data": {"icon": "food_milk", "hunger": 24, "mood": 1, "energy": 4}},
+    {"id": "food_fish",    "name": "Рыба",       "type": "food", "rarity": "rare", "price": 28, "data": {"icon": "food_fish", "hunger": 24, "mood": 1, "energy": 2}},
+    {"id": "food_rice",    "name": "Рис",        "type": "food", "rarity": "rare", "price": 26, "data": {"icon": "food_rice", "hunger": 24, "mood": 2, "energy": 0}},
+    {"id": "food_cupcake", "name": "Кекс",       "type": "food", "rarity": "epic", "price": 40, "data": {"icon": "food_cupcake", "hunger": 38, "mood": 8, "energy": 0}},
+    {"id": "food_ramen",   "name": "Рамен",      "type": "food", "rarity": "epic", "price": 48, "data": {"icon": "food_ramen", "hunger": 38, "mood": 4, "energy": 2}},
+] + food_asset_shop_items() + decor_item_shop_items() + accessory_shop_items() + character_shop_items()
 
 ITEMS_BY_ID = {it["id"]: it for it in SHOP_ITEMS}
 
