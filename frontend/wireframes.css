@@ -2038,6 +2038,12 @@ textarea.input { resize: vertical; min-height: 70px; }
 .emote-item-ring {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+}
+.emote-category-ring {
+  z-index: 3;
+}
+.emote-item-ring {
   z-index: 2;
 }
 .emote-node {
@@ -2055,6 +2061,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   border-radius: 50%;
   background: rgba(255,255,255,0.74);
   cursor: pointer;
+  pointer-events: auto;
   transition: transform .12s ease, background .12s ease, border-color .12s ease;
 }
 .emote-node:hover,
@@ -2103,6 +2110,10 @@ textarea.input { resize: vertical; min-height: 70px; }
   font-family: 'Press Start 2P', system-ui, sans-serif;
   font-size: 12px;
   color: var(--ink2);
+}
+.emote-rps .pipoya-emote-img {
+  width: 36px;
+  height: 36px;
 }
 .rps-panel {
   position: fixed;

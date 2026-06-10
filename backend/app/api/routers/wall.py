@@ -1,4 +1,6 @@
 """Стена рабочего пространства — лёгкая лента для участников."""
+import random
+
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -189,6 +191,43 @@ async def create_rps_challenge(
     await db.commit()
     await db.refresh(challenge)
     return challenge
+
+
+@router.post("/workspaces/{workspace_id}/rps/bot", response_model=WallPostOut)
+async def play_rps_bot(
+    workspace_id: str,
+    data: RpsChoiceIn,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await require_membership(workspace_id, db, user)
+    bot_choice = random.choice(tuple(RPS_CHOICES))
+    winner_id = _rps_winner(user.id, "bot", data.choice, bot_choice)
+    pet = None
+    if winner_id == user.id:
+        pet = await db.scalar(select(Pet).where(Pet.user_id == user.id))
+        if pet is not None:
+            pet.coins = int(pet.coins or 0) + RPS_REWARD
+    winner_text = (
+        "ничья"
+        if winner_id is None
+        else f"победил {user.display_name or user.email} (+{RPS_REWARD} монет)"
+        if winner_id == user.id
+        else "победил бот"
+    )
+    post = WallPost(
+        workspace_id=workspace_id,
+        author_id=user.id,
+        text=(
+            "Камень-ножницы-бумага с ботом: "
+            f"{user.display_name or user.email} выбрал {RPS_CHOICES[data.choice]}, "
+            f"бот выбрал {RPS_CHOICES[bot_choice]} - {winner_text}."
+        ),
+    )
+    db.add(post)
+    await db.commit()
+    await db.refresh(post)
+    return _wall_out(post, user.display_name or user.email or user.id[:8])
 
 
 @router.get("/rps/challenges", response_model=list[RpsChallengeOut])

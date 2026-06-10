@@ -202,12 +202,8 @@
       showRpsNotice('Стена еще не готова для игры');
       return;
     }
-    if (!opponentId) {
-      showRpsNotice('Не удалось определить игрока. Обновите стену.');
-      return;
-    }
-    if (meId && String(opponentId) === String(meId)) {
-      showRpsNotice('Нужно выбрать питомца другого участника');
+    if (!opponentId || (meId && String(opponentId) === String(meId))) {
+      await playRpsBot(target, key);
       return;
     }
     try {
@@ -220,6 +216,23 @@
       refreshRpsPanel();
     } catch (err) {
       showRpsNotice(err?.message || 'Не удалось отправить вызов');
+    }
+  }
+
+  async function playRpsBot(target, key) {
+    const selected = RPS[key];
+    const wsId = await getWorkspaceId();
+    if (!selected || !wsId || !api?.post) return;
+    try {
+      await api.post(`/workspaces/${wsId}/rps/bot`, { choice: key });
+      showBurst(target, selected.index);
+      showRpsNotice('КНБ с ботом сыграно. Результат на стене.');
+      setTimeout(() => {
+        const wallIsOpen = document.querySelector('#screen-team.on');
+        if (wallIsOpen) document.querySelector('[data-go="team"]')?.click();
+      }, 450);
+    } catch (err) {
+      showRpsNotice(err?.message || 'Не удалось сыграть с ботом');
     }
   }
 
@@ -281,7 +294,7 @@
       const selected = RPS[entry.action];
       button.classList.add('emote-rps');
       button.title = selected.label;
-      button.textContent = selected.short;
+      button.appendChild(emoteImg(selected.index));
       button.addEventListener('click', () => inviteRps(target, entry.action).catch((err) => {
         showRpsNotice(err?.message || 'Не удалось отправить вызов');
       }));
@@ -296,7 +309,7 @@
 
   function buildMenu(target, mode) {
     const categories = mode === 'pet' ? PET_GROUPS : WALL_GROUPS;
-    let active = categories[0].id;
+    let active = mode === 'wall' ? 'game' : categories[0].id;
 
     const root = document.createElement('div');
     root.className = `emote-wheel ${mode === 'pet' ? 'pet-mode' : 'wall-mode'}`;
@@ -355,7 +368,7 @@
       button.type = 'button';
       button.className = 'emote-node emote-rps';
       button.title = RPS[key].label;
-      button.textContent = RPS[key].short;
+      button.appendChild(emoteImg(RPS[key].index));
       setRadialPosition(button, index, 3, 86);
       button.addEventListener('click', () => chooseRpsResponse(challenge, key).catch((err) => {
         showRpsNotice(err?.message || 'Не удалось сделать ход');

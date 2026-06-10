@@ -177,6 +177,27 @@ async def test_wall_rps_challenge_notifies_and_rewards_winner(client):
     assert any("Камень-ножницы-бумага" in post["text"] and "+5" in post["text"] for post in wall)
 
 
+async def test_wall_rps_bot_rewards_winner(client, monkeypatch):
+    from app.api.routers import wall
+
+    ws, ho, _hb, _owner, _bob = await _workspace_with_member(client)
+    monkeypatch.setattr(wall.random, "choice", lambda _choices: "scissors")
+
+    result = await client.post(
+        f"/workspaces/{ws['id']}/rps/bot",
+        json={"choice": "rock"},
+        headers=ho,
+    )
+    assert result.status_code == 200, result.text
+    assert "+5" in result.json()["text"]
+
+    owner_pet = (await client.get("/pets/me", headers=ho)).json()
+    assert owner_pet["coins"] == 5
+
+    wall_posts = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
+    assert any("+5" in post["text"] for post in wall_posts)
+
+
 async def test_mention_of_self_or_outsider_does_not_notify(client):
     ws, ho, hb, owner, bob = await _workspace_with_member(client)
     project = (
