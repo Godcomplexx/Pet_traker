@@ -6,9 +6,9 @@
   const EMOTE_DIR = 'assets/emotes/pipoya';
 
   const RPS = {
-    rock: { label: 'Камень', short: 'К', index: 85 },
-    scissors: { label: 'Ножницы', short: 'Н', index: 86 },
-    paper: { label: 'Бумага', short: 'Б', index: 87 },
+    rock: { label: 'Камень', short: 'К', index: 86 },
+    scissors: { label: 'Ножницы', short: 'Н', index: 87 },
+    paper: { label: 'Бумага', short: 'Б', index: 88 },
   };
 
   const PET_GROUPS = [
@@ -61,6 +61,13 @@
     return emote;
   }
 
+  function rpsEmoteImg(key, className = '') {
+    const selected = RPS[key];
+    const emote = emoteImg(selected.index, className);
+    emote.setAttribute('aria-label', selected.label);
+    return emote;
+  }
+
   function closeMenu() {
     menu?.remove();
     menu = null;
@@ -92,6 +99,15 @@
     const burst = document.createElement('div');
     burst.className = 'pet-emote burst pipoya-burst';
     burst.appendChild(emoteImg(index, 'pet-emote-img is-animated'));
+    screen.appendChild(burst);
+    setTimeout(() => burst.remove(), 1400);
+  }
+
+  function showRpsBurst(host, key) {
+    const screen = host.closest('.petscreen, .team-pet, .team-playground') || host;
+    const burst = document.createElement('div');
+    burst.className = 'pet-emote burst rps-burst';
+    burst.appendChild(rpsEmoteImg(key, 'pet-emote-img is-animated'));
     screen.appendChild(burst);
     setTimeout(() => burst.remove(), 1400);
   }
@@ -211,7 +227,7 @@
         opponent_id: opponentId,
         choice: key,
       });
-      showBurst(target, selected.index);
+      showRpsBurst(target, key);
       showRpsNotice(`Вызов отправлен: ${teamPetName(target)}`);
       refreshRpsPanel();
     } catch (err) {
@@ -225,7 +241,7 @@
     if (!selected || !wsId || !api?.post) return;
     try {
       await api.post(`/workspaces/${wsId}/rps/bot`, { choice: key });
-      showBurst(target, selected.index);
+      showRpsBurst(target, key);
       showRpsNotice('КНБ с ботом сыграно. Результат на стене.');
       setTimeout(() => {
         const wallIsOpen = document.querySelector('#screen-team.on');
@@ -294,7 +310,7 @@
       const selected = RPS[entry.action];
       button.classList.add('emote-rps');
       button.title = selected.label;
-      button.appendChild(emoteImg(selected.index));
+      button.appendChild(rpsEmoteImg(entry.action));
       button.addEventListener('click', () => inviteRps(target, entry.action).catch((err) => {
         showRpsNotice(err?.message || 'Не удалось отправить вызов');
       }));
@@ -387,7 +403,7 @@
       button.type = 'button';
       button.className = 'emote-node emote-rps';
       button.title = RPS[key].label;
-      button.appendChild(emoteImg(RPS[key].index));
+      button.appendChild(rpsEmoteImg(key));
       setRadialPosition(button, index, 3, 86);
       button.addEventListener('click', () => chooseRpsResponse(challenge, key).catch((err) => {
         showRpsNotice(err?.message || 'Не удалось сделать ход');
