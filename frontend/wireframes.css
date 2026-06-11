@@ -2120,11 +2120,11 @@ textarea.input { resize: vertical; min-height: 70px; }
   position: absolute;
   left: 50%;
   top: 50%;
-  transform:
-    rotate(var(--angle))
-    translate(var(--radius))
-    rotate(var(--inverse-angle))
-    translate(-50%, -50%);
+  transform: translate(
+    calc(-50% + var(--radial-x, 0px)),
+    calc(-50% + var(--radial-y, 0px))
+  );
+  transform-origin: center;
   display: grid;
   place-items: center;
   align-content: center;
@@ -2141,12 +2141,10 @@ textarea.input { resize: vertical; min-height: 70px; }
 .emote-node.on {
   border-color: rgba(184,149,58,0.68);
   background: rgba(245,224,151,0.58);
-  transform:
-    rotate(var(--angle))
-    translate(var(--radius))
-    rotate(var(--inverse-angle))
-    translate(-50%, -50%)
-    scale(1.08);
+  transform: translate(
+    calc(-50% + var(--radial-x, 0px)),
+    calc(-50% + var(--radial-y, 0px))
+  ) scale(1.08);
 }
 .emote-category {
   width: 58px;

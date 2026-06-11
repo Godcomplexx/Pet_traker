@@ -280,9 +280,12 @@
 
   function setRadialPosition(node, index, total, radius) {
     const angle = -90 + (360 / total) * index;
+    const radians = angle * Math.PI / 180;
     node.style.setProperty('--angle', `${angle}deg`);
     node.style.setProperty('--inverse-angle', `${-angle}deg`);
     node.style.setProperty('--radius', `${radius}px`);
+    node.style.setProperty('--radial-x', `${Math.cos(radians) * radius}px`);
+    node.style.setProperty('--radial-y', `${Math.sin(radians) * radius}px`);
   }
 
   function makeCategoryButton(category, index, total, selectCategory) {
