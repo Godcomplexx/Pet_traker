@@ -242,6 +242,7 @@
     try {
       await api.post(`/workspaces/${wsId}/rps/bot`, { choice: key });
       showRpsBurst(target, key);
+      refreshPetState();
       showRpsNotice('КНБ с ботом сыграно. Результат на стене.');
       setTimeout(() => {
         const wallIsOpen = document.querySelector('#screen-team.on');
@@ -257,6 +258,7 @@
     if (!selected || !challenge?.id) return;
     closeMenu();
     await api.post(`/rps/challenges/${challenge.id}/choice`, { choice: key });
+    refreshPetState();
     showRpsNotice(`Вы выбрали: ${selected.label}`);
     refreshRpsPanel();
     setTimeout(() => {
@@ -276,6 +278,10 @@
       toast.classList.add('fade');
       setTimeout(() => toast.remove(), 400);
     }, 2400);
+  }
+
+  function refreshPetState() {
+    document.dispatchEvent(new CustomEvent('petpro:refresh-pet'));
   }
 
   function setRadialPosition(node, index, total, radius) {
