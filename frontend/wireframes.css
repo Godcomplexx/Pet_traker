@@ -2666,6 +2666,10 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: 24px;
   height: 24px;
 }
+.dock-bag .shopcard .food-icon {
+  width: 24px;
+  height: 24px;
+}
 .dock-bag .shopcard .sm {
   font-size: 7px;
   line-height: 1.2;
@@ -3389,6 +3393,14 @@ textarea.input { resize: vertical; min-height: 70px; }
   display: block;
 }
 .shopcard .decor-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+  display: block;
+}
+.shopcard .food-icon {
   width: 30px;
   height: 30px;
   object-fit: contain;
