@@ -144,6 +144,10 @@ async def test_wall_rps_challenge_notifies_and_rewards_winner(client):
     assert challenge["status"] == "pending"
     assert challenge["challenger_choice"] == "rock"
 
+    wall_before_finish = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
+    assert not any("Камень-ножницы-бумага" in post["text"] for post in wall_before_finish)
+    assert not any("предложил сыграть" in post["text"] for post in wall_before_finish)
+
     bob_notifs = (await client.get("/notifications", headers=hb)).json()
     assert any(
         n["entity_type"] == "rps_challenge" and n["entity_id"] == challenge["id"]
@@ -175,6 +179,7 @@ async def test_wall_rps_challenge_notifies_and_rewards_winner(client):
 
     wall = (await client.get(f"/workspaces/{ws['id']}/wall", headers=ho)).json()
     assert any("Камень-ножницы-бумага" in post["text"] and "+5" in post["text"] for post in wall)
+    assert not any("предложил сыграть" in post["text"] for post in wall)
 
 
 async def test_wall_rps_bot_rewards_winner(client, monkeypatch):

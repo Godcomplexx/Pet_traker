@@ -183,11 +183,6 @@ async def create_rps_challenge(
         entity_type="rps_challenge",
         entity_id=challenge.id,
     ))
-    db.add(WallPost(
-        workspace_id=workspace_id,
-        author_id=user.id,
-        text=f"{user.display_name or user.email} предложил сыграть в камень-ножницы-бумага.",
-    ))
     await db.commit()
     await db.refresh(challenge)
     return challenge
