@@ -103,6 +103,15 @@
     setTimeout(() => burst.remove(), 1400);
   }
 
+  function setPetEmote(host, index) {
+    const screen = host.closest('.team-pet, .petscreen, .team-playground') || host;
+    screen.querySelectorAll('.pipoya-selected-emote').forEach((node) => node.remove());
+    const emote = document.createElement('div');
+    emote.className = 'pet-emote state-emote pipoya-selected-emote';
+    emote.appendChild(emoteImg(index, 'pet-emote-img is-animated'));
+    screen.appendChild(emote);
+  }
+
   function showRpsBurst(host, key) {
     const screen = host.closest('.petscreen, .team-pet, .team-playground') || host;
     const burst = document.createElement('div');
@@ -195,12 +204,9 @@
     return qs('.team-name', target)?.textContent?.trim() || 'питомец';
   }
 
-  function chooseEmote(target, index, mode) {
+  function chooseEmote(target, index) {
     closeMenu();
-    showBurst(target, index);
-    if (mode === 'wall') {
-      postToWall(`Эмоция для ${teamPetName(target)}`, index).catch(() => {});
-    }
+    setPetEmote(target, index);
   }
 
   async function inviteRps(target, key) {
