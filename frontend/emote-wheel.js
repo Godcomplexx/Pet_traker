@@ -104,8 +104,10 @@
   }
 
   function setPetEmote(host, index) {
-    const screen = host.closest('.team-pet, .petscreen, .team-playground') || host;
-    screen.querySelectorAll('.pipoya-selected-emote, .pipoya-burst, .rps-burst').forEach((node) => node.remove());
+    const teamPet = host.closest('.team-pet');
+    const screen = teamPet || host.closest('.petscreen, .team-playground') || host;
+    const removable = teamPet ? '.pet-emote' : '.pipoya-selected-emote, .pipoya-burst, .rps-burst';
+    screen.querySelectorAll(removable).forEach((node) => node.remove());
     const emote = document.createElement('div');
     emote.className = 'pet-emote state-emote pipoya-selected-emote';
     emote.appendChild(emoteImg(index, 'pet-emote-img'));
