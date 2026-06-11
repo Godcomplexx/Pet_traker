@@ -2154,7 +2154,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   width: 34px;
   height: 34px;
 }
-.emote-category span {
+.emote-category .emote-label {
   position: absolute;
   bottom: -13px;
   left: 50%;

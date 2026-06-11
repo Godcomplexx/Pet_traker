@@ -302,6 +302,7 @@
     button.dataset.category = category.id;
     button.appendChild(emoteImg(category.icon));
     const label = document.createElement('span');
+    label.className = 'emote-label';
     label.textContent = category.label;
     button.appendChild(label);
     setRadialPosition(button, index, total, 114);
