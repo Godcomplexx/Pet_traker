@@ -11,10 +11,12 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.routers import (
     articles,
+    attachments,
     auth,
     comments,
     feed,
     games,
+    live,
     minesweeper,
     pets,
     projects,
@@ -86,7 +88,7 @@ async def health():
     return {"status": "ok"}
 
 
-for r in (auth, pets, shop, workspaces, projects, articles, tasks, comments, feed, wall, games, minesweeper):
+for r in (auth, pets, shop, workspaces, projects, articles, tasks, attachments, comments, feed, live, wall, games, minesweeper):
     app.include_router(r.router, prefix="/api")
 
 

@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     #   "taskiq"  — enqueue to Redis/Taskiq worker (production / scale)
     event_mode: str = "inline"
 
+    upload_dir: str = ".data/uploads"
+    upload_max_bytes: int = 10 * 1024 * 1024
+
     # ── Email / подтверждение регистрации ──
     # Требовать подтверждение email кодом перед входом.
     require_email_verification: bool = True

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums import NotificationType
 from app.models import Notification, User, WorkspaceMember
+from app.services.realtime import make_event, queue_live_event
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,21 @@ async def create_notification(
         entity_id=entity_id,
     )
     db.add(notif)
+    queue_live_event(
+        db,
+        make_event(
+            "notification.created",
+            {
+                "type": type_.value,
+                "title": title,
+                "body": body,
+                "entity_type": entity_type,
+                "entity_id": entity_id,
+            },
+            workspace_id=workspace_id,
+            target_user_ids=[user_id],
+        ),
+    )
     return notif
 
 

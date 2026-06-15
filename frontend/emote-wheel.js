@@ -4,6 +4,7 @@
   const api = window.api;
   const qs = (sel, root = document) => root.querySelector(sel);
   const EMOTE_DIR = 'assets/emotes/pipoya';
+  const WALL_EMOTE_KEY = 'petpro.wallEmotes';
 
   const RPS = {
     rock: { label: 'Камень', short: 'К', index: 86 },
@@ -39,6 +40,41 @@
   let rpsPanel = null;
   let rpsTimer = null;
   let teamDecorTimer = null;
+
+  function readWallEmotes() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(WALL_EMOTE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function writeWallEmotes(value) {
+    try {
+      localStorage.setItem(WALL_EMOTE_KEY, JSON.stringify(value));
+    } catch {
+      // This is only a local visual preference; the current DOM selection can remain transient.
+    }
+  }
+
+  function wallEmoteKey(target) {
+    return target?.dataset?.userId || target?.dataset?.petId || '';
+  }
+
+  function saveWallEmote(target, index) {
+    const key = wallEmoteKey(target);
+    if (!key) return;
+    const emotes = readWallEmotes();
+    emotes[key] = Number(index);
+    writeWallEmotes(emotes);
+    target.dataset.wallEmote = String(index);
+  }
+
+  function storedWallEmote(pet) {
+    const emotes = readWallEmotes();
+    return emotes[pet.user_id] ?? emotes[pet.id];
+  }
 
   function group(id, label, icon, entries) {
     return { id, label, icon, entries };
@@ -106,10 +142,13 @@
   function setPetEmote(host, index) {
     const teamPet = host.closest('.team-pet');
     const screen = teamPet || host.closest('.petscreen, .team-playground') || host;
+    const existing = screen.querySelector('.pipoya-selected-emote');
+    if (existing?.dataset.emoteIndex === String(index)) return;
     const removable = teamPet ? '.pet-emote' : '.pipoya-selected-emote, .pipoya-burst, .rps-burst';
     screen.querySelectorAll(removable).forEach((node) => node.remove());
     const emote = document.createElement('div');
     emote.className = 'pet-emote state-emote pipoya-selected-emote';
+    emote.dataset.emoteIndex = String(index);
     emote.appendChild(emoteImg(index, 'pet-emote-img'));
     screen.appendChild(emote);
   }
@@ -141,6 +180,8 @@
       if (!pet) return;
       node.dataset.userId = pet.user_id || '';
       node.dataset.petId = pet.id || '';
+      const emote = storedWallEmote(pet);
+      if (emote !== undefined) setPetEmote(node, Number(emote));
       node.title = 'Правый клик: эмоции и игры';
     });
     return pets;
@@ -206,8 +247,9 @@
     return qs('.team-name', target)?.textContent?.trim() || 'питомец';
   }
 
-  function chooseEmote(target, index) {
+  function chooseEmote(target, index, mode) {
     closeMenu();
+    if (mode === 'wall') saveWallEmote(target, index);
     setPetEmote(target, index);
   }
 
@@ -343,7 +385,7 @@
 
   function buildMenu(target, mode) {
     const categories = mode === 'pet' ? PET_GROUPS : WALL_GROUPS;
-    let active = mode === 'wall' ? 'game' : categories[0].id;
+    let active = categories[0].id;
 
     const root = document.createElement('div');
     root.className = `emote-wheel ${mode === 'pet' ? 'pet-mode' : 'wall-mode'}`;

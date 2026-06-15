@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import ELEVATED_ROLES, WRITE_ROLES, get_current_user, require_membership
@@ -14,11 +14,21 @@ from app.enums import (
     TaskType,
     TaskVisibility,
 )
-from app.models import Article, Project, Task, User, WorkspaceMember
-from app.schemas import BoardMove, TaskCreate, TaskOut, TaskUpdate
+from app.models import Article, Project, Task, TaskChecklistItem, User, WorkspaceMember
+from app.schemas import (
+    BoardMove,
+    TaskChecklistItemCreate,
+    TaskChecklistItemOut,
+    TaskChecklistItemUpdate,
+    TaskChecklistReorder,
+    TaskCreate,
+    TaskOut,
+    TaskUpdate,
+)
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 from app.services.notifications import notify_assignment
+from app.services.realtime import make_event, publish_queued_events, queue_live_event
 
 router = APIRouter(tags=["tasks"])
 
@@ -38,6 +48,24 @@ async def _load_task_with_access(db: AsyncSession, task_id: str, user: User) -> 
     else:
         await _assert_member(db, task.workspace_id, user)
     return task
+
+
+async def _load_checklist_item_with_access(
+    db: AsyncSession, item_id: str, user: User
+) -> TaskChecklistItem:
+    item = await db.get(TaskChecklistItem, item_id)
+    if item is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Checklist item not found")
+    await _load_task_with_access(db, item.task_id, user)
+    return item
+
+
+def _queue_task_live_event(db: AsyncSession, type_: str, task: Task) -> None:
+    payload = {"task_id": task.id, "status": task.status.value if task.status else None}
+    if task.scope == TaskScope.PERSONAL:
+        queue_live_event(db, make_event(type_, payload, target_user_ids=[task.owner_id]))
+    else:
+        queue_live_event(db, make_event(type_, payload, workspace_id=task.workspace_id))
 
 
 async def _validate_workspace_assignees(
@@ -61,6 +89,113 @@ async def _validate_workspace_assignees(
     return ids
 
 
+@router.get("/tasks/{task_id}/checklist", response_model=list[TaskChecklistItemOut])
+async def list_task_checklist(
+    task_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    task = await _load_task_with_access(db, task_id, user)
+    rows = await db.scalars(
+        select(TaskChecklistItem)
+        .where(TaskChecklistItem.task_id == task_id)
+        .order_by(TaskChecklistItem.position.asc(), TaskChecklistItem.created_at.asc())
+    )
+    return rows.all()
+
+
+@router.post(
+    "/tasks/{task_id}/checklist",
+    response_model=TaskChecklistItemOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_task_checklist_item(
+    task_id: str,
+    data: TaskChecklistItemCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    task = await _load_task_with_access(db, task_id, user)
+    max_position = await db.scalar(
+        select(func.max(TaskChecklistItem.position)).where(TaskChecklistItem.task_id == task_id)
+    )
+    item = TaskChecklistItem(
+        task_id=task_id,
+        created_by=user.id,
+        title=data.title,
+        kind=data.kind,
+        position=int(max_position or 0) + 1,
+    )
+    db.add(item)
+    _queue_task_live_event(db, "task.checklist_updated", task)
+    await db.commit()
+    await publish_queued_events(db)
+    await db.refresh(item)
+    return item
+
+
+@router.patch("/task-checklist/{item_id}", response_model=TaskChecklistItemOut)
+async def update_task_checklist_item(
+    item_id: str,
+    data: TaskChecklistItemUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    item = await _load_checklist_item_with_access(db, item_id, user)
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(item, field, value)
+    task = await db.get(Task, item.task_id)
+    if task is not None:
+        _queue_task_live_event(db, "task.checklist_updated", task)
+    await db.commit()
+    await publish_queued_events(db)
+    await db.refresh(item)
+    return item
+
+
+@router.patch("/tasks/{task_id}/checklist/reorder", response_model=list[TaskChecklistItemOut])
+async def reorder_task_checklist(
+    task_id: str,
+    data: TaskChecklistReorder,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    task = await _load_task_with_access(db, task_id, user)
+    if data.order:
+        rows = await db.scalars(
+            select(TaskChecklistItem).where(TaskChecklistItem.task_id == task_id)
+        )
+        items = {item.id: item for item in rows.all()}
+        for idx, item_id in enumerate(data.order):
+            if item_id in items:
+                items[item_id].position = idx
+    _queue_task_live_event(db, "task.checklist_updated", task)
+    await db.commit()
+    await publish_queued_events(db)
+    rows = await db.scalars(
+        select(TaskChecklistItem)
+        .where(TaskChecklistItem.task_id == task_id)
+        .order_by(TaskChecklistItem.position.asc(), TaskChecklistItem.created_at.asc())
+    )
+    return rows.all()
+
+
+@router.delete("/task-checklist/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task_checklist_item(
+    item_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    item = await _load_checklist_item_with_access(db, item_id, user)
+    task = await db.get(Task, item.task_id)
+    await db.delete(item)
+    if task is not None:
+        _queue_task_live_event(db, "task.checklist_updated", task)
+    await db.commit()
+    await publish_queued_events(db)
+    return None
+
+
 @router.post("/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 async def create_task(
     data: TaskCreate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
@@ -80,7 +215,10 @@ async def create_task(
             due_date=data.due_date,
         )
         db.add(task)
+        await db.flush()
+        _queue_task_live_event(db, "task.created", task)
         await db.commit()
+        await publish_queued_events(db)
         await db.refresh(task)
         return task
 
@@ -149,7 +287,9 @@ async def create_task(
             task_id=task.id,
             title=task.title,
         )
+    _queue_task_live_event(db, "task.created", task)
     await db.commit()
+    await publish_queued_events(db)
     await db.refresh(task)
     return task
 
@@ -208,7 +348,9 @@ async def update_task(
                 task_id=task.id,
                 title=task.title,
             )
+    _queue_task_live_event(db, "task.updated", task)
     await db.commit()
+    await publish_queued_events(db)
     await db.refresh(task)
     return task
 
@@ -268,7 +410,9 @@ async def complete_task(
         },
     )
     event_id = event.id
+    _queue_task_live_event(db, "task.updated", task)
     await db.commit()
+    await publish_queued_events(db)
     await dispatch_event(event_id)
     await db.refresh(task)
     return task
@@ -294,7 +438,9 @@ async def reopen_task(
         privacy_level=PrivacyLevel.PRIVATE if is_personal else PrivacyLevel.WORKSPACE,
         payload={"activity_text": None if is_personal else f"переоткрыл задачу «{task.title}»"},
     )
+    _queue_task_live_event(db, "task.updated", task)
     await db.commit()
+    await publish_queued_events(db)
     await db.refresh(task)
     return task
 
@@ -370,7 +516,9 @@ async def move_task(
     else:
         task.status = new_status
 
+    _queue_task_live_event(db, "task.moved", task)
     await db.commit()
+    await publish_queued_events(db)
     if event_id:
         await dispatch_event(event_id)
     await db.refresh(task)

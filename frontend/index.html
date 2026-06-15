@@ -280,10 +280,10 @@
         <button class="btn primary" data-go="projects">+ Проект</button>
       </div>
 
-      <div class="card sk" style="margin-bottom:var(--gap);">
-        <div class="row" style="gap:18px;align-items:stretch;">
-          <div class="petscreen" style="width:124px;height:124px;flex:0 0 auto;"><div class="scan">LVL <span data-petlevel>1</span></div></div>
-          <div style="flex:1;">
+      <div class="card sk dashboard-pet-card">
+        <div class="dashboard-pet-row">
+          <div class="petscreen dashboard-pet-screen"><div class="scan">LVL <span data-petlevel>1</span></div></div>
+          <div class="dashboard-pet-info">
             <div class="between"><h2><span data-petname>Питомец</span> <span class="mono">· ур. <span data-petlevel>1</span></span></h2><span class="chip" data-petstate></span></div>
             <div class="stat"><span class="lbl">XP до ур.<span data-petlevelnext>2</span></span><div class="track"><div class="fill xp" data-petfill style="width:0%"></div></div><span class="num" data-petnum>0/100</span></div>
             <div class="stat"><span class="lbl">Настроение</span><div class="track"><div class="fill acc" data-petmood style="width:80%"></div></div><span class="num" data-petmoodnum>80</span></div>
@@ -468,6 +468,41 @@
       <div class="grid g-2-1">
         <div class="col">
           <div class="card sk"><h3>Описание</h3><div id="tdDesc" class="muted"></div></div>
+          <div class="card sk2 task-checklist-card" id="taskChecklistCard">
+            <div class="between task-checklist-head">
+              <h3>Чеклист и подзадачи</h3>
+              <span class="mono" id="taskChecklistCount">0/0</span>
+            </div>
+            <div class="task-checklist-progress">
+              <div class="task-checklist-fill" id="taskChecklistFill"></div>
+            </div>
+            <div class="task-template-row" id="taskChecklistTemplates">
+              <button class="btn sm" data-task-template="article" type="button">Шаблон: статья</button>
+              <button class="btn sm" data-task-template="experiment" type="button">эксперимент</button>
+              <button class="btn sm" data-task-template="review" type="button">проверка</button>
+            </div>
+            <div class="task-checklist-list" id="taskChecklistList"></div>
+            <div class="task-checklist-form">
+              <select class="rolepick" id="taskChecklistKind">
+                <option value="CHECK">пункт</option>
+                <option value="SUBTASK">подзадача</option>
+              </select>
+              <input class="input" id="taskChecklistInput" placeholder="Добавить пункт или подзадачу...">
+              <button class="btn primary sm" id="taskChecklistAdd" type="button">Добавить</button>
+            </div>
+          </div>
+          <div class="card sk2 task-attachments-card" id="taskAttachmentsCard">
+            <div class="between task-attachments-head">
+              <h3>Файлы</h3>
+              <span class="mono" id="taskAttachmentCount">0</span>
+            </div>
+            <div class="task-attachment-form">
+              <input class="input" id="taskAttachmentFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.csv,.txt,.xls,.xlsx,.doc,.docx">
+              <button class="btn primary sm" id="taskAttachmentUpload" type="button">Загрузить</button>
+            </div>
+            <div class="muted sm" id="taskAttachmentStatus"></div>
+            <div class="task-attachment-list" id="taskAttachmentList"></div>
+          </div>
           <div class="card sk" id="tdEditCard" hidden>
             <h3>Редактировать</h3>
             <div class="col" style="gap:10px;">
@@ -499,7 +534,7 @@
           </div>
         </div>
         <div class="col">
-          <div class="card sk2 cmtbox" data-cmt="task"><h3>Комментарии</h3><div class="cmt-list"></div>
+          <div class="card sk2 cmtbox task-chat-box" data-cmt="task"><h3>Чат задачи</h3><div class="cmt-list"></div>
             <div class="cmt-form"></div></div>
         </div>
       </div>
@@ -560,7 +595,32 @@
         </div>
       </div>
 
-      <div class="grid g2">
+      <div class="card sk task-kanban-shell">
+        <div class="task-kanban-toolbar">
+          <input class="input board-search" id="taskBoardSearch" type="search" placeholder="Поиск по задачам...">
+          <select class="rolepick" id="taskBoardAssignee" title="Исполнитель"></select>
+          <select class="rolepick" id="taskBoardType" title="Тип"></select>
+          <select class="rolepick" id="taskBoardPriority" title="Приоритет"></select>
+          <select class="rolepick" id="taskBoardGroup" title="Группировка">
+            <option value="none">без группировки</option>
+            <option value="scope">по типу доступа</option>
+            <option value="project">по проекту</option>
+            <option value="assignee">по исполнителю</option>
+          </select>
+        </div>
+        <div class="task-column-picker" id="taskColumnPicker"></div>
+        <div class="task-bulkbar" id="taskBulkbar" hidden>
+          <span class="mono"><span id="taskBulkCount">0</span> выбрано</span>
+          <button class="btn sm" data-task-bulk="TODO">В TODO</button>
+          <button class="btn sm" data-task-bulk="IN_PROGRESS">В работе</button>
+          <button class="btn sm" data-task-bulk="IN_REVIEW">На проверку</button>
+          <button class="btn primary sm" data-task-bulk="DONE">Готово</button>
+          <button class="btn sm" id="taskBulkClear">Сбросить</button>
+        </div>
+        <div class="task-board" id="taskBoard"></div>
+      </div>
+
+      <div class="grid g2 task-list-fallback">
         <div class="card sk">
           <h3>Командные <span class="mono" id="teamCount"></span></h3>
           <div id="teamTasks"></div>
@@ -820,6 +880,11 @@
 
 <script src="api.js"></script>
 <script src="app.js"></script>
+<script src="task-chat.js"></script>
+<script src="task-board.js"></script>
+<script src="task-checklist.js"></script>
+<script src="task-attachments.js"></script>
+<script src="live.js"></script>
 <script src="pet-life.js"></script>
 <script src="pet-accessories.js"></script>
 <script src="room-decor.js"></script>

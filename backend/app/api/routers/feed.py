@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.enums import NotificationType
 from app.models import ActivityEvent, Notification, Pet, User, WallPresence, WorkspaceMember
 from app.schemas import ActivityOut, NotificationOut, PetOut
+from app.services.realtime import make_event, publish_queued_events, publish_live_event
 
 router = APIRouter(tags=["activity"])
 WALL_PRESENCE_TTL = timedelta(seconds=75)
@@ -111,6 +112,14 @@ async def mark_read(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Notification not found")
     notif.is_read = True
     await db.commit()
+    await publish_queued_events(db)
+    await publish_live_event(
+        make_event(
+            "notification.read",
+            {"notification_id": notif.id, "entity_type": notif.entity_type, "entity_id": notif.entity_id},
+            target_user_ids=[user.id],
+        )
+    )
     await db.refresh(notif)
     return notif
 
@@ -125,4 +134,6 @@ async def mark_all_read(
     for notif in rows.all():
         notif.is_read = True
     await db.commit()
+    await publish_queued_events(db)
+    await publish_live_event(make_event("notifications.read_all", {}, target_user_ids=[user.id]))
     return None

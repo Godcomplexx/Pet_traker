@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from typing import Literal
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator
@@ -90,6 +91,48 @@ class TaskOut(ORMModel):
     completed_at: datetime | None = None
     completed_by: str | None = None
     position: int = 0
+    created_at: datetime
+
+
+class TaskChecklistItemCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+    kind: Literal["CHECK", "SUBTASK"] = "CHECK"
+
+
+class TaskChecklistItemUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=300)
+    kind: Literal["CHECK", "SUBTASK"] | None = None
+    is_done: bool | None = None
+
+
+class TaskChecklistReorder(BaseModel):
+    order: list[str] = Field(default_factory=list)
+
+
+class TaskChecklistItemOut(ORMModel):
+    id: str
+    task_id: str
+    created_by: str | None = None
+    title: str
+    kind: str
+    is_done: bool
+    position: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class AttachmentOut(ORMModel):
+    id: str
+    workspace_id: str | None = None
+    task_id: str | None = None
+    project_id: str | None = None
+    article_id: str | None = None
+    uploaded_by: str | None = None
+    original_name: str
+    content_type: str
+    size_bytes: int
+    version: int
+    download_url: str
     created_at: datetime
 
 
