@@ -14,6 +14,7 @@ from app.schemas import (
     WorkspaceJoin,
     WorkspaceOut,
 )
+from app.services.audit import record_audit
 from app.services.demo_data import seed_workspace_demo
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
@@ -28,6 +29,16 @@ async def create_workspace(
     await db.flush()
     # FR-WS-2: creator becomes OWNER.
     db.add(WorkspaceMember(workspace_id=ws.id, user_id=user.id, role=WorkspaceRole.OWNER))
+    record_audit(
+        db,
+        workspace_id=ws.id,
+        actor_id=user.id,
+        action="workspace.created",
+        entity_type="workspace",
+        entity_id=ws.id,
+        after={"name": ws.name, "description": ws.description, "owner_id": user.id},
+        target_user_id=user.id,
+    )
     if data.with_demo_data:
         await seed_workspace_demo(db, workspace_id=ws.id, user_id=user.id)
     await db.commit()
@@ -53,6 +64,16 @@ async def join_workspace(
         raise HTTPException(status.HTTP_409_CONFLICT, "Вы уже участник этой лаборатории")
 
     db.add(WorkspaceMember(workspace_id=ws.id, user_id=user.id, role=WorkspaceRole.MEMBER))
+    record_audit(
+        db,
+        workspace_id=ws.id,
+        actor_id=user.id,
+        action="workspace.member_joined",
+        entity_type="workspace",
+        entity_id=ws.id,
+        target_user_id=user.id,
+        after={"role": WorkspaceRole.MEMBER},
+    )
     await db.commit()
     await db.refresh(ws)
     return ws
@@ -113,6 +134,8 @@ async def invite_member(
     member = await require_membership(workspace_id, db, user)
     if member.role not in ADMIN_ROLES:  # FR-WS-3
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Only OWNER/ADMIN can add members")
+    if data.role == WorkspaceRole.OWNER:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot assign owner role")
 
     invitee = await db.scalar(select(User).where(User.email == data.email))
     if invitee is None:
@@ -129,6 +152,17 @@ async def invite_member(
 
     new_member = WorkspaceMember(workspace_id=workspace_id, user_id=invitee.id, role=data.role)
     db.add(new_member)
+    await db.flush()
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="workspace.member_invited",
+        entity_type="workspace",
+        entity_id=workspace_id,
+        target_user_id=invitee.id,
+        after={"role": data.role},
+    )
     await db.commit()
     await db.refresh(new_member)
     return new_member
@@ -152,7 +186,23 @@ async def update_member_role(
     )
     if target is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
+    if target.role == WorkspaceRole.OWNER:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot change owner role")
+    if data.role == WorkspaceRole.OWNER:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot assign owner role")
+    before_role = target.role
     target.role = data.role
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="workspace.member_role_changed",
+        entity_type="workspace",
+        entity_id=workspace_id,
+        target_user_id=user_id,
+        before={"role": before_role},
+        after={"role": data.role},
+    )
     await db.commit()
     await db.refresh(target)
     return target
@@ -177,6 +227,16 @@ async def remove_member(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
     if target.role == WorkspaceRole.OWNER:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot remove the owner")
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="workspace.member_removed",
+        entity_type="workspace",
+        entity_id=workspace_id,
+        target_user_id=user_id,
+        before={"role": target.role},
+    )
     await db.delete(target)
     await db.commit()
     return None

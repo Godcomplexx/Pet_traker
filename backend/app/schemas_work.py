@@ -166,6 +166,20 @@ class ActivityOut(ORMModel):
     created_at: datetime
 
 
+class AuditLogOut(ORMModel):
+    id: str
+    workspace_id: str
+    actor_id: str | None = None
+    action: str
+    entity_type: str
+    entity_id: str
+    target_user_id: str | None = None
+    before: dict = Field(default_factory=dict)
+    after: dict = Field(default_factory=dict)
+    details: dict = Field(default_factory=dict)
+    created_at: datetime
+
+
 class NotificationOut(ORMModel):
     id: str
     type: enums.NotificationType

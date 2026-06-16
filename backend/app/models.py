@@ -342,6 +342,22 @@ class ActivityEvent(Base):
     created_at: Mapped[datetime] = TS()
 
 
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[str] = PK()
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    actor_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    action: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    entity_type: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    entity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    target_user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    before: Mapped[dict] = mapped_column(JsonType, default=dict)
+    after: Mapped[dict] = mapped_column(JsonType, default=dict)
+    details: Mapped[dict] = mapped_column(JsonType, default=dict)
+    created_at: Mapped[datetime] = TS()
+
+
 class Notification(Base):
     __tablename__ = "notifications"
 

@@ -27,10 +27,13 @@ from app.schemas import (
     ProjectUpdate,
     TaskOut,
 )
+from app.services.audit import diff_snapshots, record_audit, snapshot_fields
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 
 router = APIRouter(tags=["projects"])
+
+PROJECT_AUDIT_FIELDS = ("name", "description", "type", "status", "deadline", "owner_id")
 
 
 async def _enrich_projects(db: AsyncSession, projects: list[Project]) -> list[ProjectOut]:
@@ -120,6 +123,16 @@ async def create_project(
         **({"status": data.status} if data.status else {}),
     )
     db.add(project)
+    await db.flush()
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="project.created",
+        entity_type="project",
+        entity_id=project.id,
+        after=snapshot_fields(project, PROJECT_AUDIT_FIELDS),
+    )
     await db.commit()
     await db.refresh(project)
     return project
@@ -168,6 +181,7 @@ async def move_project(
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
 
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     status_changed = project.status != new_status
     project.status = new_status
 
@@ -195,6 +209,20 @@ async def move_project(
         )
         event_id = event.id
 
+    audit_after = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=user.id,
+            action="project.moved",
+            entity_type="project",
+            entity_id=project.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
+        )
     await db.commit()
     if event_id and new_status == ProjectStatus.DONE:
         await dispatch_event(event_id)
@@ -216,9 +244,29 @@ async def update_project(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await _get_project_for_member(db, project_id, user)
+    project = await db.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
+    member = await require_membership(project.workspace_id, db, user)
+    if member.role not in WRITE_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(project, field, value)
+    audit_after = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=user.id,
+            action="project.updated",
+            entity_type="project",
+            entity_id=project.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
+        )
     await db.commit()
     await db.refresh(project)
     return project
@@ -238,6 +286,7 @@ async def change_project_status(
     if member.role not in ELEVATED_ROLES:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
 
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     project.status = data.status
     # FR-PROJ-6 + FR-GAME-6: reward project completion.
     event = await emit_event(
@@ -254,6 +303,20 @@ async def change_project_status(
         },
     )
     event_id = event.id
+    audit_after = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=user.id,
+            action="project.status_changed",
+            entity_type="project",
+            entity_id=project.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
+        )
     await db.commit()
     if data.status == ProjectStatus.DONE:
         await dispatch_event(event_id)
@@ -328,13 +391,36 @@ async def add_project_member(
         )
     )
     if exists:
+        before_role = exists.role
         exists.role = data.role  # обновляем роль, если уже участник
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=user.id,
+            action="project.member_role_changed",
+            entity_type="project",
+            entity_id=project.id,
+            target_user_id=data.user_id,
+            before={"role": before_role},
+            after={"role": data.role},
+        )
         await db.commit()
         await db.refresh(exists)
         target = exists
     else:
         target = ProjectMember(project_id=project_id, user_id=data.user_id, role=data.role)
         db.add(target)
+        await db.flush()
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=user.id,
+            action="project.member_added",
+            entity_type="project",
+            entity_id=project.id,
+            target_user_id=data.user_id,
+            after={"role": data.role},
+        )
         await db.commit()
         await db.refresh(target)
     u = await db.get(User, target.user_id)
@@ -364,6 +450,16 @@ async def remove_project_member(
     )
     if target is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
+    record_audit(
+        db,
+        workspace_id=project.workspace_id,
+        actor_id=user.id,
+        action="project.member_removed",
+        entity_type="project",
+        entity_id=project.id,
+        target_user_id=user_id,
+        before={"role": target.role},
+    )
     await db.delete(target)
     await db.commit()
     return None

@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.routers import (
+    audit,
     articles,
     attachments,
     auth,
@@ -89,7 +90,7 @@ async def health():
     return {"status": "ok"}
 
 
-for r in (auth, pets, shop, workspaces, projects, articles, tasks, attachments, comments, feed, integrations, live, wall, games, minesweeper):
+for r in (auth, pets, shop, workspaces, projects, articles, tasks, attachments, comments, feed, integrations, audit, live, wall, games, minesweeper):
     app.include_router(r.router, prefix="/api")
 
 

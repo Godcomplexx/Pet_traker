@@ -25,12 +25,26 @@ from app.schemas import (
     TaskOut,
     TaskUpdate,
 )
+from app.services.audit import diff_snapshots, record_audit, snapshot_fields
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 from app.services.notifications import notify_assignment
 from app.services.realtime import make_event, publish_queued_events, queue_live_event
 
 router = APIRouter(tags=["tasks"])
+
+TASK_AUDIT_FIELDS = (
+    "title",
+    "description",
+    "status",
+    "priority",
+    "type",
+    "assignee_id",
+    "assignees",
+    "due_date",
+    "completed_by",
+    "completed_at",
+)
 
 
 async def _assert_member(db: AsyncSession, workspace_id: str, user: User) -> WorkspaceMember:
@@ -278,6 +292,15 @@ async def create_task(
     )
     db.add(task)
     await db.flush()
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="task.created",
+        entity_type="task",
+        entity_id=task.id,
+        after=snapshot_fields(task, TASK_AUDIT_FIELDS),
+    )
     for aid in assignee_ids:  # FR-NOTIF-1 — уведомляем каждого исполнителя
         await notify_assignment(
             db,
@@ -310,6 +333,7 @@ async def update_task(
 ):
     task = await _load_task_with_access(db, task_id, user)
     changes = data.model_dump(exclude_unset=True)
+    audit_before = snapshot_fields(task, TASK_AUDIT_FIELDS)
     prev_assignees = set(task.assignees or ([task.assignee_id] if task.assignee_id else []))
     # assignee_ids → синхронизируем основной assignee_id + список assignees
     assignment_changed = "assignee_ids" in changes or "assignee_id" in changes
@@ -348,6 +372,21 @@ async def update_task(
                 task_id=task.id,
                 title=task.title,
             )
+    audit_after = snapshot_fields(task, TASK_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=task.workspace_id,
+            actor_id=user.id,
+            action="task.updated",
+            entity_type="task",
+            entity_id=task.id,
+            before=before,
+            after=after,
+            target_user_id=task.assignee_id if assignment_changed else None,
+            details={"changed_fields": list(after.keys())},
+        )
     _queue_task_live_event(db, "task.updated", task)
     await db.commit()
     await publish_queued_events(db)
@@ -387,6 +426,7 @@ async def complete_task(
     if task.status == TaskStatus.DONE:
         return task
 
+    audit_before = snapshot_fields(task, TASK_AUDIT_FIELDS)
     task.status = TaskStatus.DONE
     task.completed_at = datetime.now(timezone.utc)
     task.completed_by = user.id
@@ -410,6 +450,20 @@ async def complete_task(
         },
     )
     event_id = event.id
+    audit_after = snapshot_fields(task, TASK_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    record_audit(
+        db,
+        workspace_id=task.workspace_id,
+        actor_id=user.id,
+        action="task.completed",
+        entity_type="task",
+        entity_id=task.id,
+        before=before,
+        after=after,
+        target_user_id=task.assignee_id,
+        details={"changed_fields": list(after.keys())},
+    )
     _queue_task_live_event(db, "task.updated", task)
     await db.commit()
     await publish_queued_events(db)
@@ -425,8 +479,10 @@ async def reopen_task(
     task = await _load_task_with_access(db, task_id, user)
     if task.status != TaskStatus.DONE:
         return task
+    audit_before = snapshot_fields(task, TASK_AUDIT_FIELDS)
     task.status = TaskStatus.TODO
     task.completed_at = None
+    task.completed_by = None
     is_personal = task.scope == TaskScope.PERSONAL
     await emit_event(
         db,
@@ -437,6 +493,20 @@ async def reopen_task(
         workspace_id=task.workspace_id,
         privacy_level=PrivacyLevel.PRIVATE if is_personal else PrivacyLevel.WORKSPACE,
         payload={"activity_text": None if is_personal else f"переоткрыл задачу «{task.title}»"},
+    )
+    audit_after = snapshot_fields(task, TASK_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    record_audit(
+        db,
+        workspace_id=task.workspace_id,
+        actor_id=user.id,
+        action="task.reopened",
+        entity_type="task",
+        entity_id=task.id,
+        before=before,
+        after=after,
+        target_user_id=task.assignee_id,
+        details={"changed_fields": list(after.keys())},
     )
     _queue_task_live_event(db, "task.updated", task)
     await db.commit()
@@ -479,6 +549,8 @@ async def move_task(
     if going_done and not _can_complete(task, member_role, user):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cannot complete this task")
 
+    audit_before = snapshot_fields(task, TASK_AUDIT_FIELDS)
+
     # порядок внутри целевой колонки
     if data.order:
         for idx, tid in enumerate(data.order):
@@ -516,6 +588,21 @@ async def move_task(
     else:
         task.status = new_status
 
+    audit_after = snapshot_fields(task, TASK_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=task.workspace_id,
+            actor_id=user.id,
+            action="task.moved",
+            entity_type="task",
+            entity_id=task.id,
+            before=before,
+            after=after,
+            target_user_id=task.assignee_id,
+            details={"changed_fields": list(after.keys())},
+        )
     _queue_task_live_event(db, "task.moved", task)
     await db.commit()
     await publish_queued_events(db)
