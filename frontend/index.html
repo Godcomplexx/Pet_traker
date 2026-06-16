@@ -462,8 +462,8 @@
         <div><span class="btn-like sm" id="tdBack" style="color:var(--accent);">← назад</span>
           <h1 id="tdTitle">Задача</h1><div class="muted sm" id="tdMeta"></div></div>
         <div class="grow"></div>
-        <button class="btn" id="tdEdit">Редактировать</button>
-        <button class="btn" id="tdToggle">Закрыть задачу</button>
+        <button class="btn detail-action" id="tdEdit">Редактировать</button>
+        <button class="btn detail-action" id="tdToggle">Закрыть задачу</button>
       </div>
       <div class="grid g-2-1">
         <div class="col">
@@ -651,7 +651,7 @@
           <button class="btn sm" id="renamePetBtn">✎ переименовать</button>
         </div>
         <!-- inline-редактирование имени (без всплывающего окна) -->
-        <div class="row" id="petNameEdit" style="margin-top:12px;display:none;gap:8px;">
+        <div class="row pet-name-edit-row" id="petNameEdit" style="margin-top:12px;display:none;gap:8px;">
           <input class="input" id="petNameInput" placeholder="Имя питомца" style="flex:1;">
           <button class="btn primary sm" id="petNameSave">Сохранить</button>
           <button class="btn sm" id="petNameCancel">Отмена</button>
@@ -676,7 +676,7 @@
         <div class="col">
           <div class="card sk">
             <div class="note wall-warning" title="Стена очищается каждые 24 часа. Важные картинки и сообщения лучше сохранить отдельно.">⚠ Стена очищается каждые 24 ч — важное сохраняйте отдельно.</div>
-            <div class="row" style="gap:8px;">
+            <div class="row wall-compose-row" style="gap:8px;">
               <input class="input" id="wallInput" placeholder="Написать на стене…" style="flex:1;" maxlength="2000">
               <input type="file" id="wallImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
               <button class="btn sm" id="wallImageBtn" type="button">Картинка</button>
