@@ -14,7 +14,7 @@ from app.enums import (
     RewardType,
     TaskVisibility,
 )
-from app.models import ActivityEvent, DomainEvent, Pet, Reward
+from app.models import ActivityEvent, DomainEvent, Pet, Reward, WebhookDelivery, WebhookSubscription
 from app.services.gamification import level_of, reward_for_event
 from app.services.pet import reward_care
 
@@ -134,6 +134,38 @@ async def process_domain_event(db: AsyncSession, event_id: str) -> None:
                     visibility=TaskVisibility.WORKSPACE,
                 )
             )
+
+        if event.workspace_id:
+            hooks = (
+                await db.scalars(
+                    select(WebhookSubscription).where(
+                        WebhookSubscription.workspace_id == event.workspace_id,
+                        WebhookSubscription.active.is_(True),
+                    )
+                )
+            ).all()
+            for hook in hooks:
+                events = set(hook.events or [])
+                if "*" not in events and event.event_type.value not in events:
+                    continue
+                db.add(
+                    WebhookDelivery(
+                        subscription_id=hook.id,
+                        workspace_id=event.workspace_id,
+                        event_id=event.id,
+                        event_type=event.event_type.value,
+                        payload={
+                            "event_id": event.id,
+                            "event_type": event.event_type.value,
+                            "entity_type": event.entity_type,
+                            "entity_id": event.entity_id,
+                            "workspace_id": event.workspace_id,
+                            "payload": event.payload or {},
+                            "created_at": event.created_at.isoformat()
+                            if event.created_at else None,
+                        },
+                    )
+                )
 
         event.status = EventStatus.PROCESSED
         event.processed_at = datetime.now(timezone.utc)

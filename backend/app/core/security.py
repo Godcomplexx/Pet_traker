@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta, timezone
+import hashlib
+import secrets
 from typing import Any
 
 import bcrypt
@@ -8,6 +10,7 @@ from app.core.config import settings
 
 ACCESS = "access"
 REFRESH = "refresh"
+API_TOKEN_PREFIX = "lm_"
 
 # bcrypt only considers the first 72 bytes; truncate explicitly to stay
 # compatible across bcrypt versions (newer ones raise on longer input).
@@ -24,6 +27,14 @@ def verify_password(plain: str, hashed: str) -> bool:
         return bcrypt.checkpw(_pw_bytes(plain), hashed.encode("utf-8"))
     except ValueError:
         return False
+
+
+def create_api_token() -> str:
+    return API_TOKEN_PREFIX + secrets.token_urlsafe(32)
+
+
+def hash_api_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def _create_token(subject: str, token_type: str, expires_delta: timedelta) -> str:

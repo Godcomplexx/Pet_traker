@@ -95,7 +95,7 @@ async def list_task_checklist(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    task = await _load_task_with_access(db, task_id, user)
+    await _load_task_with_access(db, task_id, user)
     rows = await db.scalars(
         select(TaskChecklistItem)
         .where(TaskChecklistItem.task_id == task_id)

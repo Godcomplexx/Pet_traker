@@ -1,12 +1,14 @@
+from datetime import datetime, timezone
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import ACCESS, decode_token
+from app.core.security import ACCESS, decode_token, hash_api_token
 from app.enums import WorkspaceRole
-from app.models import User, WorkspaceMember
+from app.models import ApiToken, User, WorkspaceMember
 
 bearer = HTTPBearer(auto_error=True)
 
@@ -35,7 +37,21 @@ async def get_current_user(
     try:
         user_id = decode_token(creds.credentials, ACCESS)
     except ValueError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired token")
+        token_hash = hash_api_token(creds.credentials)
+        api_token = await db.scalar(
+            select(ApiToken).where(
+                ApiToken.token_hash == token_hash,
+                ApiToken.revoked_at.is_(None),
+            )
+        )
+        if api_token is None:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired token")
+        user = await db.get(User, api_token.user_id)
+        if user is None:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found")
+        api_token.last_used_at = datetime.now(timezone.utc)
+        await db.commit()
+        return user
     user = await db.get(User, user_id)
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "User not found")
