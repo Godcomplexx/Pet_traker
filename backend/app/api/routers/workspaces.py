@@ -14,6 +14,7 @@ from app.schemas import (
     WorkspaceJoin,
     WorkspaceOut,
 )
+from app.services.demo_data import seed_workspace_demo
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
@@ -27,6 +28,8 @@ async def create_workspace(
     await db.flush()
     # FR-WS-2: creator becomes OWNER.
     db.add(WorkspaceMember(workspace_id=ws.id, user_id=user.id, role=WorkspaceRole.OWNER))
+    if data.with_demo_data:
+        await seed_workspace_demo(db, workspace_id=ws.id, user_id=user.id)
     await db.commit()
     await db.refresh(ws)
     return ws

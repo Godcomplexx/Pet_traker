@@ -18,6 +18,47 @@ async def test_register_creates_pet(client):
     assert pet["customized"] is False
 
 
+async def test_workspace_demo_data_is_explicit(client):
+    tokens = await register(client, "demo-onboard@lab.ru")
+    h = auth_headers(tokens)
+
+    empty_ws = await _make_workspace(client, h, "Empty Lab")
+    assert (await client.get(f"/workspaces/{empty_ws['id']}/projects", headers=h)).json() == []
+    assert (await client.get(f"/workspaces/{empty_ws['id']}/articles", headers=h)).json() == []
+
+    demo_resp = await client.post(
+        "/workspaces",
+        json={"name": "Demo Lab", "with_demo_data": True},
+        headers=h,
+    )
+    assert demo_resp.status_code == 201, demo_resp.text
+    demo_ws = demo_resp.json()
+
+    projects = (await client.get(f"/workspaces/{demo_ws['id']}/projects", headers=h)).json()
+    articles = (await client.get(f"/workspaces/{demo_ws['id']}/articles", headers=h)).json()
+    tasks = (await client.get("/me/tasks", headers=h)).json()
+    wall = (await client.get(f"/workspaces/{demo_ws['id']}/wall", headers=h)).json()
+
+    assert len(projects) == 1
+    assert projects[0]["task_total"] >= 2
+    assert len(articles) == 1
+    assert articles[0]["task_total"] == 1
+    assert {task["status"] for task in tasks} >= {"TODO", "IN_PROGRESS", "IN_REVIEW"}
+    assert any(task["scope"] == "PERSONAL" for task in tasks)
+    assert wall and "демо-лаборатория" in wall[0]["text"]
+
+    checklist_task = next(task for task in tasks if task["status"] == "IN_PROGRESS")
+    checklist = (
+        await client.get(f"/tasks/{checklist_task['id']}/checklist", headers=h)
+    ).json()
+    comments = (
+        await client.get(f"/tasks/{checklist_task['id']}/comments", headers=h)
+    ).json()
+    assert len(checklist) == 3
+    assert {item["kind"] for item in checklist} == {"CHECK", "SUBTASK"}
+    assert comments and "Стартовый комментарий" in comments[0]["text"]
+
+
 async def test_customize_pet(client):
     tokens = await register(client, "look@lab.ru")
     h = auth_headers(tokens)

@@ -273,6 +273,7 @@ class ZipSolveOut(BaseModel):
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     description: str | None = None
+    with_demo_data: bool = False
 
 
 class WorkspaceJoin(BaseModel):

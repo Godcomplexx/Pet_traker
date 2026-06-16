@@ -1903,6 +1903,30 @@ textarea.input { resize: vertical; min-height: 70px; }
 }
 .field-err:not(:empty) { min-height: 16px; }
 
+.onboard-demo-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 2px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.38);
+  cursor: pointer;
+}
+.onboard-demo-option input {
+  margin-top: 2px;
+}
+.onboard-demo-option span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.onboard-demo-option small {
+  color: var(--ink2);
+  line-height: 1.35;
+}
+
 /* tabs */
 .tabs {
   display: flex;
