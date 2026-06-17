@@ -20,11 +20,12 @@ from app.schemas import (
     WallPostOut,
     WallReactionIn,
 )
+from app.services.gamification import RPS_WIN_COINS
 
 router = APIRouter(tags=["wall"])
 WALL_TTL = timedelta(hours=24)
 PRESENCE_TTL = timedelta(seconds=75)
-RPS_REWARD = 5
+RPS_REWARD = RPS_WIN_COINS
 RPS_CHOICES = {"rock": "Камень", "paper": "Бумага", "scissors": "Ножницы"}
 RPS_BEATS = {"rock": "scissors", "scissors": "paper", "paper": "rock"}
 

@@ -161,6 +161,56 @@ async def test_team_task_completion_grants_xp_and_activity(client):
     assert len(feed) == 1 and feed[0]["entity_type"] == "task"
 
 
+async def test_gamification_can_be_muted_without_disabling_rewards(client):
+    tokens = await register(client, "muted@lab.ru")
+    h = auth_headers(tokens)
+    ws = await _make_workspace(client, h)
+
+    pet = (await client.get("/pets/me", headers=h)).json()
+    assert pet["gamification_muted"] is False
+
+    muted = await client.patch(
+        "/pets/me/settings",
+        json={"gamification_muted": True},
+        headers=h,
+    )
+    assert muted.status_code == 200, muted.text
+    assert muted.json()["gamification_muted"] is True
+
+    task = (
+        await client.post(
+            "/tasks",
+            json={"scope": "WORKSPACE", "workspace_id": ws["id"], "title": "Quiet reward"},
+            headers=h,
+        )
+    ).json()
+    done = await client.patch(f"/tasks/{task['id']}/complete", headers=h)
+    assert done.status_code == 200, done.text
+
+    rewarded = (await client.get("/pets/me", headers=h)).json()
+    assert rewarded["gamification_muted"] is True
+    assert rewarded["xp"] == 10
+
+
+async def test_gamification_rules_are_public_to_authenticated_users(client):
+    tokens = await register(client, "rules@lab.ru")
+    h = auth_headers(tokens)
+
+    resp = await client.get("/gamification/rules", headers=h)
+    assert resp.status_code == 200, resp.text
+    rules = resp.json()
+    assert rules["xp"]["task_completed"] == {
+        "team": 10,
+        "personal": 5,
+        "before_due_bonus": 5,
+    }
+    assert rules["xp"]["comment_added"]["daily_cap"] == 5
+    assert rules["coins"]["daily_games"]["sudoku"] == 50
+    assert rules["coins"]["daily_games"]["zip"] == 45
+    assert rules["coins"]["daily_games"]["minesweeper"] == 55
+    assert rules["coins"]["rps_win"] == 5
+
+
 async def test_completion_is_idempotent(client):
     tokens = await register(client, "idem@lab.ru")
     h = auth_headers(tokens)

@@ -96,5 +96,7 @@
     // auth helpers (no token required)
     login: (body) => request('/auth/login', { method: 'POST', body, auth: false }),
     register: (body) => request('/auth/register', { method: 'POST', body, auth: false }),
+    petSettings: (body) => request('/pets/me/settings', { method: 'PATCH', body }),
+    gamificationRules: () => request('/gamification/rules'),
   };
 })();

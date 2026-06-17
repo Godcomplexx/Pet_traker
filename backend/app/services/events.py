@@ -15,7 +15,7 @@ from app.enums import (
     TaskVisibility,
 )
 from app.models import ActivityEvent, DomainEvent, Pet, Reward, WebhookDelivery, WebhookSubscription
-from app.services.gamification import level_of, reward_for_event
+from app.services.gamification import COMMENT_DAILY_CAP, LEVEL_UP_COINS, level_of, reward_for_event
 from app.services.pet import reward_care
 
 
@@ -82,7 +82,7 @@ async def process_domain_event(db: AsyncSession, event_id: str) -> None:
                     Reward.created_at >= cutoff,
                 )
             )
-            if (awarded_today or 0) >= 5:
+            if (awarded_today or 0) >= COMMENT_DAILY_CAP:
                 xp = 0
 
         if xp > 0:
@@ -111,7 +111,7 @@ async def process_domain_event(db: AsyncSession, event_id: str) -> None:
                     pet.level = level_of(pet.xp)
                     # Монеты за каждый новый уровень (10 монет/уровень) — для магазина/кейсов.
                     if pet.level > level_before:
-                        pet.coins = (pet.coins or 0) + (pet.level - level_before) * 10
+                        pet.coins = (pet.coins or 0) + (pet.level - level_before) * LEVEL_UP_COINS
                     # Тамагочи: работа кормит и радует питомца.
                     milestone = event.event_type in (
                         DomainEventType.PROJECT_STATUS_CHANGED,

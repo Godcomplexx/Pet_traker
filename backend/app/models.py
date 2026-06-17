@@ -99,6 +99,7 @@ class Pet(Base):
     accent_color: Mapped[str] = mapped_column(String(9), default="#7a3a22")
     # Прошёл ли пользователь экран создания питомца.
     customized: Mapped[bool] = mapped_column(Boolean, default=False)
+    gamification_muted: Mapped[bool] = mapped_column(Boolean, default=False)
     level: Mapped[int] = mapped_column(Integer, default=1)
     xp: Mapped[int] = mapped_column(Integer, default=0)
     mood: Mapped[int] = mapped_column(Integer, default=80)
