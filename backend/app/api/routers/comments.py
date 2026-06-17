@@ -11,6 +11,7 @@ from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 from app.services.mentions import extract_mentioned_emails
 from app.services.notifications import notify_mentions, notify_task_comment
+from app.services.realtime import make_event, publish_queued_events, queue_live_event
 
 router = APIRouter(tags=["comments"])
 
@@ -90,7 +91,24 @@ async def _add_team_comment(
         payload={"activity_text": None},  # comments aren't surfaced in activity feed
     )
     event_id = event.id
+    queue_live_event(
+        db,
+        make_event(
+            "comment.created",
+            {
+                "comment_id": comment.id,
+                "entity_type": entity_type,
+                "entity_id": target_id,
+                "text": comment.text,
+                "author_id": user.id,
+                "author_name": user.display_name,
+                "created_at": comment.created_at.isoformat(),
+            },
+            workspace_id=workspace_id,
+        ),
+    )
     await db.commit()
+    await publish_queued_events(db)
     await dispatch_event(event_id)
     await db.refresh(comment)
     return comment
@@ -185,7 +203,25 @@ async def comment_task(
             visibility=TaskVisibility.PRIVATE,
         )
         db.add(comment)
+        await db.flush()
+        queue_live_event(
+            db,
+            make_event(
+                "comment.created",
+                {
+                    "comment_id": comment.id,
+                    "entity_type": "task",
+                    "entity_id": task_id,
+                    "text": comment.text,
+                    "author_id": user.id,
+                    "author_name": user.display_name,
+                    "created_at": comment.created_at.isoformat(),
+                },
+                target_user_ids=[task.owner_id],
+            ),
+        )
         await db.commit()
+        await publish_queued_events(db)
         await db.refresh(comment)
         return comment
 
@@ -227,7 +263,23 @@ async def edit_comment(
     if comment is None or comment.deleted_at is not None or comment.author_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Comment not found")
     comment.text = data.text
+    target_id = comment.task_id or comment.project_id or comment.article_id or comment.id
+    queue_live_event(
+        db,
+        make_event(
+            "comment.updated",
+            {
+                "comment_id": comment.id,
+                "entity_type": "task" if comment.task_id else "project" if comment.project_id else "article",
+                "entity_id": target_id,
+                "text": comment.text,
+            },
+            workspace_id=comment.workspace_id,
+            target_user_ids=[comment.author_id] if comment.workspace_id is None else [],
+        ),
+    )
     await db.commit()
+    await publish_queued_events(db)
     await db.refresh(comment)
     return comment
 
@@ -242,5 +294,20 @@ async def delete_comment(
     from datetime import datetime, timezone
 
     comment.deleted_at = datetime.now(timezone.utc)
+    target_id = comment.task_id or comment.project_id or comment.article_id or comment.id
+    queue_live_event(
+        db,
+        make_event(
+            "comment.deleted",
+            {
+                "comment_id": comment.id,
+                "entity_type": "task" if comment.task_id else "project" if comment.project_id else "article",
+                "entity_id": target_id,
+            },
+            workspace_id=comment.workspace_id,
+            target_user_ids=[comment.author_id] if comment.workspace_id is None else [],
+        ),
+    )
     await db.commit()
+    await publish_queued_events(db)
     return None

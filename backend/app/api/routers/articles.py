@@ -15,12 +15,23 @@ from app.schemas import (
     BoardMove,
     TaskOut,
 )
+from app.services.audit import diff_snapshots, record_audit, snapshot_fields
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 
 router = APIRouter(tags=["articles"])
 
 REWARDED_STATUSES = {ArticleStatus.SUBMITTED, ArticleStatus.ACCEPTED, ArticleStatus.PUBLISHED}
+ARTICLE_AUDIT_FIELDS = (
+    "title",
+    "description",
+    "status",
+    "project_id",
+    "target_journal",
+    "document_url",
+    "deadline",
+    "owner_id",
+)
 
 
 async def _enrich_articles(db: AsyncSession, articles: list[Article]) -> list[ArticleOut]:
@@ -99,6 +110,16 @@ async def create_article(
         owner_id=user.id,
     )
     db.add(article)
+    await db.flush()
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="article.created",
+        entity_type="article",
+        entity_id=article.id,
+        after=snapshot_fields(article, ARTICLE_AUDIT_FIELDS),
+    )
     await db.commit()
     await db.refresh(article)
     return article
@@ -140,6 +161,7 @@ async def move_article(
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
 
+    audit_before = snapshot_fields(article, ARTICLE_AUDIT_FIELDS)
     status_changed = article.status != new_status
     article.status = new_status
 
@@ -167,6 +189,20 @@ async def move_article(
         )
         event_id = event.id
 
+    audit_after = snapshot_fields(article, ARTICLE_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=article.workspace_id,
+            actor_id=user.id,
+            action="article.moved",
+            entity_type="article",
+            entity_id=article.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
+        )
     await db.commit()
     if event_id and new_status in REWARDED_STATUSES:
         await dispatch_event(event_id)
@@ -215,6 +251,7 @@ async def change_article_status(
     if member.role not in WRITE_ROLES:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
 
+    audit_before = snapshot_fields(article, ARTICLE_AUDIT_FIELDS)
     article.status = data.status
     # FR-ART-4 + FR-GAME-5
     event = await emit_event(
@@ -232,6 +269,20 @@ async def change_article_status(
         },
     )
     event_id = event.id
+    audit_after = snapshot_fields(article, ARTICLE_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=article.workspace_id,
+            actor_id=user.id,
+            action="article.status_changed",
+            entity_type="article",
+            entity_id=article.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
+        )
     await db.commit()
     if data.status in REWARDED_STATUSES:
         await dispatch_event(event_id)
@@ -287,13 +338,36 @@ async def add_article_member(
         )
     )
     if exists:
+        before_role = exists.role
         exists.role = data.role
+        record_audit(
+            db,
+            workspace_id=article.workspace_id,
+            actor_id=user.id,
+            action="article.member_role_changed",
+            entity_type="article",
+            entity_id=article.id,
+            target_user_id=data.user_id,
+            before={"role": before_role},
+            after={"role": data.role},
+        )
         await db.commit()
         await db.refresh(exists)
         target = exists
     else:
         target = ArticleMember(article_id=article_id, user_id=data.user_id, role=data.role)
         db.add(target)
+        await db.flush()
+        record_audit(
+            db,
+            workspace_id=article.workspace_id,
+            actor_id=user.id,
+            action="article.member_added",
+            entity_type="article",
+            entity_id=article.id,
+            target_user_id=data.user_id,
+            after={"role": data.role},
+        )
         await db.commit()
         await db.refresh(target)
     u = await db.get(User, target.user_id)
@@ -327,6 +401,16 @@ async def remove_article_member(
     )
     if target is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
+    record_audit(
+        db,
+        workspace_id=article.workspace_id,
+        actor_id=user.id,
+        action="article.member_removed",
+        entity_type="article",
+        entity_id=article.id,
+        target_user_id=user_id,
+        before={"role": target.role},
+    )
     await db.delete(target)
     await db.commit()
     return None

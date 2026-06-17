@@ -101,6 +101,7 @@ class PetOut(ORMModel):
     body_color: str
     accent_color: str
     customized: bool
+    gamification_muted: bool = False
     level: int
     xp: int
     mood: int
@@ -122,6 +123,10 @@ class PetOut(ORMModel):
 
 class PetUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=80)
+
+
+class PetSettingsUpdate(BaseModel):
+    gamification_muted: bool
 
 
 class PetPlayIn(BaseModel):
@@ -273,6 +278,7 @@ class ZipSolveOut(BaseModel):
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     description: str | None = None
+    with_demo_data: bool = False
 
 
 class WorkspaceJoin(BaseModel):

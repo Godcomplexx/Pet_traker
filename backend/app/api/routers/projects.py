@@ -1,45 +1,27 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import (
-    ELEVATED_ROLES,
-    WRITE_ROLES,
-    get_current_user,
-    require_membership,
-)
+from app.api.deps import ELEVATED_ROLES, WRITE_ROLES, get_current_user, require_membership
 from app.core.database import get_db
-from app.enums import (
-    DomainEventType,
-    PrivacyLevel,
-    ProjectStatus,
-    TaskStatus,
-)
-from app.models import Article, Project, ProjectMember, Task, User, WorkspaceMember
-from app.schemas import (
-    ArticleOut,
-    BoardMove,
-    ProjectCreate,
-    ProjectMemberAdd,
-    ProjectMemberOut,
-    ProjectOut,
-    ProjectStatusUpdate,
-    ProjectUpdate,
-    TaskOut,
-)
+from app.enums import DomainEventType, PrivacyLevel, ProjectStatus, TaskStatus
+from app.models import Article, Project, ProjectMember, Task, User
+from app.schemas import ArticleOut, BoardMove, ProjectCreate, ProjectOut, ProjectStatusUpdate, ProjectUpdate, TaskOut
+from app.services.audit import diff_snapshots, record_audit, snapshot_fields
 from app.services.dispatch import dispatch_event
 from app.services.events import emit_event
 
 router = APIRouter(tags=["projects"])
 
+PROJECT_AUDIT_FIELDS = ("name", "description", "type", "status", "deadline", "owner_id")
+
 
 async def _enrich_projects(db: AsyncSession, projects: list[Project]) -> list[ProjectOut]:
-    """Дополнить проекты счётчиками задач/статей и участниками для карточек доски."""
     if not projects:
         return []
-    ids = [p.id for p in projects]
-
-    # задачи: всего и выполнено по проекту
+    ids = [project.id for project in projects]
     task_rows = (
         await db.execute(
             select(
@@ -51,39 +33,33 @@ async def _enrich_projects(db: AsyncSession, projects: list[Project]) -> list[Pr
             .group_by(Task.project_id)
         )
     ).all()
-    task_map = {pid: (total, done) for pid, total, done in task_rows}
-
-    # статьи по проекту
-    art_rows = (
+    article_rows = (
         await db.execute(
             select(Article.project_id, func.count(Article.id))
             .where(Article.project_id.in_(ids))
             .group_by(Article.project_id)
         )
     ).all()
-    art_map = {pid: cnt for pid, cnt in art_rows}
-
-    # участники по проекту
-    mem_rows = (
+    member_rows = (
         await db.execute(
-            select(ProjectMember.project_id, ProjectMember.user_id).where(
-                ProjectMember.project_id.in_(ids)
-            )
+            select(ProjectMember.project_id, ProjectMember.user_id).where(ProjectMember.project_id.in_(ids))
         )
     ).all()
-    mem_map: dict[str, list[str]] = {}
-    for pid, uid in mem_rows:
-        mem_map.setdefault(pid, []).append(uid)
+    task_map = {project_id: (total, done) for project_id, total, done in task_rows}
+    article_map = {project_id: count for project_id, count in article_rows}
+    member_map: dict[str, list[str]] = {}
+    for project_id, user_id in member_rows:
+        member_map.setdefault(project_id, []).append(user_id)
 
     out = []
-    for p in projects:
-        total, done = task_map.get(p.id, (0, 0))
-        o = ProjectOut.model_validate(p)
-        o.task_total = total
-        o.task_done = done
-        o.article_count = art_map.get(p.id, 0)
-        o.member_ids = mem_map.get(p.id, [])
-        out.append(o)
+    for project in projects:
+        total, done = task_map.get(project.id, (0, 0))
+        item = ProjectOut.model_validate(project)
+        item.task_total = total
+        item.task_done = done
+        item.article_count = article_map.get(project.id, 0)
+        item.member_ids = member_map.get(project.id, [])
+        out.append(item)
     return out
 
 
@@ -91,7 +67,7 @@ async def _get_project_for_member(db: AsyncSession, project_id: str, user: User)
     project = await db.get(Project, project_id)
     if project is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
-    await require_membership(project.workspace_id, db, user)  # FR-PROJ-7
+    await require_membership(project.workspace_id, db, user)
     return project
 
 
@@ -108,7 +84,7 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
 ):
     member = await require_membership(workspace_id, db, user)
-    if member.role not in WRITE_ROLES:  # FR-WS-5: VIEWER cannot create
+    if member.role not in WRITE_ROLES:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
     project = Project(
         workspace_id=workspace_id,
@@ -120,6 +96,16 @@ async def create_project(
         **({"status": data.status} if data.status else {}),
     )
     db.add(project)
+    await db.flush()
+    record_audit(
+        db,
+        workspace_id=workspace_id,
+        actor_id=user.id,
+        action="project.created",
+        entity_type="project",
+        entity_id=project.id,
+        after=snapshot_fields(project, PROJECT_AUDIT_FIELDS),
+    )
     await db.commit()
     await db.refresh(project)
     return project
@@ -139,9 +125,7 @@ async def list_projects(
         stmt = stmt.where(Project.name.ilike(f"%{q}%"))
     if type:
         stmt = stmt.where(Project.type == type)
-    # порядок для канбана: внутри колонки — по position, затем по дате
-    stmt = stmt.order_by(Project.position.asc(), Project.created_at.desc())
-    rows = (await db.scalars(stmt)).all()
+    rows = (await db.scalars(stmt.order_by(Project.position.asc(), Project.created_at.desc()))).all()
     return await _enrich_projects(db, list(rows))
 
 
@@ -152,49 +136,25 @@ async def move_project(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """DnD на доске: сменить статус (колонку) и/или порядок (position).
-
-    Награда за перевод в DONE начисляется так же, как в /status.
-    """
     project = await db.get(Project, project_id)
     if project is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
     member = await require_membership(project.workspace_id, db, user)
     if member.role not in WRITE_ROLES:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
-
     try:
         new_status = ProjectStatus(data.status)
     except ValueError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown status")
 
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     status_changed = project.status != new_status
     project.status = new_status
-
-    # пересчёт порядка в целевой колонке по присланному списку id
-    if data.order:
-        for idx, pid in enumerate(data.order):
-            p = await db.get(Project, pid)
-            if p and p.workspace_id == project.workspace_id:
-                p.position = idx
-
+    await _apply_project_order(db, project.workspace_id, data.order)
     event_id = None
     if status_changed:
-        event = await emit_event(
-            db,
-            event_type=DomainEventType.PROJECT_STATUS_CHANGED,
-            actor_id=user.id,
-            entity_type="project",
-            entity_id=project.id,
-            workspace_id=project.workspace_id,
-            privacy_level=PrivacyLevel.WORKSPACE,
-            payload={
-                "status": new_status.value,
-                "activity_text": f"перевёл проект «{project.name}» в {new_status.value}",
-            },
-        )
-        event_id = event.id
-
+        event_id = (await _emit_status_event(db, project, user.id, new_status)).id
+    _record_project_audit(db, project, user.id, audit_before, "project.moved")
     await db.commit()
     if event_id and new_status == ProjectStatus.DONE:
         await dispatch_event(event_id)
@@ -216,9 +176,16 @@ async def update_project(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    project = await _get_project_for_member(db, project_id, user)
+    project = await db.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
+    member = await require_membership(project.workspace_id, db, user)
+    if member.role not in WRITE_ROLES:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(project, field, value)
+    _record_project_audit(db, project, user.id, audit_before, "project.updated")
     await db.commit()
     await db.refresh(project)
     return project
@@ -237,23 +204,10 @@ async def change_project_status(
     member = await require_membership(project.workspace_id, db, user)
     if member.role not in ELEVATED_ROLES:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
-
+    audit_before = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
     project.status = data.status
-    # FR-PROJ-6 + FR-GAME-6: reward project completion.
-    event = await emit_event(
-        db,
-        event_type=DomainEventType.PROJECT_STATUS_CHANGED,
-        actor_id=user.id,
-        entity_type="project",
-        entity_id=project.id,
-        workspace_id=project.workspace_id,
-        privacy_level=PrivacyLevel.WORKSPACE,
-        payload={
-            "status": data.status.value,
-            "activity_text": f"перевёл проект «{project.name}» в {data.status.value}",
-        },
-    )
-    event_id = event.id
+    event_id = (await _emit_status_event(db, project, user.id, data.status)).id
+    _record_project_audit(db, project, user.id, audit_before, "project.status_changed")
     await db.commit()
     if data.status == ProjectStatus.DONE:
         await dispatch_event(event_id)
@@ -267,9 +221,7 @@ async def project_tasks(
 ):
     await _get_project_for_member(db, project_id, user)
     rows = await db.scalars(
-        select(Task).where(Task.project_id == project_id).order_by(
-            Task.position.asc(), Task.created_at.asc()
-        )
+        select(Task).where(Task.project_id == project_id).order_by(Task.position.asc(), Task.created_at.asc())
     )
     return rows.all()
 
@@ -283,87 +235,40 @@ async def project_articles(
     return rows.all()
 
 
-# ── участники проекта (ТЗ §5.3, §12.4) ──
-@router.get("/projects/{project_id}/members", response_model=list[ProjectMemberOut])
-async def project_members(
-    project_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
-    await _get_project_for_member(db, project_id, user)
-    rows = await db.execute(
-        select(ProjectMember, User.display_name, User.email)
-        .join(User, User.id == ProjectMember.user_id)
-        .where(ProjectMember.project_id == project_id)
+async def _apply_project_order(db: AsyncSession, workspace_id: str, order: list[str]) -> None:
+    for idx, project_id in enumerate(order or []):
+        project = await db.get(Project, project_id)
+        if project and project.workspace_id == workspace_id:
+            project.position = idx
+
+
+async def _emit_status_event(db: AsyncSession, project: Project, actor_id: str, status_: ProjectStatus):
+    return await emit_event(
+        db,
+        event_type=DomainEventType.PROJECT_STATUS_CHANGED,
+        actor_id=actor_id,
+        entity_type="project",
+        entity_id=project.id,
+        workspace_id=project.workspace_id,
+        privacy_level=PrivacyLevel.WORKSPACE,
+        payload={"status": status_.value, "activity_text": f"перевёл проект «{project.name}» в {status_.value}"},
     )
-    return [
-        ProjectMemberOut(id=m.id, user_id=m.user_id, role=m.role, display_name=dn, email=em)
-        for m, dn, em in rows.all()
-    ]
 
 
-@router.post("/projects/{project_id}/members", response_model=ProjectMemberOut, status_code=201)
-async def add_project_member(
-    project_id: str,
-    data: ProjectMemberAdd,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    project = await db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
-    member = await require_membership(project.workspace_id, db, user)
-    if member.role not in ELEVATED_ROLES:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
-    # Участник проекта должен входить в workspace.
-    in_ws = await db.scalar(
-        select(WorkspaceMember).where(
-            WorkspaceMember.workspace_id == project.workspace_id,
-            WorkspaceMember.user_id == data.user_id,
+def _record_project_audit(
+    db: AsyncSession, project: Project, actor_id: str, audit_before: dict, action: str
+) -> None:
+    audit_after = snapshot_fields(project, PROJECT_AUDIT_FIELDS)
+    before, after = diff_snapshots(audit_before, audit_after)
+    if before:
+        record_audit(
+            db,
+            workspace_id=project.workspace_id,
+            actor_id=actor_id,
+            action=action,
+            entity_type="project",
+            entity_id=project.id,
+            before=before,
+            after=after,
+            details={"changed_fields": list(after.keys())},
         )
-    )
-    if in_ws is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "User is not a workspace member")
-    exists = await db.scalar(
-        select(ProjectMember).where(
-            ProjectMember.project_id == project_id, ProjectMember.user_id == data.user_id
-        )
-    )
-    if exists:
-        exists.role = data.role  # обновляем роль, если уже участник
-        await db.commit()
-        await db.refresh(exists)
-        target = exists
-    else:
-        target = ProjectMember(project_id=project_id, user_id=data.user_id, role=data.role)
-        db.add(target)
-        await db.commit()
-        await db.refresh(target)
-    u = await db.get(User, target.user_id)
-    return ProjectMemberOut(
-        id=target.id, user_id=target.user_id, role=target.role,
-        display_name=u.display_name if u else None, email=u.email if u else None,
-    )
-
-
-@router.delete("/projects/{project_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_project_member(
-    project_id: str,
-    user_id: str,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    project = await db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Project not found")
-    member = await require_membership(project.workspace_id, db, user)
-    if member.role not in ELEVATED_ROLES:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
-    target = await db.scalar(
-        select(ProjectMember).where(
-            ProjectMember.project_id == project_id, ProjectMember.user_id == user_id
-        )
-    )
-    if target is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Member not found")
-    await db.delete(target)
-    await db.commit()
-    return None

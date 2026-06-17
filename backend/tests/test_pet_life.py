@@ -331,7 +331,7 @@ async def test_sudoku_grants_daily_reward_after_valid_solution(client):
 
     status = await client.get("/pets/me/sudoku", headers=headers)
     assert status.status_code == 200, status.text
-    assert status.json()["reward"] == 40
+    assert status.json()["reward"] == 50
     assert status.json()["completed_today"] is False
 
     wrong = await client.post(
@@ -349,11 +349,11 @@ async def test_sudoku_grants_daily_reward_after_valid_solution(client):
     solved = await client.post("/pets/me/sudoku", json={"grid": solution}, headers=headers)
     assert solved.status_code == 200, solved.text
     body = solved.json()
-    assert body["coins_awarded"] == 40
-    assert body["pet"]["coins"] == 40
+    assert body["coins_awarded"] == 50
+    assert body["pet"]["coins"] == 50
     assert body["pet"]["sudoku_completed_on"] is not None
 
     again = await client.post("/pets/me/sudoku", json={"grid": solution}, headers=headers)
     assert again.status_code == 200, again.text
     assert again.json()["coins_awarded"] == 0
-    assert again.json()["pet"]["coins"] == 40
+    assert again.json()["pet"]["coins"] == 50

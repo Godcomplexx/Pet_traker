@@ -18,6 +18,47 @@ async def test_register_creates_pet(client):
     assert pet["customized"] is False
 
 
+async def test_workspace_demo_data_is_explicit(client):
+    tokens = await register(client, "demo-onboard@lab.ru")
+    h = auth_headers(tokens)
+
+    empty_ws = await _make_workspace(client, h, "Empty Lab")
+    assert (await client.get(f"/workspaces/{empty_ws['id']}/projects", headers=h)).json() == []
+    assert (await client.get(f"/workspaces/{empty_ws['id']}/articles", headers=h)).json() == []
+
+    demo_resp = await client.post(
+        "/workspaces",
+        json={"name": "Demo Lab", "with_demo_data": True},
+        headers=h,
+    )
+    assert demo_resp.status_code == 201, demo_resp.text
+    demo_ws = demo_resp.json()
+
+    projects = (await client.get(f"/workspaces/{demo_ws['id']}/projects", headers=h)).json()
+    articles = (await client.get(f"/workspaces/{demo_ws['id']}/articles", headers=h)).json()
+    tasks = (await client.get("/me/tasks", headers=h)).json()
+    wall = (await client.get(f"/workspaces/{demo_ws['id']}/wall", headers=h)).json()
+
+    assert len(projects) == 1
+    assert projects[0]["task_total"] >= 2
+    assert len(articles) == 1
+    assert articles[0]["task_total"] == 1
+    assert {task["status"] for task in tasks} >= {"TODO", "IN_PROGRESS", "IN_REVIEW"}
+    assert any(task["scope"] == "PERSONAL" for task in tasks)
+    assert wall and "демо-лаборатория" in wall[0]["text"]
+
+    checklist_task = next(task for task in tasks if task["status"] == "IN_PROGRESS")
+    checklist = (
+        await client.get(f"/tasks/{checklist_task['id']}/checklist", headers=h)
+    ).json()
+    comments = (
+        await client.get(f"/tasks/{checklist_task['id']}/comments", headers=h)
+    ).json()
+    assert len(checklist) == 3
+    assert {item["kind"] for item in checklist} == {"CHECK", "SUBTASK"}
+    assert comments and "Стартовый комментарий" in comments[0]["text"]
+
+
 async def test_customize_pet(client):
     tokens = await register(client, "look@lab.ru")
     h = auth_headers(tokens)
@@ -118,6 +159,56 @@ async def test_team_task_completion_grants_xp_and_activity(client):
 
     feed = (await client.get(f"/workspaces/{ws['id']}/activity", headers=h)).json()
     assert len(feed) == 1 and feed[0]["entity_type"] == "task"
+
+
+async def test_gamification_can_be_muted_without_disabling_rewards(client):
+    tokens = await register(client, "muted@lab.ru")
+    h = auth_headers(tokens)
+    ws = await _make_workspace(client, h)
+
+    pet = (await client.get("/pets/me", headers=h)).json()
+    assert pet["gamification_muted"] is False
+
+    muted = await client.patch(
+        "/pets/me/settings",
+        json={"gamification_muted": True},
+        headers=h,
+    )
+    assert muted.status_code == 200, muted.text
+    assert muted.json()["gamification_muted"] is True
+
+    task = (
+        await client.post(
+            "/tasks",
+            json={"scope": "WORKSPACE", "workspace_id": ws["id"], "title": "Quiet reward"},
+            headers=h,
+        )
+    ).json()
+    done = await client.patch(f"/tasks/{task['id']}/complete", headers=h)
+    assert done.status_code == 200, done.text
+
+    rewarded = (await client.get("/pets/me", headers=h)).json()
+    assert rewarded["gamification_muted"] is True
+    assert rewarded["xp"] == 10
+
+
+async def test_gamification_rules_are_public_to_authenticated_users(client):
+    tokens = await register(client, "rules@lab.ru")
+    h = auth_headers(tokens)
+
+    resp = await client.get("/gamification/rules", headers=h)
+    assert resp.status_code == 200, resp.text
+    rules = resp.json()
+    assert rules["xp"]["task_completed"] == {
+        "team": 10,
+        "personal": 5,
+        "before_due_bonus": 5,
+    }
+    assert rules["xp"]["comment_added"]["daily_cap"] == 5
+    assert rules["coins"]["daily_games"]["sudoku"] == 50
+    assert rules["coins"]["daily_games"]["zip"] == 45
+    assert rules["coins"]["daily_games"]["minesweeper"] == 55
+    assert rules["coins"]["rps_win"] == 5
 
 
 async def test_completion_is_idempotent(client):

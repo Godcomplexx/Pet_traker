@@ -12,6 +12,7 @@ from app.schemas import (
     PetCustomize,
     PetOut,
     PetPlayIn,
+    PetSettingsUpdate,
     PetUpdate,
     PetSudokuSolveIn,
     SudokuCheckIn,
@@ -19,14 +20,14 @@ from app.schemas import (
     SudokuScoreOut,
     ZipScoreOut,
 )
+from app.services.gamification import DAILY_LOGIN_COINS, SUDOKU_COINS, reward_rules
 from app.services.pet import apply_decay, pet_state, revive_pet, state_label
 from app.services.shop import get_item
 from app.services import sudoku as sudoku_svc
 
 router = APIRouter(tags=["pets"])
 
-DAILY_LOGIN_COINS = 30
-SUDOKU_REWARD_COINS = 40
+SUDOKU_REWARD_COINS = SUDOKU_COINS
 SUDOKU_MAX_HINTS = 3
 
 
@@ -134,6 +135,25 @@ async def rename_pet(
     await db.commit()
     await db.refresh(pet)
     return _to_out(pet)
+
+
+@router.patch("/pets/me/settings", response_model=PetOut)
+async def update_pet_settings(
+    data: PetSettingsUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    pet = await _get_pet(db, user.id)
+    apply_decay(pet)
+    pet.gamification_muted = data.gamification_muted
+    await db.commit()
+    await db.refresh(pet)
+    return _to_out(pet)
+
+
+@router.get("/gamification/rules")
+async def gamification_rules(user: User = Depends(get_current_user)):
+    return reward_rules()
 
 
 @router.put("/pets/me", response_model=PetOut)

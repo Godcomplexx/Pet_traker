@@ -21,14 +21,15 @@ from app.schemas import (
     ZipSolveIn,
     ZipSolveOut,
 )
+from app.services.gamification import SUDOKU_COINS, ZIP_COINS
 from app.services import sudoku
 
 router = APIRouter(tags=["games"])
 
 GAME_SUDOKU = "sudoku"
 GAME_ZIP = "zip"
-SUDOKU_REWARD = 50
-ZIP_REWARD = 45
+SUDOKU_REWARD = SUDOKU_COINS
+ZIP_REWARD = ZIP_COINS
 ZIP_SIZE = 7
 ZIP_MARKERS = 16
 

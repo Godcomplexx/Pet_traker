@@ -3,9 +3,11 @@ from __future__ import annotations
 import random
 from functools import lru_cache
 
+from app.services.gamification import MINESWEEPER_COINS
+
 SIZE = 9
 MINE_COUNT = 10
-REWARD = 55
+REWARD = MINESWEEPER_COINS
 GAME_ID = "minesweeper"
 
 
