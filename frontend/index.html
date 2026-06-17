@@ -276,6 +276,24 @@
         </table>
         <p class="note" id="roleHint">роль определяет права: VIEWER только смотрит, MEMBER/EDITOR ведут задачи и статьи, ADMIN/OWNER управляют участниками</p>
       </div>
+
+      <div class="card sk audit-card" id="auditCard">
+        <div class="between">
+          <h3>Журнал аудита <span class="mono" id="auditCount"></span></h3>
+          <button class="btn sm" id="auditRefresh" type="button">Обновить</button>
+        </div>
+        <div class="audit-toolbar">
+          <select class="rolepick" id="auditEntityFilter" aria-label="Фильтр журнала аудита">
+            <option value="">Все события</option>
+            <option value="workspace">Лаборатория</option>
+            <option value="project">Проекты</option>
+            <option value="task">Задачи</option>
+            <option value="article">Статьи</option>
+          </select>
+        </div>
+        <div class="note" id="auditStatus">Журнал доступен владельцу и администраторам лаборатории.</div>
+        <div class="audit-list" id="auditList"></div>
+      </div>
     </section>
 
     <!-- ===== DASHBOARD ===== -->
@@ -673,6 +691,19 @@
           <button class="btn primary sm" data-go="gameroom"><span class="asset-icon" data-icon="game" data-label="Играть"></span> Играть</button>
         </div>
       </div>
+
+      <div class="card sk gamification-card" id="gamificationCard">
+        <div class="between gamification-head">
+          <h3>Геймификация</h3>
+          <label class="toggle-row" for="gamificationMuted">
+            <input id="gamificationMuted" type="checkbox">
+            <span>Тихий режим</span>
+          </label>
+        </div>
+        <p class="note">Награды и состояние питомца сохраняются, но праздничные всплывающие уведомления можно приглушить.</p>
+        <div class="reward-rules" id="rewardRules"></div>
+        <div class="note" id="gamificationStatus"></div>
+      </div>
     </section>
 
     <!-- ===== TEAM ROOM ===== -->
@@ -887,6 +918,7 @@
 
 <script src="api.js"></script>
 <script src="app.js"></script>
+<script src="product-polish.js"></script>
 <script src="onboarding-demo.js"></script>
 <script src="task-chat.js"></script>
 <script src="task-board.js"></script>

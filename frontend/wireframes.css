@@ -927,6 +927,82 @@ small, .sm { font-size: var(--fs-xs); }
   min-width: 0;
 }
 
+.audit-card,
+.gamification-card {
+  margin-top: var(--gap);
+}
+.audit-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0 10px;
+}
+.audit-list,
+.reward-rules {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.audit-entry,
+.reward-rule {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-out);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,0.34);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.70) inset;
+}
+.audit-entry-head,
+.reward-rule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.audit-entry-head {
+  flex-wrap: wrap;
+}
+.audit-action,
+.reward-rule b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.audit-meta,
+.audit-diff,
+.reward-rule span {
+  color: var(--ink2);
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+}
+.audit-diff {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink2);
+  cursor: pointer;
+  font-family: 'Press Start 2P', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+.toggle-row input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--xp);
+}
+body.gamification-muted .toast.xp,
+body.gamification-muted .toast.lvl {
+  display: none;
+}
+
 /* ============================================================
    TASK ITEM
    ============================================================ */
@@ -4222,6 +4298,27 @@ textarea.input { resize: vertical; min-height: 70px; }
     min-width: 0;
     white-space: nowrap;
     text-align: right;
+  }
+  .audit-card .between,
+  .gamification-card .between {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .audit-toolbar,
+  .audit-toolbar .rolepick,
+  .audit-card .btn {
+    width: 100%;
+  }
+  .audit-entry-head,
+  .reward-rule {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .reward-rule span {
+    width: 100%;
+  }
+  .toggle-row {
+    max-width: 100%;
   }
   .task-chat-box .comment-row {
     width: 100%;

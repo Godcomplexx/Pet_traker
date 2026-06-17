@@ -27,6 +27,9 @@ logs/
 # Local asset dumps / pasted README images
 /assets/
 /accets/
+/image/
+/.codex/screenshots/
+/test-results/
 /frontend/assets/custom-icons/image/
 
 # IDE / OS
