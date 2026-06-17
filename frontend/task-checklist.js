@@ -38,6 +38,21 @@
     }[char]));
   }
 
+  function setSafeHtml(target, html) {
+    const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    doc.querySelectorAll('script, iframe, object, embed, link, meta').forEach((node) => node.remove());
+    doc.querySelectorAll('*').forEach((node) => {
+      Array.from(node.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim();
+        if (name.startsWith('on') || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    target.replaceChildren(...Array.from(doc.body.childNodes));
+  }
+
   function setTaskId(taskId) {
     if (!taskId || state.taskId === taskId) return;
     state.taskId = taskId;
@@ -58,10 +73,10 @@
     if (!list) return;
     renderProgress();
     if (!state.items.length) {
-      list.innerHTML = '<div class="muted sm task-checklist-empty">Пока нет пунктов. Добавьте чеклист или примените шаблон.</div>';
+      setSafeHtml(list, '<div class="muted sm task-checklist-empty">Пока нет пунктов. Добавьте чеклист или примените шаблон.</div>');
       return;
     }
-    list.innerHTML = state.items.map((item, index) => `
+    setSafeHtml(list, state.items.map((item, index) => `
       <div class="task-check-item ${item.is_done ? 'done' : ''}" data-check-item="${esc(item.id)}" data-check-kind="${esc(item.kind)}">
         <label class="task-check-toggle">
           <input type="checkbox" data-check-toggle="${esc(item.id)}" ${item.is_done ? 'checked' : ''}>
@@ -72,19 +87,19 @@
         <button class="btn sm" data-check-move="${esc(item.id)}" data-dir="1" ${index === state.items.length - 1 ? 'disabled' : ''} type="button">↓</button>
         <button class="btn sm" data-check-delete="${esc(item.id)}" type="button">×</button>
       </div>
-    `).join('');
+    `).join(''));
   }
 
   async function loadChecklist() {
     if (!window.api || !state.taskId || state.loading) return;
     state.loading = true;
     const list = $('#taskChecklistList');
-    if (list) list.innerHTML = '<div class="muted sm">Загрузка...</div>';
+    if (list) setSafeHtml(list, '<div class="muted sm">Загрузка...</div>');
     try {
       state.items = await window.api.get(`/tasks/${state.taskId}/checklist`);
       render();
     } catch (error) {
-      if (list) list.innerHTML = `<div class="muted sm">Не удалось загрузить чеклист: ${esc(error.message || error)}</div>`;
+      if (list) setSafeHtml(list, `<div class="muted sm">Не удалось загрузить чеклист: ${esc(error.message || error)}</div>`);
     } finally {
       state.loading = false;
     }

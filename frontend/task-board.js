@@ -48,6 +48,21 @@
     }[char]));
   }
 
+  function setSafeHtml(target, html) {
+    const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    doc.querySelectorAll('script, iframe, object, embed, link, meta').forEach((node) => node.remove());
+    doc.querySelectorAll('*').forEach((node) => {
+      Array.from(node.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim();
+        if (name.startsWith('on') || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    target.replaceChildren(...Array.from(doc.body.childNodes));
+  }
+
   function readColumns() {
     try {
       return JSON.parse(localStorage.getItem(COLUMN_KEY) || '[]');
@@ -205,13 +220,13 @@
   function renderPicker() {
     const picker = $('#taskColumnPicker');
     if (!picker) return;
-    picker.innerHTML = STATUSES.map((status) => {
+    setSafeHtml(picker, STATUSES.map((status) => {
       const checked = !state.hiddenColumns.has(status.id);
       return `<label class="chip btn-like task-column-toggle">
         <input type="checkbox" data-task-column="${status.id}" ${checked ? 'checked' : ''}>
         ${esc(status.title)}
       </label>`;
-    }).join('');
+    }).join(''));
   }
 
   function renderBulkbar() {
@@ -245,11 +260,11 @@
     });
 
     if (!tasks.length) {
-      board.innerHTML = '<div class="muted sm task-board-empty">Нет задач под выбранные фильтры.</div>';
+      setSafeHtml(board, '<div class="muted sm task-board-empty">Нет задач под выбранные фильтры.</div>');
       return;
     }
 
-    board.innerHTML = Array.from(groups.entries()).map(([name, items]) => {
+    setSafeHtml(board, Array.from(groups.entries()).map(([name, items]) => {
       const columns = STATUSES
         .filter((status) => !state.hiddenColumns.has(status.id))
         .map((status) => renderColumn(status, items))
@@ -261,7 +276,7 @@
         </div>
         <div class="board task-status-board">${columns}</div>
       </section>`;
-    }).join('');
+    }).join(''));
   }
 
   function fillFilters() {
@@ -269,11 +284,11 @@
     const type = $('#taskBoardType');
     const priority = $('#taskBoardPriority');
     if (assignee) {
-      assignee.innerHTML = '<option value="all">все исполнители</option>' +
-        state.members.map((member) => `<option value="${esc(member.user_id)}">${esc(member.display_name || member.email || member.user_id.slice(0, 6))}</option>`).join('');
+      setSafeHtml(assignee, '<option value="all">все исполнители</option>' +
+        state.members.map((member) => `<option value="${esc(member.user_id)}">${esc(member.display_name || member.email || member.user_id.slice(0, 6))}</option>`).join(''));
     }
-    if (type) type.innerHTML = '<option value="all">все типы</option>' + TYPES.map((item) => `<option value="${item}">${item}</option>`).join('');
-    if (priority) priority.innerHTML = '<option value="all">любой приоритет</option>' + PRIORITIES.map((item) => `<option value="${item}">${item}</option>`).join('');
+    if (type) setSafeHtml(type, '<option value="all">все типы</option>' + TYPES.map((item) => `<option value="${item}">${item}</option>`).join(''));
+    if (priority) setSafeHtml(priority, '<option value="all">любой приоритет</option>' + PRIORITIES.map((item) => `<option value="${item}">${item}</option>`).join(''));
   }
 
   async function loadBoard() {
@@ -309,7 +324,7 @@
       render();
     } catch (error) {
       const board = $('#taskBoard');
-      if (board) board.innerHTML = `<div class="muted sm task-board-empty">Не удалось загрузить доску: ${esc(error.message || error)}</div>`;
+      if (board) setSafeHtml(board, `<div class="muted sm task-board-empty">Не удалось загрузить доску: ${esc(error.message || error)}</div>`);
     } finally {
       state.loading = false;
     }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import uuid
+import logging
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -18,6 +19,7 @@ from app.schemas import AttachmentOut
 from app.services.realtime import make_event, publish_live_event
 
 router = APIRouter(tags=["attachments"])
+logger = logging.getLogger(__name__)
 
 ALLOWED_CONTENT_TYPES = {
     "application/pdf",
@@ -353,6 +355,6 @@ async def delete_attachment(
     try:
         if path.exists() and path.is_file():
             path.unlink()
-    except OSError:
-        pass
+    except OSError as exc:
+        logger.warning("Failed to remove attachment file %s: %s", path, exc)
     return None

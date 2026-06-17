@@ -18,6 +18,21 @@
     }[char]));
   }
 
+  function setSafeHtml(target, html) {
+    const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    doc.querySelectorAll('script, iframe, object, embed, link, meta').forEach((node) => node.remove());
+    doc.querySelectorAll('*').forEach((node) => {
+      Array.from(node.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const value = attr.value.trim();
+        if (name.startsWith('on') || ((name === 'href' || name === 'src') && /^javascript:/i.test(value))) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    target.replaceChildren(...Array.from(doc.body.childNodes));
+  }
+
   function apiOrigin() {
     return String(window.api?.base || '').replace(/\/api\/?$/, '');
   }
@@ -91,10 +106,10 @@
     if (count) count.textContent = String(state.attachments.length);
     if (!list) return;
     if (!state.attachments.length) {
-      list.innerHTML = '<div class="muted sm task-attachment-empty">Файлов пока нет.</div>';
+      setSafeHtml(list, '<div class="muted sm task-attachment-empty">Файлов пока нет.</div>');
       return;
     }
-    list.innerHTML = state.attachments.map((att) => {
+    setSafeHtml(list, state.attachments.map((att) => {
       const preview = state.previewUrls.has(att.id)
         ? `<img class="task-attachment-preview" src="${esc(state.previewUrls.get(att.id))}" alt="${esc(att.original_name)}">`
         : `<div class="task-attachment-icon">${esc(icon(att))}</div>`;
@@ -107,7 +122,7 @@
         <button class="btn sm" data-attachment-download="${esc(att.id)}" type="button">Скачать</button>
         <button class="btn sm" data-attachment-delete="${esc(att.id)}" type="button">×</button>
       </div>`;
-    }).join('');
+    }).join(''));
     if (loadPreviews) hydratePreviews();
   }
 
@@ -120,7 +135,7 @@
       render();
     } catch (error) {
       const list = $('#taskAttachmentList');
-      if (list) list.innerHTML = `<div class="muted sm">Не удалось загрузить файлы: ${esc(error.message || error)}</div>`;
+      if (list) setSafeHtml(list, `<div class="muted sm">Не удалось загрузить файлы: ${esc(error.message || error)}</div>`);
     }
   }
 

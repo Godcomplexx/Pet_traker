@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import enum
-from datetime import date, datetime
+from datetime import date
+from functools import singledispatch
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,18 +10,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import AuditLog
 
 
+@singledispatch
 def audit_value(value: Any) -> Any:
-    if isinstance(value, enum.Enum):
-        return value.value
-    if isinstance(value, datetime | date):
-        return value.isoformat()
-    if isinstance(value, list):
-        return [audit_value(item) for item in value]
-    if isinstance(value, tuple | set):
-        return [audit_value(item) for item in value]
-    if isinstance(value, dict):
-        return {str(key): audit_value(item) for key, item in value.items()}
     return value
+
+
+@audit_value.register
+def _(value: enum.Enum) -> Any:
+    return value.value
+
+
+@audit_value.register
+def _(value: date) -> str:
+    return value.isoformat()
+
+
+@audit_value.register
+def _(value: list) -> list:
+    return [audit_value(item) for item in value]
+
+
+@audit_value.register
+def _(value: tuple) -> list:
+    return [audit_value(item) for item in value]
+
+
+@audit_value.register
+def _(value: set) -> list:
+    return [audit_value(item) for item in value]
+
+
+@audit_value.register
+def _(value: dict) -> dict:
+    return {str(key): audit_value(item) for key, item in value.items()}
 
 
 def snapshot_fields(entity: object, fields: tuple[str, ...]) -> dict[str, Any]:

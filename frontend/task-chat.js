@@ -72,10 +72,20 @@
     const row = document.createElement('div');
     row.className = `comment-row${isMine ? ' mine' : ''}`;
     row.dataset.liveComment = comment.comment_id || '';
-    row.innerHTML = `<div class="comment-body">
-      <div class="comment-meta"><b>${esc(name)}</b><span>${esc(new Date(comment.created_at || Date.now()).toLocaleString('ru'))}</span></div>
-      <div class="comment-text">${esc(comment.text)}</div>
-    </div>`;
+    const body = document.createElement('div');
+    body.className = 'comment-body';
+    const meta = document.createElement('div');
+    meta.className = 'comment-meta';
+    const author = document.createElement('b');
+    author.textContent = name;
+    const created = document.createElement('span');
+    created.textContent = new Date(comment.created_at || Date.now()).toLocaleString('ru');
+    meta.append(author, created);
+    const text = document.createElement('div');
+    text.className = 'comment-text';
+    text.textContent = comment.text || '';
+    body.append(meta, text);
+    row.appendChild(body);
     list.appendChild(row);
     scrollChatToBottom(box);
   }
