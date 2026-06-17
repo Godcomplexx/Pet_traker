@@ -2,38 +2,12 @@
   'use strict';
 
   const api = window.api;
+  const menuUi = window.petproEmoteWheelMenu;
+  if (!menuUi) return;
+
   const qs = (sel, root = document) => root.querySelector(sel);
-  const EMOTE_DIR = 'assets/emotes/pipoya';
   const WALL_EMOTE_KEY = 'petpro.wallEmotes';
-
-  const RPS = {
-    rock: { label: 'Камень', short: 'К', index: 86 },
-    scissors: { label: 'Ножницы', short: 'Н', index: 87 },
-    paper: { label: 'Бумага', short: 'Б', index: 88 },
-  };
-
-  const PET_GROUPS = [
-    group('notice', 'Внимание', 0, [0, 1, 2, 3, 4]),
-    group('joy', 'Радость', 5, [5, 6, 7, 8, 14]),
-    group('love', 'Симпатия', 9, [9, 10, 11, 12, 18]),
-    group('state', 'Состояние', 20, [20, 25, 26, 27, 28]),
-    group('face', 'Лицо', 30, [30, 31, 32, 33, 34]),
-    group('power', 'Эффект', 37, [37, 38, 39, 40, 49]),
-  ];
-
-  const WALL_GROUPS = [
-    group('hello', 'Реакции', 0, [0, 1, 2, 3, 4, 5]),
-    group('warm', 'Добро', 8, [8, 9, 10, 11, 12, 14]),
-    group('fun', 'Весело', 15, [15, 16, 17, 18, 19, 21]),
-    group('mood', 'Настроение', 22, [22, 23, 24, 25, 26, 27]),
-    group('faces', 'Мимика', 30, [30, 31, 32, 33, 34, 35]),
-    group('energy', 'Эффекты', 37, [37, 38, 39, 40, 41, 42]),
-    group('game', 'Игры', 85, [
-      action('rock'),
-      action('scissors'),
-      action('paper'),
-    ]),
-  ];
+  const { RPS, buildMenu, buildRpsChoiceMenu, emoteImg, emotePath, rpsEmoteImg } = menuUi;
 
   let menu = null;
   let workspaceId = null;
@@ -54,16 +28,12 @@
     try {
       localStorage.setItem(WALL_EMOTE_KEY, JSON.stringify(value));
     } catch {
-      // This is only a local visual preference; the current DOM selection can remain transient.
+      // Local visual preference only.
     }
   }
 
-  function wallEmoteKey(target) {
-    return target?.dataset?.userId || target?.dataset?.petId || '';
-  }
-
   function saveWallEmote(target, index) {
-    const key = wallEmoteKey(target);
+    const key = target?.dataset?.userId || target?.dataset?.petId || '';
     if (!key) return;
     const emotes = readWallEmotes();
     emotes[key] = Number(index);
@@ -74,34 +44,6 @@
   function storedWallEmote(pet) {
     const emotes = readWallEmotes();
     return emotes[pet.user_id] ?? emotes[pet.id];
-  }
-
-  function group(id, label, icon, entries) {
-    return { id, label, icon, entries };
-  }
-
-  function action(id) {
-    return { action: id };
-  }
-
-  function emotePath(index) {
-    return `${EMOTE_DIR}/pipo-popupemotes${String(index).padStart(3, '0')}.png`;
-  }
-
-  function emoteImg(index, className = '') {
-    const emote = document.createElement('span');
-    emote.setAttribute('role', 'img');
-    emote.setAttribute('aria-label', `emote ${index}`);
-    emote.className = `pipoya-emote-img ${className}`.trim();
-    emote.style.setProperty('--pipoya-url', `url('${emotePath(index)}')`);
-    return emote;
-  }
-
-  function rpsEmoteImg(key, className = '') {
-    const selected = RPS[key];
-    const emote = emoteImg(selected.index, className);
-    emote.setAttribute('aria-label', selected.label);
-    return emote;
   }
 
   function closeMenu() {
@@ -119,15 +61,6 @@
     const box = menu.getBoundingClientRect();
     menu.style.left = `${clamp(x - box.width / 2, margin, window.innerWidth - box.width - margin)}px`;
     menu.style.top = `${clamp(y - box.height / 2, margin, window.innerHeight - box.height - margin)}px`;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"]/g, (char) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-    }[char]));
   }
 
   function showBurst(host, index) {
@@ -226,12 +159,19 @@
     if (!feed) return;
     const node = document.createElement('div');
     node.className = 'task wall-local-emote';
-    node.innerHTML = `
-      <div class="t"><b>Вы</b> - ${escapeHtml(text)}
-        <div class="mono">сейчас</div>
-      </div>
-      <img class="wall-image pipoya-wall-image" src="${imageData}" alt="">
-    `;
+    const body = document.createElement('div');
+    body.className = 't';
+    const name = document.createElement('b');
+    name.textContent = 'Вы';
+    const meta = document.createElement('div');
+    meta.className = 'mono';
+    meta.textContent = 'сейчас';
+    body.append(name, document.createTextNode(` - ${text}`), meta);
+    const img = document.createElement('img');
+    img.className = 'wall-image pipoya-wall-image';
+    img.src = imageData;
+    img.alt = '';
+    node.append(body, img);
     feed.prepend(node);
   }
 
@@ -243,10 +183,6 @@
     prependLocalWallPost(text, imageData);
   }
 
-  function teamPetName(target) {
-    return qs('.team-name', target)?.textContent?.trim() || 'питомец';
-  }
-
   function chooseEmote(target, index, mode) {
     closeMenu();
     if (mode === 'wall') saveWallEmote(target, index);
@@ -254,8 +190,7 @@
   }
 
   async function inviteRps(target, key) {
-    const selected = RPS[key];
-    if (!selected) return;
+    if (!RPS[key]) return;
     closeMenu();
     const wsId = await getWorkspaceId();
     let opponentId = target.dataset.userId;
@@ -273,10 +208,7 @@
       return;
     }
     try {
-      await api.post(`/workspaces/${wsId}/rps`, {
-        opponent_id: opponentId,
-        choice: key,
-      });
+      await api.post(`/workspaces/${wsId}/rps`, { opponent_id: opponentId, choice: key });
       showRpsBurst(target, key);
       showRpsNotice(`Вызов отправлен: ${teamPetName(target)}`);
       refreshRpsPanel();
@@ -286,17 +218,15 @@
   }
 
   async function playRpsBot(target, key) {
-    const selected = RPS[key];
     const wsId = await getWorkspaceId();
-    if (!selected || !wsId || !api?.post) return;
+    if (!RPS[key] || !wsId || !api?.post) return;
     try {
       await api.post(`/workspaces/${wsId}/rps/bot`, { choice: key });
       showRpsBurst(target, key);
       refreshPetState();
       showRpsNotice('КНБ с ботом сыграно. Результат на стене.');
       setTimeout(() => {
-        const wallIsOpen = document.querySelector('#screen-team.on');
-        if (wallIsOpen) document.querySelector('[data-go="team"]')?.click();
+        if (document.querySelector('#screen-team.on')) document.querySelector('[data-go="team"]')?.click();
       }, 450);
     } catch (err) {
       showRpsNotice(err?.message || 'Не удалось сыграть с ботом');
@@ -304,17 +234,19 @@
   }
 
   async function chooseRpsResponse(challenge, key) {
-    const selected = RPS[key];
-    if (!selected || !challenge?.id) return;
+    if (!RPS[key] || !challenge?.id) return;
     closeMenu();
     await api.post(`/rps/challenges/${challenge.id}/choice`, { choice: key });
     refreshPetState();
-    showRpsNotice(`Вы выбрали: ${selected.label}`);
+    showRpsNotice(`Вы выбрали: ${RPS[key].label}`);
     refreshRpsPanel();
     setTimeout(() => {
-      const wallIsOpen = document.querySelector('#screen-team.on');
-      if (wallIsOpen) document.querySelector('[data-go="team"]')?.click();
+      if (document.querySelector('#screen-team.on')) document.querySelector('[data-go="team"]')?.click();
     }, 500);
+  }
+
+  function teamPetName(target) {
+    return qs('.team-name', target)?.textContent?.trim() || 'питомец';
   }
 
   function showRpsNotice(text) {
@@ -334,158 +266,100 @@
     document.dispatchEvent(new CustomEvent('petpro:refresh-pet'));
   }
 
-  function setRadialPosition(node, index, total, radius) {
-    const angle = -90 + (360 / total) * index;
-    const radians = angle * Math.PI / 180;
-    node.style.setProperty('--angle', `${angle}deg`);
-    node.style.setProperty('--inverse-angle', `${-angle}deg`);
-    node.style.setProperty('--radius', `${radius}px`);
-    node.style.setProperty('--radial-x', `${Math.cos(radians) * radius}px`);
-    node.style.setProperty('--radial-y', `${Math.sin(radians) * radius}px`);
-  }
-
-  function makeCategoryButton(category, index, total, selectCategory) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'emote-node emote-category';
-    button.title = category.label;
-    button.dataset.category = category.id;
-    button.appendChild(emoteImg(category.icon));
-    const label = document.createElement('span');
-    label.className = 'emote-label';
-    label.textContent = category.label;
-    button.appendChild(label);
-    setRadialPosition(button, index, total, 114);
-    button.addEventListener('click', () => selectCategory(category.id));
-    return button;
-  }
-
-  function makeItemButton(target, entry, index, total, mode) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'emote-node emote-choice';
-    setRadialPosition(button, index, total, 66);
-
-    if (typeof entry === 'object' && entry.action) {
-      const selected = RPS[entry.action];
-      button.classList.add('emote-rps');
-      button.title = selected.label;
-      button.appendChild(rpsEmoteImg(entry.action));
-      button.addEventListener('click', () => inviteRps(target, entry.action).catch((err) => {
-        showRpsNotice(err?.message || 'Не удалось отправить вызов');
-      }));
-      return button;
-    }
-
-    button.title = `Emote ${entry + 1}`;
-    button.appendChild(emoteImg(entry));
-    button.addEventListener('click', () => chooseEmote(target, entry, mode));
-    return button;
-  }
-
-  function buildMenu(target, mode) {
-    const categories = mode === 'pet' ? PET_GROUPS : WALL_GROUPS;
-    let active = categories[0].id;
-
-    const root = document.createElement('div');
-    root.className = `emote-wheel ${mode === 'pet' ? 'pet-mode' : 'wall-mode'}`;
-    root.setAttribute('role', 'menu');
-
-    const center = document.createElement('button');
-    center.type = 'button';
-    center.className = 'emote-wheel-center';
-    center.addEventListener('click', closeMenu);
-    root.appendChild(center);
-
-    const categoryRing = document.createElement('div');
-    categoryRing.className = 'emote-category-ring';
-    root.appendChild(categoryRing);
-
-    const itemRing = document.createElement('div');
-    itemRing.className = 'emote-item-ring';
-    root.appendChild(itemRing);
-
-    function selectCategoryAtPoint(event) {
-      if (event.target.closest('.emote-choice, .emote-wheel-center')) return;
-      const box = root.getBoundingClientRect();
-      const cx = box.left + box.width / 2;
-      const cy = box.top + box.height / 2;
-      const dx = event.clientX - cx;
-      const dy = event.clientY - cy;
-      const distance = Math.hypot(dx, dy);
-      if (distance < box.width * 0.30 || distance > box.width * 0.50) return;
-      const degrees = (Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360;
-      const index = Math.round(degrees / (360 / categories.length)) % categories.length;
-      active = categories[index].id;
-      event.preventDefault();
-      event.stopPropagation();
-      render();
-    }
-
-    root.addEventListener('click', selectCategoryAtPoint, true);
-
-    function render() {
-      const selected = categories.find((category) => category.id === active) || categories[0];
-      center.innerHTML = `<b>${escapeHtml(selected.label)}</b><span>Esc</span>`;
-      categoryRing.replaceChildren(...categories.map((category, index) => {
-        const button = makeCategoryButton(category, index, categories.length, (id) => {
-          active = id;
-          render();
-        });
-        button.classList.toggle('on', category.id === selected.id);
-        return button;
-      }));
-      itemRing.replaceChildren(...selected.entries.map((entry, index) => (
-        makeItemButton(target, entry, index, selected.entries.length, mode)
-      )));
-    }
-
-    render();
-    return root;
-  }
-
-  function buildRpsChoiceMenu(challenge) {
-    const root = document.createElement('div');
-    root.className = 'emote-wheel rps-choice-mode';
-    root.setAttribute('role', 'menu');
-
-    const center = document.createElement('button');
-    center.type = 'button';
-    center.className = 'emote-wheel-center';
-    center.innerHTML = '<b>Ваш ход</b><span>Esc</span>';
-    center.addEventListener('click', closeMenu);
-    root.appendChild(center);
-
-    const itemRing = document.createElement('div');
-    itemRing.className = 'emote-item-ring';
-    ['rock', 'scissors', 'paper'].forEach((key, index) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'emote-node emote-rps';
-      button.title = RPS[key].label;
-      button.appendChild(rpsEmoteImg(key));
-      setRadialPosition(button, index, 3, 86);
-      button.addEventListener('click', () => chooseRpsResponse(challenge, key).catch((err) => {
-        showRpsNotice(err?.message || 'Не удалось сделать ход');
-      }));
-      itemRing.appendChild(button);
-    });
-    root.appendChild(itemRing);
-    return root;
-  }
-
   function openRpsChoice(challenge) {
     closeMenu();
-    menu = buildRpsChoiceMenu(challenge);
+    menu = buildRpsChoiceMenu(challenge, {
+      closeMenu,
+      chooseRpsResponse: (item, key) => chooseRpsResponse(item, key).catch(() => showRpsNotice('Ошибка')),
+    });
     document.body.appendChild(menu);
     placeMenu(window.innerWidth / 2, window.innerHeight / 2);
   }
 
   function openMenu(target, x, y, mode) {
     closeMenu();
-    menu = buildMenu(target, mode);
+    menu = buildMenu(target, mode, {
+      chooseEmote,
+      closeMenu,
+      inviteRps: (item, key) => inviteRps(item, key).catch((err) => showRpsNotice(err?.message || 'Не удалось отправить вызов')),
+    });
     document.body.appendChild(menu);
     placeMenu(x, y);
+  }
+
+  async function rpsChallenges() {
+    if (!api?.isAuthed?.()) return [];
+    return api.get('/rps/challenges').catch(() => []);
+  }
+
+  async function currentUserId() {
+    if (!api?.isAuthed?.()) return null;
+    const me = await api.get('/auth/me').catch(() => null);
+    return me?.id || null;
+  }
+
+  async function respondRps(challenge, accept) {
+    const next = await api.post(`/rps/challenges/${challenge.id}/respond`, { accept });
+    if (accept) openRpsChoice(next);
+    else showRpsNotice('Вызов отклонён');
+    refreshRpsPanel();
+  }
+
+  function ensureRpsPanel() {
+    if (rpsPanel) return rpsPanel;
+    rpsPanel = document.createElement('div');
+    rpsPanel.className = 'rps-panel';
+    rpsPanel.hidden = true;
+    document.body.appendChild(rpsPanel);
+    return rpsPanel;
+  }
+
+  async function refreshRpsPanel() {
+    const panel = ensureRpsPanel();
+    const [items, meId] = await Promise.all([rpsChallenges(), currentUserId()]);
+    const incoming = items.filter((item) => item.opponent_id === meId && item.status === 'pending');
+    const awaitingChoice = items.find((item) => item.opponent_id === meId && item.status === 'accepted' && !item.opponent_choice);
+    if (!incoming.length && !awaitingChoice) {
+      panel.hidden = true;
+      panel.replaceChildren();
+      return;
+    }
+    panel.hidden = false;
+    panel.replaceChildren();
+    if (awaitingChoice) panel.appendChild(rpsPrimaryButton(awaitingChoice));
+    incoming.forEach((challenge) => panel.appendChild(rpsChallengeCard(challenge)));
+  }
+
+  function rpsPrimaryButton(challenge) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'rps-card primary';
+    button.textContent = 'Выбрать ход в КНБ';
+    button.addEventListener('click', () => openRpsChoice(challenge));
+    return button;
+  }
+
+  function rpsChallengeCard(challenge) {
+    const card = document.createElement('div');
+    card.className = 'rps-card';
+    const title = document.createElement('b');
+    title.textContent = 'Камень-ножницы-бумага';
+    const text = document.createElement('span');
+    text.textContent = 'Вас вызывают на стене';
+    const actions = document.createElement('div');
+    actions.className = 'rps-card-actions';
+    const accept = document.createElement('button');
+    accept.type = 'button';
+    accept.textContent = 'Принять';
+    accept.addEventListener('click', () => respondRps(challenge, true).catch(() => showRpsNotice('Ошибка')));
+    const decline = document.createElement('button');
+    decline.type = 'button';
+    decline.className = 'danger';
+    decline.textContent = 'Отказаться';
+    decline.addEventListener('click', () => respondRps(challenge, false).catch(() => showRpsNotice('Ошибка')));
+    actions.append(accept, decline);
+    card.append(title, text, actions);
+    return card;
   }
 
   document.addEventListener('click', (event) => {
@@ -508,84 +382,9 @@
     decorateTeamPets().finally(() => openMenu(target, event.clientX, event.clientY, 'wall'));
   }, true);
 
-  async function rpsChallenges() {
-    if (!api?.isAuthed?.()) return [];
-    return api.get('/rps/challenges').catch(() => []);
-  }
-
-  async function currentUserId() {
-    if (!api?.isAuthed?.()) return null;
-    const me = await api.get('/auth/me').catch(() => null);
-    return me?.id || null;
-  }
-
-  async function respondRps(challenge, accept) {
-    const next = await api.post(`/rps/challenges/${challenge.id}/respond`, { accept });
-    if (accept) {
-      openRpsChoice(next);
-    } else {
-      showRpsNotice('Вызов отклонён');
-    }
-    refreshRpsPanel();
-  }
-
-  function ensureRpsPanel() {
-    if (rpsPanel) return rpsPanel;
-    rpsPanel = document.createElement('div');
-    rpsPanel.className = 'rps-panel';
-    rpsPanel.hidden = true;
-    document.body.appendChild(rpsPanel);
-    return rpsPanel;
-  }
-
-  async function refreshRpsPanel() {
-    const panel = ensureRpsPanel();
-    const [items, meId] = await Promise.all([rpsChallenges(), currentUserId()]);
-    const incoming = items.filter((item) => item.opponent_id === meId && item.status === 'pending');
-    const awaitingChoice = items.find(
-      (item) => item.opponent_id === meId && item.status === 'accepted' && !item.opponent_choice
-    );
-    if (!incoming.length && !awaitingChoice) {
-      panel.hidden = true;
-      panel.replaceChildren();
-      return;
-    }
-
-    panel.hidden = false;
-    panel.replaceChildren();
-    if (awaitingChoice) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'rps-card primary';
-      button.textContent = 'Выбрать ход в КНБ';
-      button.addEventListener('click', () => openRpsChoice(awaitingChoice));
-      panel.appendChild(button);
-    }
-    incoming.forEach((challenge) => {
-      const card = document.createElement('div');
-      card.className = 'rps-card';
-      card.innerHTML = '<b>Камень-ножницы-бумага</b><span>Вас вызывают на стене</span>';
-      const actions = document.createElement('div');
-      actions.className = 'rps-card-actions';
-      const accept = document.createElement('button');
-      accept.type = 'button';
-      accept.textContent = 'Принять';
-      accept.addEventListener('click', () => respondRps(challenge, true).catch(() => showRpsNotice('Ошибка')));
-      const decline = document.createElement('button');
-      decline.type = 'button';
-      decline.className = 'danger';
-      decline.textContent = 'Отказаться';
-      decline.addEventListener('click', () => respondRps(challenge, false).catch(() => showRpsNotice('Ошибка')));
-      actions.append(accept, decline);
-      card.appendChild(actions);
-      panel.appendChild(card);
-    });
-  }
-
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeMenu();
   });
-
   window.addEventListener('resize', closeMenu);
   document.addEventListener('scroll', closeMenu, true);
   document.addEventListener('visibilitychange', () => {
@@ -594,10 +393,9 @@
       refreshRpsPanel();
     }
   });
+
   const playground = document.getElementById('teamPlayground');
-  if (playground) {
-    new MutationObserver(scheduleTeamDecor).observe(playground, { childList: true, subtree: true });
-  }
+  if (playground) new MutationObserver(scheduleTeamDecor).observe(playground, { childList: true, subtree: true });
   setTimeout(() => {
     decorateTeamPets().catch(() => {});
     refreshRpsPanel();
